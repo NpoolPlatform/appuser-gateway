@@ -1,0 +1,11 @@
+---
+config:
+  hostname: "appuser-gateway.npool.top"
+  http_port: 50330
+  grpc_port: 50331
+  healthz_port: 50332
+  prometheus_port: 50333
+  appid: "89089012783789789719823798127398"
+  serviceid: "a79f2fe8-7cd6-11ec-b7a7-069013a3cb9a"
+  logdir: "./"
+  apolloAccessKey: "0147fb70b815403790e8634b899fac07"

@@ -1,0 +1,8 @@
+commonLabels:
+  # app: appuser-gateway
+
+resources:
+- 01-appuser-gateway.yaml
+- 02-strip-prefix.yaml
+- 03-traefik-ingress.yaml
+- 04-traefik-vpn-ingress.yaml
