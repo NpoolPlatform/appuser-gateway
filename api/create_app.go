@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -16,7 +17,6 @@ import (
 )
 
 func checkAppInfo(info *appcrud.AppReq) error {
-
 	if _, err := uuid.Parse(info.GetCreatedBy()); err != nil {
 		logger.Sugar().Error("CreatedBy is invalid")
 		return status.Error(npool.ErrParams, app.ErrMsgAppCreatedByInvalid)

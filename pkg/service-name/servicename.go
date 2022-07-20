@@ -1,3 +1,3 @@
 package servicename
 
-const ServiceName = "App User Manager"
+const ServiceName = "AppUserGateway"

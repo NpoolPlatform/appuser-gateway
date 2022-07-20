@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/NpoolPlatform/appuser-gateway/api"
-	db "github.com/NpoolPlatform/appuser-gateway/pkg/db"
+
 	grpc2 "github.com/NpoolPlatform/go-service-framework/pkg/grpc"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -27,9 +27,6 @@ var runCmd = &cli.Command{
 		return logger.Sync()
 	},
 	Action: func(c *cli.Context) error {
-		if err := db.Init(); err != nil {
-			return err
-		}
 		go func() {
 			if err := grpc2.RunGRPC(rpcRegister); err != nil {
 				logger.Sugar().Errorf("fail to run grpc server: %v", err)
