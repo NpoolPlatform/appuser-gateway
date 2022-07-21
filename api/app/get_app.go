@@ -1,5 +1,5 @@
 //nolint:nolintlint,dupl
-package api
+package app
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
-	"github.com/NpoolPlatform/message/npool/appusergateway/app"
+	"github.com/NpoolPlatform/message/npool/appusergw/app"
 	appcrud "github.com/NpoolPlatform/message/npool/appusermgrv2/app"
 
 	"github.com/google/uuid"
@@ -19,7 +19,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *AppServer) GetApp(ctx context.Context, in *app.GetAppRequest) (*app.GetAppResponse, error) {
+func (s *Server) GetApp(ctx context.Context, in *app.GetAppRequest) (*app.GetAppResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppV2")
@@ -47,7 +47,7 @@ func (s *AppServer) GetApp(ctx context.Context, in *app.GetAppRequest) (*app.Get
 	}, nil
 }
 
-func (s *AppServer) GetApps(ctx context.Context, in *app.GetAppsRequest) (*app.GetAppsResponse, error) {
+func (s *Server) GetApps(ctx context.Context, in *app.GetAppsRequest) (*app.GetAppsResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppV2")
@@ -73,7 +73,7 @@ func (s *AppServer) GetApps(ctx context.Context, in *app.GetAppsRequest) (*app.G
 	}, nil
 }
 
-func (s *AppServer) GetAppsByCreator(ctx context.Context, in *app.GetAppsByCreatorRequest) (*app.GetAppsByCreatorResponse, error) {
+func (s *Server) GetAppsByCreator(ctx context.Context, in *app.GetAppsByCreatorRequest) (*app.GetAppsByCreatorResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppV2")
@@ -104,7 +104,7 @@ func (s *AppServer) GetAppsByCreator(ctx context.Context, in *app.GetAppsByCreat
 	}, nil
 }
 
-func (s *AppServer) GetAppInfo(ctx context.Context, in *app.GetAppInfoRequest) (*app.GetAppInfoResponse, error) {
+func (s *Server) GetAppInfo(ctx context.Context, in *app.GetAppInfoRequest) (*app.GetAppInfoResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppInfo")
@@ -131,5 +131,60 @@ func (s *AppServer) GetAppInfo(ctx context.Context, in *app.GetAppInfoRequest) (
 
 	return &app.GetAppInfoResponse{
 		Info: resp,
+	}, nil
+}
+
+func (s *Server) GetAppInfos(ctx context.Context, in *app.GetAppInfosRequest) (*app.GetAppInfosResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppInfos")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span.AddEvent("call grpc GetAppInfos")
+	resp, err := appmwgrpc.GetAppInfos(ctx, in.GetLimit(), in.GetOffset())
+	if err != nil {
+		logger.Sugar().Errorw("fail get app info: %v", err)
+		return &app.GetAppInfosResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+	}
+
+	return &app.GetAppInfosResponse{
+		Infos: resp,
+	}, nil
+}
+
+func (s *Server) GetAppInfosByCreator(ctx context.Context, in *app.GetAppInfosByCreatorRequest) (*app.GetAppInfosByCreatorResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppInfosByCreator")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	if _, err := uuid.Parse(in.GetUserID()); err != nil {
+		logger.Sugar().Error("UserID is invalid")
+		return &app.GetAppInfosByCreatorResponse{}, status.Error(npool.ErrParams, app.ErrMsgUserIDInvalid)
+	}
+
+	span.AddEvent("call grpc GetAppInfosByCreator")
+	resp, err := appmwgrpc.GetAppInfosByCreator(ctx, in.GetUserID(), in.GetLimit(), in.GetOffset())
+	if err != nil {
+		logger.Sugar().Errorw("fail get app info by creator : %v", err)
+		return &app.GetAppInfosByCreatorResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+	}
+
+	return &app.GetAppInfosByCreatorResponse{
+		Infos: resp,
 	}, nil
 }

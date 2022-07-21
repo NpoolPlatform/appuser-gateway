@@ -1,4 +1,4 @@
-package api
+package app
 
 import (
 	"context"
@@ -8,15 +8,14 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npool "github.com/NpoolPlatform/message/npool"
-	"github.com/NpoolPlatform/message/npool/appusergateway/app"
+	"github.com/NpoolPlatform/message/npool/appusergw/app"
 	appcrud "github.com/NpoolPlatform/message/npool/appusermgrv2/app"
-	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *AppServer) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*app.UpdateAppResponse, error) {
+func (s *Server) CreateApp(ctx context.Context, in *app.CreateAppRequest) (*app.CreateAppResponse, error) {
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppV2")
 	defer span.End()
 	var err error
@@ -26,10 +25,17 @@ func (s *AppServer) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*a
 			span.RecordError(err)
 		}
 	}()
-	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
-		return &app.UpdateAppResponse{}, status.Error(npool.ErrParams, app.ErrMsgAppIDInvalid)
+	if in.GetInfo().GetID() != "" {
+		span.AddEvent("call grpc ExistAppV2")
+		exist, err := grpc.ExistAppV2(ctx, in.GetInfo().GetID())
+		if err != nil {
+			return &app.CreateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+		}
+		if exist {
+			return &app.CreateAppResponse{}, status.Error(npool.ErrAlreadyExists, app.ErrMsgAppAlreadyExists)
+		}
 	}
-	err = checkAppInfo(in.GetInfo())
+	err = validate(in.GetInfo())
 	if err != nil {
 		return nil, err
 	}
@@ -39,18 +45,18 @@ func (s *AppServer) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*a
 		Op:    cruder.EQ,
 	}})
 	if err != nil {
-		return &app.UpdateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+		return &app.CreateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 	if exist {
-		return &app.UpdateAppResponse{}, status.Error(npool.ErrAlreadyExists, app.ErrMsgAppNameAlreadyExists)
+		return &app.CreateAppResponse{}, status.Error(npool.ErrAlreadyExists, "app name already exist")
 	}
 	span.AddEvent("call grpc CreateAppV2")
 	resp, err := grpc.CreateAppV2(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("fail create app: %v", err)
-		return &app.UpdateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+		return &app.CreateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
-	return &app.UpdateAppResponse{
+	return &app.CreateAppResponse{
 		Info: resp,
 	}, nil
 }
