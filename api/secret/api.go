@@ -1,4 +1,4 @@
-package appusersecret
+package secret
 
 import (
 	"context"

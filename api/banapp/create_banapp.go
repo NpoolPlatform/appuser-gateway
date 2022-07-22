@@ -7,6 +7,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
+	"github.com/NpoolPlatform/message/npool/appusergw"
 	"github.com/NpoolPlatform/message/npool/appusergw/banapp"
 	appcrud "github.com/NpoolPlatform/message/npool/appusermgrv2/banapp"
 	"go.opentelemetry.io/otel"
@@ -42,7 +43,7 @@ func (s *Server) CreateBanApp(ctx context.Context, in *banapp.CreateBanAppReques
 		return &banapp.CreateBanAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 	if exist {
-		return &banapp.CreateBanAppResponse{}, status.Error(npool.ErrAlreadyExists, banapp.ErrMsgAppAlreadyExists)
+		return &banapp.CreateBanAppResponse{}, status.Error(npool.ErrAlreadyExists, appusergw.ErrMsgAppAlreadyExists)
 	}
 
 	span.AddEvent("call grpc CreateBanAppV2")

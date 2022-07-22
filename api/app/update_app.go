@@ -8,6 +8,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npool "github.com/NpoolPlatform/message/npool"
+	"github.com/NpoolPlatform/message/npool/appusergw"
 	"github.com/NpoolPlatform/message/npool/appusergw/app"
 	appcrud "github.com/NpoolPlatform/message/npool/appusermgrv2/app"
 	"github.com/google/uuid"
@@ -27,7 +28,7 @@ func (s *Server) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*app.
 		}
 	}()
 	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
-		return &app.UpdateAppResponse{}, status.Error(npool.ErrParams, app.ErrMsgAppIDInvalid)
+		return &app.UpdateAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
 	err = validate(in.GetInfo())
@@ -44,7 +45,7 @@ func (s *Server) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*app.
 		return &app.UpdateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 	if exist {
-		return &app.UpdateAppResponse{}, status.Error(npool.ErrAlreadyExists, app.ErrMsgAppNameAlreadyExists)
+		return &app.UpdateAppResponse{}, status.Error(npool.ErrAlreadyExists, appusergw.ErrMsgAppNameAlreadyExists)
 	}
 
 	span.AddEvent("call grpc CreateAppV2")

@@ -1,4 +1,4 @@
-package banapp
+package role
 
 import (
 	"context"
@@ -7,17 +7,17 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool"
 	"github.com/NpoolPlatform/message/npool/appusergw"
-	"github.com/NpoolPlatform/message/npool/appusergw/banapp"
+	"github.com/NpoolPlatform/message/npool/appusergw/approle"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) DeleteBanApp(ctx context.Context, in *banapp.DeleteBanAppRequest) (*banapp.DeleteBanAppResponse, error) {
+func (s *Server) UpdateRole(ctx context.Context, in *approle.UpdateRoleRequest) (*approle.UpdateRoleResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateRole")
 	defer span.End()
 
 	defer func() {
@@ -27,18 +27,18 @@ func (s *Server) DeleteBanApp(ctx context.Context, in *banapp.DeleteBanAppReques
 		}
 	}()
 
-	if _, err := uuid.Parse(in.GetID()); err != nil {
+	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &banapp.DeleteBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
+		return &approle.UpdateRoleResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgBanAppIDInvalid)
 	}
 
-	span.AddEvent("call grpc DeleteBanAppV2")
-	resp, err := grpc.DeleteBanAppV2(ctx, in.GetID())
+	span.AddEvent("call grpc ExistBanAppCondsV2")
+	resp, err := grpc.UpdateAppRoleV2(ctx, in.GetInfo())
 	if err != nil {
-		return &banapp.DeleteBanAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+		return &approle.UpdateRoleResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
-	return &banapp.DeleteBanAppResponse{
+	return &approle.UpdateRoleResponse{
 		Info: resp,
 	}, nil
 }

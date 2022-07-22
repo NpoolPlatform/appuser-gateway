@@ -1,4 +1,4 @@
-package banapp
+package extra
 
 import (
 	"context"
@@ -7,15 +7,14 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool"
 	"github.com/NpoolPlatform/message/npool/appusergw"
-	"github.com/NpoolPlatform/message/npool/appusergw/banapp"
-	banappcrud "github.com/NpoolPlatform/message/npool/appusermgrv2/banapp"
+	"github.com/NpoolPlatform/message/npool/appusergw/appuserextra"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) UpdateBanApp(ctx context.Context, in *banapp.UpdateBanAppRequest) (*banapp.UpdateBanAppResponse, error) {
+func (s *Server) UpdateExtra(ctx context.Context, in *appuserextra.UpdateExtraRequest) (*appuserextra.UpdateExtraResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanApp")
@@ -35,23 +34,16 @@ func (s *Server) UpdateBanApp(ctx context.Context, in *banapp.UpdateBanAppReques
 
 	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &banapp.UpdateBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgBanAppIDInvalid)
-	}
-
-	if in.GetInfo().GetMessage() == "" {
-		logger.Sugar().Error("Message is empty")
-		return &banapp.UpdateBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgBanAppMessageEmpty)
+		return &appuserextra.UpdateExtraResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgBanAppIDInvalid)
 	}
 
 	span.AddEvent("call grpc ExistBanAppCondsV2")
-	resp, err := grpc.UpdateBanAppV2(ctx, &banappcrud.BanAppReq{
-		Message: in.GetInfo().Message,
-	})
+	resp, err := grpc.UpdateAppUserExtraV2(ctx, in.GetInfo())
 	if err != nil {
-		return &banapp.UpdateBanAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+		return &appuserextra.UpdateExtraResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
-	return &banapp.UpdateBanAppResponse{
+	return &appuserextra.UpdateExtraResponse{
 		Info: resp,
 	}, nil
 }

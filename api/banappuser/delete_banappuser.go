@@ -1,4 +1,4 @@
-package banapp
+package banappuser
 
 import (
 	"context"
@@ -7,14 +7,14 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool"
 	"github.com/NpoolPlatform/message/npool/appusergw"
-	"github.com/NpoolPlatform/message/npool/appusergw/banapp"
+	"github.com/NpoolPlatform/message/npool/appusergw/banappuser"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) DeleteBanApp(ctx context.Context, in *banapp.DeleteBanAppRequest) (*banapp.DeleteBanAppResponse, error) {
+func (s *Server) DeleteBanAppUser(ctx context.Context, in *banappuser.DeleteBanAppUserRequest) (*banappuser.DeleteBanAppUserResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteBanApp")
@@ -29,16 +29,16 @@ func (s *Server) DeleteBanApp(ctx context.Context, in *banapp.DeleteBanAppReques
 
 	if _, err := uuid.Parse(in.GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &banapp.DeleteBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
+		return &banappuser.DeleteBanAppUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
 	span.AddEvent("call grpc DeleteBanAppV2")
-	resp, err := grpc.DeleteBanAppV2(ctx, in.GetID())
+	resp, err := grpc.DeleteBanAppUserV2(ctx, in.GetID())
 	if err != nil {
-		return &banapp.DeleteBanAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+		return &banappuser.DeleteBanAppUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
-	return &banapp.DeleteBanAppResponse{
+	return &banappuser.DeleteBanAppUserResponse{
 		Info: resp,
 	}, nil
 }

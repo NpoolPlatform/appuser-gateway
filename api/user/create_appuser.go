@@ -1,4 +1,4 @@
-package appuser
+package user
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool"
+	"github.com/NpoolPlatform/message/npool/appusergw"
 	"github.com/NpoolPlatform/message/npool/appusergw/appuser"
 	appusercrud "github.com/NpoolPlatform/message/npool/appusermgrv2/appuser"
 	"github.com/google/uuid"
@@ -41,7 +42,7 @@ func (s *Server) CreateUser(ctx context.Context, in *appuser.CreateUserRequest) 
 		}
 
 		if exist {
-			return &appuser.CreateUserResponse{}, status.Error(npool.ErrAlreadyExists, appuser.ErrMsgUserIDAlreadyExists)
+			return &appuser.CreateUserResponse{}, status.Error(npool.ErrAlreadyExists, appusergw.ErrMsgUserIDAlreadyExists)
 		}
 	}
 

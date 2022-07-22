@@ -1,4 +1,4 @@
-package appusersecret
+package banappuser
 
 import (
 	"context"
@@ -6,16 +6,16 @@ import (
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool"
-	"github.com/NpoolPlatform/message/npool/appusergw/appusersecret"
+	"github.com/NpoolPlatform/message/npool/appusergw/banappuser"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateSecret(ctx context.Context, in *appusersecret.CreateSecretRequest) (*appusersecret.CreateSecretResponse, error) {
+func (s *Server) CreateBanAppUser(ctx context.Context, in *banappuser.CreateBanAppUserRequest) (*banappuser.CreateBanAppUserResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateExtra")
 	defer span.End()
 
 	defer func() {
@@ -30,13 +30,14 @@ func (s *Server) CreateSecret(ctx context.Context, in *appusersecret.CreateSecre
 		return nil, err
 	}
 
-	span.AddEvent("call grpc CreateAppUserSecretV2")
-	resp, err := grpc.CreateAppUserSecretV2(ctx, in.GetInfo())
+	span.AddEvent("call grpc CreateBanAppUserV2")
+	resp, err := grpc.CreateBanAppUserV2(ctx, in.GetInfo())
 	if err != nil {
-		logger.Sugar().Errorw("fail create app user secret: %v", err)
-		return &appusersecret.CreateSecretResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+		logger.Sugar().Errorw("fail create ban app user: %v", err)
+		return &banappuser.CreateBanAppUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
-	return &appusersecret.CreateSecretResponse{
+
+	return &banappuser.CreateBanAppUserResponse{
 		Info: resp,
 	}, nil
 }

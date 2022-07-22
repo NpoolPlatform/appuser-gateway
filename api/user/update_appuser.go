@@ -1,4 +1,4 @@
-package appuser
+package user
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool"
+	"github.com/NpoolPlatform/message/npool/appusergw"
 	"github.com/NpoolPlatform/message/npool/appusergw/appuser"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
@@ -33,7 +34,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *appuser.UpdateUserRequest) 
 
 	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &appuser.UpdateUserResponse{}, status.Error(npool.ErrParams, appuser.ErrMsgUserIDInvalid)
+		return &appuser.UpdateUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgUserIDInvalid)
 	}
 
 	span.AddEvent("call grpc CreateAppUserV2")

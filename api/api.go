@@ -2,8 +2,12 @@ package api
 
 import (
 	"context"
-	"github.com/NpoolPlatform/appuser-gateway/api/appuser"
-	"github.com/NpoolPlatform/appuser-gateway/api/appusersecret"
+	"github.com/NpoolPlatform/appuser-gateway/api/banappuser"
+	"github.com/NpoolPlatform/appuser-gateway/api/extra"
+	"github.com/NpoolPlatform/appuser-gateway/api/role"
+	"github.com/NpoolPlatform/appuser-gateway/api/roleuser"
+	"github.com/NpoolPlatform/appuser-gateway/api/secret"
+	"github.com/NpoolPlatform/appuser-gateway/api/user"
 
 	"github.com/NpoolPlatform/appuser-gateway/api/app"
 	"github.com/NpoolPlatform/appuser-gateway/api/banapp"
@@ -20,8 +24,12 @@ func Register(server grpc.ServiceRegistrar) {
 	appusergw.RegisterAppUserGatewayServer(server, &Server{})
 	app.Register(server)
 	banapp.Register(server)
-	appuser.Register(server)
-	appusersecret.Register(server)
+	banappuser.Register(server)
+	extra.Register(server)
+	role.Register(server)
+	roleuser.Register(server)
+	secret.Register(server)
+	user.Register(server)
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
@@ -34,10 +42,22 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 	if err := banapp.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
-	if err := appuser.RegisterGateway(mux, endpoint, opts); err != nil {
+	if err := banappuser.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
-	if err := appusersecret.RegisterGateway(mux, endpoint, opts); err != nil {
+	if err := extra.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := role.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := roleuser.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := secret.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := user.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	return nil

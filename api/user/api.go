@@ -1,4 +1,4 @@
-package appuser
+package user
 
 import (
 	"context"

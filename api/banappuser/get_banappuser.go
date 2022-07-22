@@ -1,4 +1,4 @@
-package appusersecret
+package banappuser
 
 import (
 	"context"
@@ -7,15 +7,16 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
-	"github.com/NpoolPlatform/message/npool/appusergw/appusersecret"
-	appusersecretcrud "github.com/NpoolPlatform/message/npool/appusermgrv2/appusersecret"
+	"github.com/NpoolPlatform/message/npool/appusergw"
+	"github.com/NpoolPlatform/message/npool/appusergw/banappuser"
+	banappusercrud "github.com/NpoolPlatform/message/npool/appusermgrv2/banappuser"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) GetSecret(ctx context.Context, in *appusersecret.GetSecretRequest) (*appusersecret.GetSecretResponse, error) {
+func (s *Server) GetBanAppUser(ctx context.Context, in *banappuser.GetBanAppUserRequest) (*banappuser.GetBanAppUserResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetBanApp")
@@ -30,21 +31,21 @@ func (s *Server) GetSecret(ctx context.Context, in *appusersecret.GetSecretReque
 
 	if _, err := uuid.Parse(in.GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &appusersecret.GetSecretResponse{}, status.Error(npool.ErrParams, appusersecret.ErrMsgIDInvalid)
+		return &banappuser.GetBanAppUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgIDInvalid)
 	}
 
 	span.AddEvent("call grpc GetBanAppV2")
-	resp, err := grpc.GetAppUserSecretV2(ctx, in.GetID())
+	resp, err := grpc.GetBanAppUserV2(ctx, in.GetID())
 	if err != nil {
-		return &appusersecret.GetSecretResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+		return &banappuser.GetBanAppUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
-	return &appusersecret.GetSecretResponse{
+	return &banappuser.GetBanAppUserResponse{
 		Info: resp,
 	}, nil
 }
 
-func (s *Server) GetAppUserSecret(ctx context.Context, in *appusersecret.GetAppUserSecretRequest) (*appusersecret.GetAppUserSecretResponse, error) {
+func (s *Server) GetAppUserBanAppUser(ctx context.Context, in *banappuser.GetAppUserBanAppUserRequest) (*banappuser.GetAppUserBanAppUserResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetBanApp")
@@ -59,16 +60,16 @@ func (s *Server) GetAppUserSecret(ctx context.Context, in *appusersecret.GetAppU
 
 	if _, err := uuid.Parse(in.GetUserID()); err != nil {
 		logger.Sugar().Error("UserID is invalid")
-		return &appusersecret.GetAppUserSecretResponse{}, status.Error(npool.ErrParams, appusersecret.ErrMsgUserIDInvalid)
+		return &banappuser.GetAppUserBanAppUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgUserIDInvalid)
 	}
 
 	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
 		logger.Sugar().Error("AppID is invalid")
-		return &appusersecret.GetAppUserSecretResponse{}, status.Error(npool.ErrParams, appusersecret.ErrMsgAppIDInvalid)
+		return &banappuser.GetAppUserBanAppUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
 	span.AddEvent("call grpc GetAppUserSecretOnlyV2")
-	resp, err := grpc.GetAppUserSecretOnlyV2(ctx, &appusersecretcrud.Conds{
+	resp, err := grpc.GetBanAppUserOnlyV2(ctx, &banappusercrud.Conds{
 		AppID: &npool.StringVal{
 			Value: in.GetTargetAppID(),
 			Op:    cruder.EQ,
@@ -79,10 +80,10 @@ func (s *Server) GetAppUserSecret(ctx context.Context, in *appusersecret.GetAppU
 		},
 	})
 	if err != nil {
-		return &appusersecret.GetAppUserSecretResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+		return &banappuser.GetAppUserBanAppUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
-	return &appusersecret.GetAppUserSecretResponse{
+	return &banappuser.GetAppUserBanAppUserResponse{
 		Info: resp,
 	}, nil
 }

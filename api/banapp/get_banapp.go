@@ -6,7 +6,7 @@ import (
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool"
-	"github.com/NpoolPlatform/message/npool/appusergw/app"
+	"github.com/NpoolPlatform/message/npool/appusergw"
 	"github.com/NpoolPlatform/message/npool/appusergw/banapp"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
@@ -29,7 +29,7 @@ func (s *Server) GetBanApp(ctx context.Context, in *banapp.GetBanAppRequest) (*b
 
 	if _, err := uuid.Parse(in.GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &banapp.GetBanAppResponse{}, status.Error(npool.ErrParams, app.ErrMsgAppIDInvalid)
+		return &banapp.GetBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
 	span.AddEvent("call grpc GetBanAppV2")

@@ -8,6 +8,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npool "github.com/NpoolPlatform/message/npool"
+	"github.com/NpoolPlatform/message/npool/appusergw"
 	"github.com/NpoolPlatform/message/npool/appusergw/app"
 	appcrud "github.com/NpoolPlatform/message/npool/appusermgrv2/app"
 	"go.opentelemetry.io/otel"
@@ -32,7 +33,7 @@ func (s *Server) CreateApp(ctx context.Context, in *app.CreateAppRequest) (*app.
 			return &app.CreateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 		}
 		if exist {
-			return &app.CreateAppResponse{}, status.Error(npool.ErrAlreadyExists, app.ErrMsgAppAlreadyExists)
+			return &app.CreateAppResponse{}, status.Error(npool.ErrAlreadyExists, appusergw.ErrMsgAppAlreadyExists)
 		}
 	}
 	err = validate(in.GetInfo())

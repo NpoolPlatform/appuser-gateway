@@ -10,6 +10,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
+	"github.com/NpoolPlatform/message/npool/appusergw"
 	"github.com/NpoolPlatform/message/npool/appusergw/app"
 	appcrud "github.com/NpoolPlatform/message/npool/appusermgrv2/app"
 
@@ -33,7 +34,7 @@ func (s *Server) GetApp(ctx context.Context, in *app.GetAppRequest) (*app.GetApp
 
 	if _, err := uuid.Parse(in.GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &app.GetAppResponse{}, status.Error(npool.ErrParams, app.ErrMsgAppIDInvalid)
+		return &app.GetAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
 	span.AddEvent("call grpc GetAppV2")
@@ -119,7 +120,7 @@ func (s *Server) GetAppInfo(ctx context.Context, in *app.GetAppInfoRequest) (*ap
 
 	if _, err := uuid.Parse(in.GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &app.GetAppInfoResponse{}, status.Error(npool.ErrParams, app.ErrMsgAppIDInvalid)
+		return &app.GetAppInfoResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
 	span.AddEvent("call grpc GetAppInfo")
@@ -174,7 +175,7 @@ func (s *Server) GetAppInfosByCreator(ctx context.Context, in *app.GetAppInfosBy
 
 	if _, err := uuid.Parse(in.GetUserID()); err != nil {
 		logger.Sugar().Error("UserID is invalid")
-		return &app.GetAppInfosByCreatorResponse{}, status.Error(npool.ErrParams, app.ErrMsgUserIDInvalid)
+		return &app.GetAppInfosByCreatorResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgUserIDInvalid)
 	}
 
 	span.AddEvent("call grpc GetAppInfosByCreator")

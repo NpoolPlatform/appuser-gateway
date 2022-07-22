@@ -1,4 +1,4 @@
-package appusersecret
+package secret
 
 import (
 	"context"
@@ -7,14 +7,12 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool"
 	"github.com/NpoolPlatform/message/npool/appusergw/appusersecret"
-	"github.com/NpoolPlatform/message/npool/appusergw/banapp"
-	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) UpdateSecret(ctx context.Context, in *appusersecret.UpdateSecretRequest) (*appusersecret.UpdateSecretResponse, error) {
+func (s *Server) CreateSecret(ctx context.Context, in *appusersecret.CreateSecretRequest) (*appusersecret.CreateSecretResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanApp")
@@ -32,18 +30,13 @@ func (s *Server) UpdateSecret(ctx context.Context, in *appusersecret.UpdateSecre
 		return nil, err
 	}
 
-	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
-		logger.Sugar().Error("ID is invalid")
-		return &appusersecret.UpdateSecretResponse{}, status.Error(npool.ErrParams, banapp.ErrMsgBanAppIDInvalid)
-	}
-
-	span.AddEvent("call grpc ExistBanAppCondsV2")
-	resp, err := grpc.UpdateAppUserSecretV2(ctx, in.GetInfo())
+	span.AddEvent("call grpc CreateAppUserSecretV2")
+	resp, err := grpc.CreateAppUserSecretV2(ctx, in.GetInfo())
 	if err != nil {
-		return &appusersecret.UpdateSecretResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
+		logger.Sugar().Errorw("fail create app user secret: %v", err)
+		return &appusersecret.CreateSecretResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
-
-	return &appusersecret.UpdateSecretResponse{
+	return &appusersecret.CreateSecretResponse{
 		Info: resp,
 	}, nil
 }
