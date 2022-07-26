@@ -19,9 +19,8 @@ import (
 func (s *Server) GetSecret(ctx context.Context, in *appusersecret.GetSecretRequest) (*appusersecret.GetSecretResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetSecret")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -34,9 +33,10 @@ func (s *Server) GetSecret(ctx context.Context, in *appusersecret.GetSecretReque
 		return &appusersecret.GetSecretResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgIDInvalid)
 	}
 
-	span.AddEvent("call grpc GetBanAppV2")
+	span.AddEvent("call grpc GetAppUserSecretV2")
 	resp, err := grpc.GetAppUserSecretV2(ctx, in.GetID())
 	if err != nil {
+		logger.Sugar().Error("fail get secret:%v", err)
 		return &appusersecret.GetSecretResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -48,7 +48,7 @@ func (s *Server) GetSecret(ctx context.Context, in *appusersecret.GetSecretReque
 func (s *Server) GetAppUserSecret(ctx context.Context, in *appusersecret.GetAppUserSecretRequest) (*appusersecret.GetAppUserSecretResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUserSecret")
 	defer span.End()
 
 	defer func() {
@@ -80,6 +80,7 @@ func (s *Server) GetAppUserSecret(ctx context.Context, in *appusersecret.GetAppU
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get secret:%v", err)
 		return &appusersecret.GetAppUserSecretResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

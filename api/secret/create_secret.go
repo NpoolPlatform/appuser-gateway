@@ -15,9 +15,8 @@ import (
 func (s *Server) CreateSecret(ctx context.Context, in *appusersecret.CreateSecretRequest) (*appusersecret.CreateSecretResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateSecret")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
