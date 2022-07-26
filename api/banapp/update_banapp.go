@@ -18,9 +18,8 @@ import (
 func (s *Server) UpdateBanApp(ctx context.Context, in *banapp.UpdateBanAppRequest) (*banapp.UpdateBanAppResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateBanApp")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -40,14 +39,15 @@ func (s *Server) UpdateBanApp(ctx context.Context, in *banapp.UpdateBanAppReques
 
 	if in.GetInfo().GetMessage() == "" {
 		logger.Sugar().Error("Message is empty")
-		return &banapp.UpdateBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgBanAppMessageEmpty)
+		return &banapp.UpdateBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgMessageEmpty)
 	}
 
-	span.AddEvent("call grpc ExistBanAppCondsV2")
+	span.AddEvent("call grpc UpdateBanAppV2")
 	resp, err := grpc.UpdateBanAppV2(ctx, &banappcrud.BanAppReq{
 		Message: in.GetInfo().Message,
 	})
 	if err != nil {
+		logger.Sugar().Error("fail update ban app:%v", err)
 		return &banapp.UpdateBanAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

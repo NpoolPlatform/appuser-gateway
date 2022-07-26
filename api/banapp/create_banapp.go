@@ -20,7 +20,6 @@ func (s *Server) CreateBanApp(ctx context.Context, in *banapp.CreateBanAppReques
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanApp")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -40,9 +39,11 @@ func (s *Server) CreateBanApp(ctx context.Context, in *banapp.CreateBanAppReques
 			Op:    cruder.EQ,
 		}})
 	if err != nil {
+		logger.Sugar().Errorw("fail check ban app: %v", err)
 		return &banapp.CreateBanAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 	if exist {
+		logger.Sugar().Errorw("ban app already exists")
 		return &banapp.CreateBanAppResponse{}, status.Error(npool.ErrAlreadyExists, appusergw.ErrMsgAppAlreadyExists)
 	}
 
@@ -52,6 +53,7 @@ func (s *Server) CreateBanApp(ctx context.Context, in *banapp.CreateBanAppReques
 		logger.Sugar().Errorw("fail create ban app: %v", err)
 		return &banapp.CreateBanAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
+
 	return &banapp.CreateBanAppResponse{
 		Info: resp,
 	}, nil

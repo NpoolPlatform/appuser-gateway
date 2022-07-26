@@ -19,7 +19,6 @@ func (s *Server) DeleteBanApp(ctx context.Context, in *banapp.DeleteBanAppReques
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteBanApp")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -29,12 +28,13 @@ func (s *Server) DeleteBanApp(ctx context.Context, in *banapp.DeleteBanAppReques
 
 	if _, err := uuid.Parse(in.GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &banapp.DeleteBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
+		return &banapp.DeleteBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgIDInvalid)
 	}
 
 	span.AddEvent("call grpc DeleteBanAppV2")
 	resp, err := grpc.DeleteBanAppV2(ctx, in.GetID())
 	if err != nil {
+		logger.Sugar().Error("fail delete ban app : %v", err)
 		return &banapp.DeleteBanAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

@@ -19,7 +19,6 @@ func (s *Server) GetBanApp(ctx context.Context, in *banapp.GetBanAppRequest) (*b
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetBanApp")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -29,12 +28,13 @@ func (s *Server) GetBanApp(ctx context.Context, in *banapp.GetBanAppRequest) (*b
 
 	if _, err := uuid.Parse(in.GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &banapp.GetBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
+		return &banapp.GetBanAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgIDInvalid)
 	}
 
 	span.AddEvent("call grpc GetBanAppV2")
 	resp, err := grpc.GetBanAppV2(ctx, in.GetID())
 	if err != nil {
+		logger.Sugar().Error("fail get ban app")
 		return &banapp.GetBanAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

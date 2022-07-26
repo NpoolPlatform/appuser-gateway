@@ -15,7 +15,7 @@ func validate(info *banappcrud.BanAppReq) error {
 		return status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
-	if info.Message == nil {
+	if info.GetMessage() == "" {
 		logger.Sugar().Error("Message is empty")
 		return status.Error(npool.ErrParams, appusergw.ErrMsgMessageEmpty)
 	}
