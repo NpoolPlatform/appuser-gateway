@@ -12,7 +12,7 @@ import (
 	scodes "go.opentelemetry.io/otel/codes"
 )
 
-func GetAppGenesisAppRoleUsers(ctx context.Context, appID, userID string) ([]*approleusercrud.AppRoleUser, error) {
+func GetAppGenesisAppRoleUsers(ctx context.Context, appID string) ([]*approleusercrud.AppRoleUser, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppGenesisAppRoleUsers")

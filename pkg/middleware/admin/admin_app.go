@@ -6,6 +6,7 @@ import (
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	serconst "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
 	appcrud "github.com/NpoolPlatform/message/npool/appusermgrv2/app"
@@ -33,6 +34,7 @@ func CreateAdminApps(ctx context.Context) ([]*appcrud.App, error) {
 	genesisApp, err := grpc.GetAppV2(ctx, constant.GenesisAppID)
 	if err != nil {
 		if !ent.IsNotFound(err) {
+			logger.Sugar().Errorw("fail get admin app: %v", err)
 			return nil, err
 		}
 	}
@@ -60,6 +62,7 @@ func CreateAdminApps(ctx context.Context) ([]*appcrud.App, error) {
 	churchApp, err := grpc.GetAppV2(ctx, constant.ChurchAppID)
 	if err != nil {
 		if !ent.IsNotFound(err) {
+			logger.Sugar().Errorw("fail get admin apps: %v", err)
 			return nil, err
 		}
 	}
@@ -86,6 +89,7 @@ func CreateAdminApps(ctx context.Context) ([]*appcrud.App, error) {
 	span.AddEvent("call grpc CreateAppsV2")
 	resp, err := grpc.CreateAppsV2(ctx, createApps)
 	if err != nil {
+		logger.Sugar().Errorw("fail create admin apps: %v", err)
 		return nil, err
 	}
 	apps = append(apps, resp...)
@@ -115,6 +119,7 @@ func GetAdminApps(ctx context.Context) ([]*appcrud.App, error) {
 	}, 2, 0)
 	if err != nil {
 		if !ent.IsNotFound(err) {
+			logger.Sugar().Errorw("fail get admin apps: %v", err)
 			return nil, err
 		}
 	}

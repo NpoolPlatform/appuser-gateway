@@ -15,9 +15,5 @@ func validate(info *appusercrud.AppUserReq) error {
 		return status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
-	if info.GetPhoneNo() == "" && info.GetEmailAddress() == "" {
-		logger.Sugar().Error("PhoneNo and EmailAddress is empty")
-		return status.Error(npool.ErrParams, appusergw.ErrMsgPhoneAndEmailMustExistOne)
-	}
 	return nil
 }
