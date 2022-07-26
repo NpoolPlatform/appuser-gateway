@@ -17,9 +17,8 @@ import (
 func (s *Server) DeleteRoleUser(ctx context.Context, in *approleuser.DeleteRoleUserRequest) (*approleuser.DeleteRoleUserResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateUserRoleUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteRoleUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())

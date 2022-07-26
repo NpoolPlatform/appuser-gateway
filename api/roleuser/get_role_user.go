@@ -21,7 +21,6 @@ func (s *Server) GetRoleUser(ctx context.Context, in *approleuser.GetRoleUserReq
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -37,6 +36,7 @@ func (s *Server) GetRoleUser(ctx context.Context, in *approleuser.GetRoleUserReq
 	span.AddEvent("call grpc GetAppRoleUserV2")
 	resp, err := grpc.GetAppRoleUserV2(ctx, in.GetID())
 	if err != nil {
+		logger.Sugar().Error("fail get role user:%v", err)
 		return &approleuser.GetRoleUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -48,9 +48,8 @@ func (s *Server) GetRoleUser(ctx context.Context, in *approleuser.GetRoleUserReq
 func (s *Server) GetRoleUserByUsers(ctx context.Context, in *approleuser.GetRoleUserByUsersRequest) (*approleuser.GetRoleUserByUsersResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUserByUsers")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -80,6 +79,7 @@ func (s *Server) GetRoleUserByUsers(ctx context.Context, in *approleuser.GetRole
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get role user:%v", err)
 		return &approleuser.GetRoleUserByUsersResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -91,9 +91,8 @@ func (s *Server) GetRoleUserByUsers(ctx context.Context, in *approleuser.GetRole
 func (s *Server) GetRoleUsersByRole(ctx context.Context, in *approleuser.GetRoleUsersByRoleRequest) (*approleuser.GetRoleUsersByRoleResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUsersByRole")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -123,6 +122,7 @@ func (s *Server) GetRoleUsersByRole(ctx context.Context, in *approleuser.GetRole
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get role user:%v", err)
 		return &approleuser.GetRoleUsersByRoleResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -134,9 +134,8 @@ func (s *Server) GetRoleUsersByRole(ctx context.Context, in *approleuser.GetRole
 func (s *Server) GetAppRoleUsersByRole(ctx context.Context, in *approleuser.GetAppRoleUsersByRoleRequest) (*approleuser.GetAppRoleUsersByRoleResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppRoleUsersByRole")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -166,6 +165,7 @@ func (s *Server) GetAppRoleUsersByRole(ctx context.Context, in *approleuser.GetA
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get role users:%v", err)
 		return &approleuser.GetAppRoleUsersByRoleResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -177,9 +177,8 @@ func (s *Server) GetAppRoleUsersByRole(ctx context.Context, in *approleuser.GetA
 func (s *Server) GetRoleUsers(ctx context.Context, in *approleuser.GetRoleUsersRequest) (*approleuser.GetRoleUsersResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUsers")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -200,6 +199,7 @@ func (s *Server) GetRoleUsers(ctx context.Context, in *approleuser.GetRoleUsersR
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get role users:%v", err)
 		return &approleuser.GetRoleUsersResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -211,9 +211,8 @@ func (s *Server) GetRoleUsers(ctx context.Context, in *approleuser.GetRoleUsersR
 func (s *Server) GetAppRoleUsers(ctx context.Context, in *approleuser.GetAppRoleUsersRequest) (*approleuser.GetAppRoleUsersResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppRoleUsers")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -234,6 +233,7 @@ func (s *Server) GetAppRoleUsers(ctx context.Context, in *approleuser.GetAppRole
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get role users:%v", err)
 		return &approleuser.GetAppRoleUsersResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

@@ -17,7 +17,6 @@ func (s *Server) CreateRoleUser(ctx context.Context, in *approleuser.CreateRoleU
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateRoleUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -45,9 +44,8 @@ func (s *Server) CreateRoleUser(ctx context.Context, in *approleuser.CreateRoleU
 func (s *Server) CreateAppUserRoleUser(ctx context.Context, in *approleuser.CreateAppUserRoleUserRequest) (*approleuser.CreateAppUserRoleUserResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateRoleUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppUserRoleUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -83,7 +81,6 @@ func (s *Server) CreateUserRoleUser(ctx context.Context, in *approleuser.CreateU
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateUserRoleUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
