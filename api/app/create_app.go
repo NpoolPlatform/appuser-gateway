@@ -17,46 +17,56 @@ import (
 )
 
 func (s *Server) CreateApp(ctx context.Context, in *app.CreateAppRequest) (*app.CreateAppResponse, error) {
+	var err error
+
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppV2")
 	defer span.End()
-	var err error
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
 			span.RecordError(err)
 		}
 	}()
+
 	if in.GetInfo().GetID() != "" {
 		span.AddEvent("call grpc ExistAppV2")
 		exist, err := grpc.ExistAppV2(ctx, in.GetInfo().GetID())
 		if err != nil {
+			logger.Sugar().Errorw("fail check app : %v", err)
 			return &app.CreateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 		}
 		if exist {
+			logger.Sugar().Errorw("app already exists")
 			return &app.CreateAppResponse{}, status.Error(npool.ErrAlreadyExists, appusergw.ErrMsgAppAlreadyExists)
 		}
 	}
+
 	err = validate(in.GetInfo())
 	if err != nil {
 		return nil, err
 	}
+
 	span.AddEvent("call grpc ExistAppCondsV2")
 	exist, err := grpc.ExistAppCondsV2(ctx, &appcrud.Conds{Name: &npool.StringVal{
 		Value: in.GetInfo().GetName(),
 		Op:    cruder.EQ,
 	}})
 	if err != nil {
+		logger.Sugar().Errorw("fail check app name: %v", err)
 		return &app.CreateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 	if exist {
-		return &app.CreateAppResponse{}, status.Error(npool.ErrAlreadyExists, "app name already exist")
+		logger.Sugar().Errorw("app name already exists")
+		return &app.CreateAppResponse{}, status.Error(npool.ErrAlreadyExists, appusergw.ErrMsgAppAlreadyExists)
 	}
+
 	span.AddEvent("call grpc CreateAppV2")
 	resp, err := grpc.CreateAppV2(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("fail create app: %v", err)
 		return &app.CreateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
+
 	return &app.CreateAppResponse{
 		Info: resp,
 	}, nil

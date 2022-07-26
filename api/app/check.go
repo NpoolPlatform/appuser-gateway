@@ -15,7 +15,7 @@ func validate(info *appcrud.AppReq) error {
 		return status.Error(npool.ErrParams, appusergw.ErrMsgCreatedByInvalid)
 	}
 
-	if info.Name == nil {
+	if info.GetName() == "" {
 		logger.Sugar().Error("Name is empty")
 		return status.Error(npool.ErrParams, appusergw.ErrMsgAppNameEmpty)
 	}

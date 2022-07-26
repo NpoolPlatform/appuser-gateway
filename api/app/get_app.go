@@ -23,7 +23,7 @@ import (
 func (s *Server) GetApp(ctx context.Context, in *app.GetAppRequest) (*app.GetAppResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppV2")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetApp")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -33,7 +33,7 @@ func (s *Server) GetApp(ctx context.Context, in *app.GetAppRequest) (*app.GetApp
 	}()
 
 	if _, err := uuid.Parse(in.GetID()); err != nil {
-		logger.Sugar().Error("ID is invalid")
+		logger.Sugar().Error("AppID is invalid")
 		return &app.GetAppResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
@@ -43,6 +43,7 @@ func (s *Server) GetApp(ctx context.Context, in *app.GetAppRequest) (*app.GetApp
 		logger.Sugar().Errorw("fail get app: %v", err)
 		return &app.GetAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
+
 	return &app.GetAppResponse{
 		Info: resp,
 	}, nil
@@ -51,9 +52,8 @@ func (s *Server) GetApp(ctx context.Context, in *app.GetAppRequest) (*app.GetApp
 func (s *Server) GetApps(ctx context.Context, in *app.GetAppsRequest) (*app.GetAppsResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppV2")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetApps")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -77,9 +77,8 @@ func (s *Server) GetApps(ctx context.Context, in *app.GetAppsRequest) (*app.GetA
 func (s *Server) GetAppsByCreator(ctx context.Context, in *app.GetAppsByCreatorRequest) (*app.GetAppsByCreatorResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppV2")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppsByCreator")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -110,7 +109,6 @@ func (s *Server) GetAppInfo(ctx context.Context, in *app.GetAppInfoRequest) (*ap
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppInfo")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -119,7 +117,7 @@ func (s *Server) GetAppInfo(ctx context.Context, in *app.GetAppInfoRequest) (*ap
 	}()
 
 	if _, err := uuid.Parse(in.GetID()); err != nil {
-		logger.Sugar().Error("ID is invalid")
+		logger.Sugar().Error("AppID is invalid")
 		return &app.GetAppInfoResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
@@ -140,7 +138,6 @@ func (s *Server) GetAppInfos(ctx context.Context, in *app.GetAppInfosRequest) (*
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppInfos")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -165,7 +162,6 @@ func (s *Server) GetAppInfosByCreator(ctx context.Context, in *app.GetAppInfosBy
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppInfosByCreator")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())

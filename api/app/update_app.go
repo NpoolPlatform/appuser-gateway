@@ -18,9 +18,10 @@ import (
 )
 
 func (s *Server) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*app.UpdateAppResponse, error) {
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppV2")
-	defer span.End()
 	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateApp")
+	defer span.End()
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -42,16 +43,18 @@ func (s *Server) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*app.
 		Op:    cruder.EQ,
 	}})
 	if err != nil {
+		logger.Sugar().Errorw("fail check app name: %v", err)
 		return &app.UpdateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 	if exist {
-		return &app.UpdateAppResponse{}, status.Error(npool.ErrAlreadyExists, appusergw.ErrMsgAppNameAlreadyExists)
+		logger.Sugar().Errorw("app name already exists")
+		return &app.UpdateAppResponse{}, status.Error(npool.ErrAlreadyExists, appusergw.ErrMsgNameAlreadyExists)
 	}
 
-	span.AddEvent("call grpc CreateAppV2")
+	span.AddEvent("call grpc UpdateAppV2")
 	resp, err := grpc.UpdateAppV2(ctx, in.GetInfo())
 	if err != nil {
-		logger.Sugar().Errorw("fail create app: %v", err)
+		logger.Sugar().Errorw("fail update app: %v", err)
 		return &app.UpdateAppResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
