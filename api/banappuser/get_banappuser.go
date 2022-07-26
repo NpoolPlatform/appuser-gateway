@@ -21,7 +21,6 @@ func (s *Server) GetBanAppUser(ctx context.Context, in *banappuser.GetBanAppUser
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetBanApp")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -34,9 +33,10 @@ func (s *Server) GetBanAppUser(ctx context.Context, in *banappuser.GetBanAppUser
 		return &banappuser.GetBanAppUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgIDInvalid)
 	}
 
-	span.AddEvent("call grpc GetBanAppV2")
+	span.AddEvent("call grpc GetBanAppUserV2")
 	resp, err := grpc.GetBanAppUserV2(ctx, in.GetID())
 	if err != nil {
+		logger.Sugar().Error("fail get ban app user:%v", err)
 		return &banappuser.GetBanAppUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -48,9 +48,8 @@ func (s *Server) GetBanAppUser(ctx context.Context, in *banappuser.GetBanAppUser
 func (s *Server) GetAppUserBanAppUser(ctx context.Context, in *banappuser.GetAppUserBanAppUserRequest) (*banappuser.GetAppUserBanAppUserResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUserBanAppUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -68,7 +67,7 @@ func (s *Server) GetAppUserBanAppUser(ctx context.Context, in *banappuser.GetApp
 		return &banappuser.GetAppUserBanAppUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
-	span.AddEvent("call grpc GetAppUserSecretOnlyV2")
+	span.AddEvent("call grpc GetBanAppUserOnlyV2")
 	resp, err := grpc.GetBanAppUserOnlyV2(ctx, &banappusercrud.Conds{
 		AppID: &npool.StringVal{
 			Value: in.GetTargetAppID(),
@@ -80,6 +79,7 @@ func (s *Server) GetAppUserBanAppUser(ctx context.Context, in *banappuser.GetApp
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get ban app user:%v", err)
 		return &banappuser.GetAppUserBanAppUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

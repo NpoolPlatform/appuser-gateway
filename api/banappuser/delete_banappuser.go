@@ -17,9 +17,8 @@ import (
 func (s *Server) DeleteBanAppUser(ctx context.Context, in *banappuser.DeleteBanAppUserRequest) (*banappuser.DeleteBanAppUserResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteBanAppUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -29,12 +28,13 @@ func (s *Server) DeleteBanAppUser(ctx context.Context, in *banappuser.DeleteBanA
 
 	if _, err := uuid.Parse(in.GetID()); err != nil {
 		logger.Sugar().Error("ID is invalid")
-		return &banappuser.DeleteBanAppUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
+		return &banappuser.DeleteBanAppUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgIDInvalid)
 	}
 
 	span.AddEvent("call grpc DeleteBanAppV2")
 	resp, err := grpc.DeleteBanAppUserV2(ctx, in.GetID())
 	if err != nil {
+		logger.Sugar().Error("fail delete ban app user")
 		return &banappuser.DeleteBanAppUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

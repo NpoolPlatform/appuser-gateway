@@ -19,7 +19,6 @@ func (s *Server) UpdateBanAppUser(ctx context.Context, in *banappuser.UpdateBanA
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateBanAppUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -37,9 +36,10 @@ func (s *Server) UpdateBanAppUser(ctx context.Context, in *banappuser.UpdateBanA
 		return &banappuser.UpdateBanAppUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgBanAppIDInvalid)
 	}
 
-	span.AddEvent("call grpc ExistBanAppCondsV2")
+	span.AddEvent("call grpc UpdateBanAppUserV2")
 	resp, err := grpc.UpdateBanAppUserV2(ctx, in.GetInfo())
 	if err != nil {
+		logger.Sugar().Error("fail update ban app user:$v", err)
 		return &banappuser.UpdateBanAppUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

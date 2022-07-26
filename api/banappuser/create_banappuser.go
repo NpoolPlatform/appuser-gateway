@@ -15,9 +15,8 @@ import (
 func (s *Server) CreateBanAppUser(ctx context.Context, in *banappuser.CreateBanAppUserRequest) (*banappuser.CreateBanAppUserResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateExtra")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanAppUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
