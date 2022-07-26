@@ -17,9 +17,8 @@ import (
 func (s *Server) UpdateExtra(ctx context.Context, in *appuserextra.UpdateExtraRequest) (*appuserextra.UpdateExtraResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateExtra")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -37,9 +36,10 @@ func (s *Server) UpdateExtra(ctx context.Context, in *appuserextra.UpdateExtraRe
 		return &appuserextra.UpdateExtraResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgBanAppIDInvalid)
 	}
 
-	span.AddEvent("call grpc ExistBanAppCondsV2")
+	span.AddEvent("call grpc UpdateAppUserExtraV2")
 	resp, err := grpc.UpdateAppUserExtraV2(ctx, in.GetInfo())
 	if err != nil {
+		logger.Sugar().Error("fail update extra")
 		return &appuserextra.UpdateExtraResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

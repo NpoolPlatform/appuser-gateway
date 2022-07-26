@@ -19,9 +19,8 @@ import (
 func (s *Server) GetExtra(ctx context.Context, in *appuserextra.GetExtraRequest) (*appuserextra.GetExtraResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetExtra")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -34,9 +33,10 @@ func (s *Server) GetExtra(ctx context.Context, in *appuserextra.GetExtraRequest)
 		return &appuserextra.GetExtraResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgIDInvalid)
 	}
 
-	span.AddEvent("call grpc GetBanAppV2")
+	span.AddEvent("call grpc GetAppUserExtraV2")
 	resp, err := grpc.GetAppUserExtraV2(ctx, in.GetID())
 	if err != nil {
+		logger.Sugar().Error("fail get extra")
 		return &appuserextra.GetExtraResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -48,9 +48,8 @@ func (s *Server) GetExtra(ctx context.Context, in *appuserextra.GetExtraRequest)
 func (s *Server) GetAppUserExtra(ctx context.Context, in *appuserextra.GetAppUserExtraRequest) (*appuserextra.GetAppUserExtraResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUserExtra")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -64,11 +63,11 @@ func (s *Server) GetAppUserExtra(ctx context.Context, in *appuserextra.GetAppUse
 	}
 
 	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
-		logger.Sugar().Error("AppID is invalid")
+		logger.Sugar().Error("TargetAppID is invalid")
 		return &appuserextra.GetAppUserExtraResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
-	span.AddEvent("call grpc GetAppUserSecretOnlyV2")
+	span.AddEvent("call grpc GetAppUserExtraOnlyV2")
 	resp, err := grpc.GetAppUserExtraOnlyV2(ctx, &appuserextracrud.Conds{
 		AppID: &npool.StringVal{
 			Value: in.GetTargetAppID(),
@@ -80,6 +79,7 @@ func (s *Server) GetAppUserExtra(ctx context.Context, in *appuserextra.GetAppUse
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get extra")
 		return &appuserextra.GetAppUserExtraResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

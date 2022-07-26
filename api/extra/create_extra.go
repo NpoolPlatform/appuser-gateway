@@ -17,7 +17,6 @@ func (s *Server) CreateExtra(ctx context.Context, in *appuserextra.CreateExtraRe
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateExtra")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
