@@ -21,7 +21,6 @@ func (s *Server) GetRole(ctx context.Context, in *approle.GetRoleRequest) (*appr
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRole")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -37,6 +36,7 @@ func (s *Server) GetRole(ctx context.Context, in *approle.GetRoleRequest) (*appr
 	span.AddEvent("call grpc GetBanAppV2")
 	resp, err := grpc.GetAppRoleV2(ctx, in.GetID())
 	if err != nil {
+		logger.Sugar().Error("fail get app role:%v", err)
 		return &approle.GetRoleResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -50,7 +50,6 @@ func (s *Server) GetAppRoleByRole(ctx context.Context, in *approle.GetAppRoleByR
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppRoleByRole")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -80,6 +79,7 @@ func (s *Server) GetAppRoleByRole(ctx context.Context, in *approle.GetAppRoleByR
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get app role:%v", err)
 		return &approle.GetAppRoleByRoleResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -107,13 +107,14 @@ func (s *Server) GetRoles(ctx context.Context, in *approle.GetRolesRequest) (*ap
 	}
 
 	span.AddEvent("call grpc GetAppRolesV2")
-	resp, err := grpc.GetAppRolesV2(ctx, &approlecrud.Conds{
+	resp, _, err := grpc.GetAppRolesV2(ctx, &approlecrud.Conds{
 		AppID: &npool.StringVal{
 			Value: in.GetAppID(),
 			Op:    cruder.EQ,
 		},
-	})
+	}, in.GetLimit(), in.GetOffset())
 	if err != nil {
+		logger.Sugar().Error("fail get app roles:%v", err)
 		return &approle.GetRolesResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -141,13 +142,14 @@ func (s *Server) GetAppRoles(ctx context.Context, in *approle.GetAppRolesRequest
 	}
 
 	span.AddEvent("call grpc GetAppRolesV2")
-	resp, err := grpc.GetAppRolesV2(ctx, &approlecrud.Conds{
+	resp, _, err := grpc.GetAppRolesV2(ctx, &approlecrud.Conds{
 		AppID: &npool.StringVal{
 			Value: in.GetTargetAppID(),
 			Op:    cruder.EQ,
 		},
-	})
+	}, in.GetLimit(), in.GetOffset())
 	if err != nil {
+		logger.Sugar().Error("fail get app roles:%v", err)
 		return &approle.GetAppRolesResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

@@ -17,7 +17,6 @@ func (s *Server) CreateRole(ctx context.Context, in *approle.CreateRoleRequest) 
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateRole")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -47,7 +46,6 @@ func (s *Server) CreateAppRole(ctx context.Context, in *approle.CreateAppRoleReq
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppRole")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())

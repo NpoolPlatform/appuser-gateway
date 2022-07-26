@@ -19,7 +19,6 @@ func (s *Server) UpdateRole(ctx context.Context, in *approle.UpdateRoleRequest) 
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateRole")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -32,9 +31,10 @@ func (s *Server) UpdateRole(ctx context.Context, in *approle.UpdateRoleRequest) 
 		return &approle.UpdateRoleResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgBanAppIDInvalid)
 	}
 
-	span.AddEvent("call grpc ExistBanAppCondsV2")
+	span.AddEvent("call grpc UpdateAppRoleV2")
 	resp, err := grpc.UpdateAppRoleV2(ctx, in.GetInfo())
 	if err != nil {
+		logger.Sugar().Error("fail update app role:%v", err)
 		return &approle.UpdateRoleResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
