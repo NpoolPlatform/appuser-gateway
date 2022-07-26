@@ -15,9 +15,8 @@ import (
 func (s *Server) CreateThirdParty(ctx context.Context, in *thirdparty.CreateThirdPartyRequest) (*thirdparty.CreateThirdPartyResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanApp")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateThirdParty")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -30,10 +29,10 @@ func (s *Server) CreateThirdParty(ctx context.Context, in *thirdparty.CreateThir
 		return nil, err
 	}
 
-	span.AddEvent("call grpc CreateAppUserSecretV2")
+	span.AddEvent("call grpc CreateAppUserThirdPartyV2")
 	resp, err := grpc.CreateAppUserThirdPartyV2(ctx, in.GetInfo())
 	if err != nil {
-		logger.Sugar().Errorw("fail create app user secret: %v", err)
+		logger.Sugar().Errorw("fail create app user third party: %v", err)
 		return &thirdparty.CreateThirdPartyResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 	return &thirdparty.CreateThirdPartyResponse{

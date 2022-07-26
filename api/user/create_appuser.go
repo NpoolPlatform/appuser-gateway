@@ -18,9 +18,8 @@ import (
 func (s *Server) CreateUser(ctx context.Context, in *appuser.CreateUserRequest) (*appuser.CreateUserResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -34,13 +33,12 @@ func (s *Server) CreateUser(ctx context.Context, in *appuser.CreateUserRequest) 
 	}
 
 	if in.GetInfo().GetID() != "" {
-		span.AddEvent("call grpc ExistAppUserCondsV2")
+		span.AddEvent("call grpc ExistAppUserV2")
 		exist, err := grpc.ExistAppUserV2(ctx, in.GetInfo().GetID())
 		if err != nil {
-			logger.Sugar().Errorw("fail check ban app: %v", err)
+			logger.Sugar().Errorw("fail check user: %v", err)
 			return &appuser.CreateUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 		}
-
 		if exist {
 			return &appuser.CreateUserResponse{}, status.Error(npool.ErrAlreadyExists, appusergw.ErrMsgUserIDAlreadyExists)
 		}
@@ -64,7 +62,7 @@ func (s *Server) CreateUser(ctx context.Context, in *appuser.CreateUserRequest) 
 		EmailAddress:  &emailAddress,
 	})
 	if err != nil {
-		logger.Sugar().Errorw("fail create ban app: %v", err)
+		logger.Sugar().Errorw("fail create user: %v", err)
 		return &appuser.CreateUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

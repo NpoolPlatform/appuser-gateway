@@ -8,6 +8,7 @@ import (
 	"github.com/NpoolPlatform/appuser-gateway/api/role"
 	"github.com/NpoolPlatform/appuser-gateway/api/roleuser"
 	"github.com/NpoolPlatform/appuser-gateway/api/secret"
+	"github.com/NpoolPlatform/appuser-gateway/api/thirdparty"
 	"github.com/NpoolPlatform/appuser-gateway/api/user"
 
 	"github.com/NpoolPlatform/appuser-gateway/api/app"
@@ -32,6 +33,7 @@ func Register(server grpc.ServiceRegistrar) {
 	secret.Register(server)
 	user.Register(server)
 	admin.Register(server)
+	thirdparty.Register(server)
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
@@ -63,6 +65,9 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := user.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := thirdparty.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 

@@ -19,7 +19,6 @@ func (s *Server) UpdateUser(ctx context.Context, in *appuser.UpdateUserRequest) 
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -37,10 +36,10 @@ func (s *Server) UpdateUser(ctx context.Context, in *appuser.UpdateUserRequest) 
 		return &appuser.UpdateUserResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgUserIDInvalid)
 	}
 
-	span.AddEvent("call grpc CreateAppUserV2")
+	span.AddEvent("call grpc UpdateAppUserV2")
 	resp, err := grpc.UpdateAppUserV2(ctx, in.GetInfo())
 	if err != nil {
-		logger.Sugar().Errorw("fail create ban app: %v", err)
+		logger.Sugar().Errorw("fail update user: %v", err)
 		return &appuser.UpdateUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 

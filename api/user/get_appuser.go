@@ -21,9 +21,8 @@ import (
 func (s *Server) GetUser(ctx context.Context, in *appuser.GetUserRequest) (*appuser.GetUserResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -39,6 +38,7 @@ func (s *Server) GetUser(ctx context.Context, in *appuser.GetUserRequest) (*appu
 	span.AddEvent("call grpc GetAppUserV2")
 	resp, err := grpc.GetAppUserV2(ctx, in.GetUserID())
 	if err != nil {
+		logger.Sugar().Error("fail get user:%v", err)
 		return &appuser.GetUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -50,9 +50,8 @@ func (s *Server) GetUser(ctx context.Context, in *appuser.GetUserRequest) (*appu
 func (s *Server) GetUserByAccount(ctx context.Context, in *appuser.GetUserByAccountRequest) (*appuser.GetUserByAccountResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUserByAccount")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -70,9 +69,10 @@ func (s *Server) GetUserByAccount(ctx context.Context, in *appuser.GetUserByAcco
 		return &appuser.GetUserByAccountResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAccountEmpty)
 	}
 
-	span.AddEvent("call grpc GetAppUserOnlyV2")
+	span.AddEvent("call grpc GetUserByAccount")
 	resp, err := mw.GetUserByAccount(ctx, in.GetAppID(), in.GetAccount())
 	if err != nil {
+		logger.Sugar().Error("fail get user :%v", err)
 		return &appuser.GetUserByAccountResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -86,7 +86,6 @@ func (s *Server) GetAppUser(ctx context.Context, in *appuser.GetAppUserRequest) 
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -116,6 +115,7 @@ func (s *Server) GetAppUser(ctx context.Context, in *appuser.GetAppUserRequest) 
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get user :%v", err)
 		return &appuser.GetAppUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -127,9 +127,8 @@ func (s *Server) GetAppUser(ctx context.Context, in *appuser.GetAppUserRequest) 
 func (s *Server) GetUserRolesByUser(ctx context.Context, in *appuser.GetUserRolesByUserRequest) (*appuser.GetUserRolesByUserResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUserRolesByUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -150,6 +149,7 @@ func (s *Server) GetUserRolesByUser(ctx context.Context, in *appuser.GetUserRole
 	span.AddEvent("call grpc GetUserRolesByUser")
 	resp, total, err := mw.GetUserRolesByUser(ctx, in.GetAppID(), in.GetUserID(), in.GetLimit(), in.GetOffset())
 	if err != nil {
+		logger.Sugar().Error("fail get user :%v", err)
 		return &appuser.GetUserRolesByUserResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -162,9 +162,8 @@ func (s *Server) GetUserRolesByUser(ctx context.Context, in *appuser.GetUserRole
 func (s *Server) GetUserInfo(ctx context.Context, in *appuser.GetUserInfoRequest) (*appuser.GetUserInfoResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUserInfo")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -185,6 +184,7 @@ func (s *Server) GetUserInfo(ctx context.Context, in *appuser.GetUserInfoRequest
 	span.AddEvent("call grpc GetUserInfo")
 	resp, err := appusermw.GetUserInfo(ctx, in.GetAppID(), in.GetUserID())
 	if err != nil {
+		logger.Sugar().Error("fail get user info:%v", err)
 		return &appuser.GetUserInfoResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -196,9 +196,8 @@ func (s *Server) GetUserInfo(ctx context.Context, in *appuser.GetUserInfoRequest
 func (s *Server) GetAppUserInfo(ctx context.Context, in *appuser.GetAppUserInfoRequest) (*appuser.GetAppUserInfoResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUserInfo")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -212,13 +211,14 @@ func (s *Server) GetAppUserInfo(ctx context.Context, in *appuser.GetAppUserInfoR
 	}
 
 	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
-		logger.Sugar().Error("AppID is invalid")
+		logger.Sugar().Error("TargetAppID is invalid")
 		return &appuser.GetAppUserInfoResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
 	span.AddEvent("call grpc GetUserInfo")
 	resp, err := appusermw.GetUserInfo(ctx, in.GetTargetAppID(), in.GetUserID())
 	if err != nil {
+		logger.Sugar().Error("fail get user info:%v", err)
 		return &appuser.GetAppUserInfoResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -230,9 +230,8 @@ func (s *Server) GetAppUserInfo(ctx context.Context, in *appuser.GetAppUserInfoR
 func (s *Server) GetUserInfos(ctx context.Context, in *appuser.GetUserInfosRequest) (*appuser.GetUserInfosResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUserInfos")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -248,6 +247,7 @@ func (s *Server) GetUserInfos(ctx context.Context, in *appuser.GetUserInfosReque
 	span.AddEvent("call grpc GetUserInfos")
 	resp, err := appusermw.GetUserInfos(ctx, in.GetAppID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
+		logger.Sugar().Error("fail get user infos:%v", err)
 		return &appuser.GetUserInfosResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
@@ -259,9 +259,8 @@ func (s *Server) GetUserInfos(ctx context.Context, in *appuser.GetUserInfosReque
 func (s *Server) GetAppUserInfos(ctx context.Context, in *appuser.GetAppUserInfosRequest) (*appuser.GetAppUserInfosResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUser")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUserInfos")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -270,13 +269,14 @@ func (s *Server) GetAppUserInfos(ctx context.Context, in *appuser.GetAppUserInfo
 	}()
 
 	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
-		logger.Sugar().Error("AppID is invalid")
+		logger.Sugar().Error("TargetAppID is invalid")
 		return &appuser.GetAppUserInfosResponse{}, status.Error(npool.ErrParams, appusergw.ErrMsgAppIDInvalid)
 	}
 
 	span.AddEvent("call grpc GetUserInfo")
 	resp, err := appusermw.GetUserInfos(ctx, in.GetTargetAppID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
+		logger.Sugar().Error("fail get user infos:%v", err)
 		return &appuser.GetAppUserInfosResponse{}, status.Error(npool.ErrService, npool.ErrMsgServiceErr)
 	}
 
