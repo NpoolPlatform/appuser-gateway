@@ -1,7 +1,9 @@
+//nolint:nolintlint,dupl
 package secret
 
 import (
 	"context"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -16,7 +18,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) GetSecret(ctx context.Context, in *appusersecret.GetSecretRequest) (*appusersecret.GetSecretResponse, error) {
+func (s *Server) GetSecret(ctx context.Context,
+	in *appusersecret.GetSecretRequest) (*appusersecret.GetSecretResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetSecret")
@@ -45,7 +48,8 @@ func (s *Server) GetSecret(ctx context.Context, in *appusersecret.GetSecretReque
 	}, nil
 }
 
-func (s *Server) GetAppUserSecret(ctx context.Context, in *appusersecret.GetAppUserSecretRequest) (*appusersecret.GetAppUserSecretResponse, error) {
+func (s *Server) GetAppUserSecret(ctx context.Context,
+	in *appusersecret.GetAppUserSecretRequest) (*appusersecret.GetAppUserSecretResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUserSecret")

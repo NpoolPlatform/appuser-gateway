@@ -1,7 +1,9 @@
+//nolint:nolintlint,dupl
 package user
 
 import (
 	"context"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	mw "github.com/NpoolPlatform/appuser-gateway/pkg/middleware/user"
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
@@ -124,7 +126,8 @@ func (s *Server) GetAppUser(ctx context.Context, in *appuser.GetAppUserRequest) 
 	}, nil
 }
 
-func (s *Server) GetUserRolesByUser(ctx context.Context, in *appuser.GetUserRolesByUserRequest) (*appuser.GetUserRolesByUserResponse, error) {
+func (s *Server) GetUserRolesByUser(ctx context.Context,
+	in *appuser.GetUserRolesByUserRequest) (*appuser.GetUserRolesByUserResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUserRolesByUser")

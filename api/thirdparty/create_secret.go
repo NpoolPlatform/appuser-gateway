@@ -1,7 +1,9 @@
+//nolint:nolintlint,dupl
 package thirdparty
 
 import (
 	"context"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -12,7 +14,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateThirdParty(ctx context.Context, in *thirdparty.CreateThirdPartyRequest) (*thirdparty.CreateThirdPartyResponse, error) {
+func (s *Server) CreateThirdParty(ctx context.Context,
+	in *thirdparty.CreateThirdPartyRequest) (*thirdparty.CreateThirdPartyResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateThirdParty")

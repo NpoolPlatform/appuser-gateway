@@ -1,7 +1,9 @@
+//nolint:nolintlint,dupl
 package roleuser
 
 import (
 	"context"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -45,7 +47,8 @@ func (s *Server) GetRoleUser(ctx context.Context, in *approleuser.GetRoleUserReq
 	}, nil
 }
 
-func (s *Server) GetRoleUserByUsers(ctx context.Context, in *approleuser.GetRoleUserByUsersRequest) (*approleuser.GetRoleUserByUsersResponse, error) {
+func (s *Server) GetRoleUserByUsers(ctx context.Context,
+	in *approleuser.GetRoleUserByUsersRequest) (*approleuser.GetRoleUserByUsersResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUserByUsers")
@@ -88,7 +91,8 @@ func (s *Server) GetRoleUserByUsers(ctx context.Context, in *approleuser.GetRole
 	}, nil
 }
 
-func (s *Server) GetRoleUsersByRole(ctx context.Context, in *approleuser.GetRoleUsersByRoleRequest) (*approleuser.GetRoleUsersByRoleResponse, error) {
+func (s *Server) GetRoleUsersByRole(ctx context.Context,
+	in *approleuser.GetRoleUsersByRoleRequest) (*approleuser.GetRoleUsersByRoleResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetRoleUsersByRole")
@@ -131,7 +135,8 @@ func (s *Server) GetRoleUsersByRole(ctx context.Context, in *approleuser.GetRole
 	}, nil
 }
 
-func (s *Server) GetAppRoleUsersByRole(ctx context.Context, in *approleuser.GetAppRoleUsersByRoleRequest) (*approleuser.GetAppRoleUsersByRoleResponse, error) {
+func (s *Server) GetAppRoleUsersByRole(ctx context.Context,
+	in *approleuser.GetAppRoleUsersByRoleRequest) (*approleuser.GetAppRoleUsersByRoleResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppRoleUsersByRole")
@@ -208,7 +213,8 @@ func (s *Server) GetRoleUsers(ctx context.Context, in *approleuser.GetRoleUsersR
 	}, nil
 }
 
-func (s *Server) GetAppRoleUsers(ctx context.Context, in *approleuser.GetAppRoleUsersRequest) (*approleuser.GetAppRoleUsersResponse, error) {
+func (s *Server) GetAppRoleUsers(ctx context.Context,
+	in *approleuser.GetAppRoleUsersRequest) (*approleuser.GetAppRoleUsersResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppRoleUsers")

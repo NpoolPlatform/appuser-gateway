@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+
 	"github.com/NpoolPlatform/api-manager/pkg/db/ent"
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
@@ -21,7 +22,6 @@ func GetUserByAccount(ctx context.Context, appID, account string) (*appusercrud.
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUserByAccount")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -40,27 +40,30 @@ func GetUserByAccount(ctx context.Context, appID, account string) (*appusercrud.
 			Op:    cruder.EQ,
 		},
 	})
-	if ent.IsNotFound(err) {
-		span.AddEvent("call grpc GetAppUserOnlyV2")
-		resp, err = grpc.GetAppUserOnlyV2(ctx, &appusercrud.Conds{
-			EmailAddress: &npool.StringVal{
-				Value: account,
-				Op:    cruder.EQ,
-			},
-			AppID: &npool.StringVal{
-				Value: appID,
-				Op:    cruder.EQ,
-			},
-		})
-		if err != nil {
-			if ent.IsNotFound(err) {
-				logger.Sugar().Error("Account not exist")
-				return nil, fmt.Errorf("account not exist")
-			}
+	if err != nil {
+		if !ent.IsNotFound(err) {
+			logger.Sugar().Errorw("fail get user: %v", err)
 			return nil, err
+		} else {
+			span.AddEvent("call grpc GetAppUserOnlyV2")
+			resp, err = grpc.GetAppUserOnlyV2(ctx, &appusercrud.Conds{
+				EmailAddress: &npool.StringVal{
+					Value: account,
+					Op:    cruder.EQ,
+				},
+				AppID: &npool.StringVal{
+					Value: appID,
+					Op:    cruder.EQ,
+				},
+			})
+			if err != nil {
+				if ent.IsNotFound(err) {
+					logger.Sugar().Error("Account not exist")
+					return nil, fmt.Errorf("account not exist")
+				}
+				return nil, err
+			}
 		}
-	} else {
-		return nil, err
 	}
 
 	return resp, err
@@ -69,9 +72,8 @@ func GetUserByAccount(ctx context.Context, appID, account string) (*appusercrud.
 func GetUserRolesByUser(ctx context.Context, appID, userID string, limit, offset int32) ([]*approlecrud.AppRole, uint32, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUserByAccount")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUserRolesByUser")
 	defer span.End()
-
 	defer func() {
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
@@ -91,6 +93,7 @@ func GetUserRolesByUser(ctx context.Context, appID, userID string, limit, offset
 		},
 	})
 	if err != nil {
+		logger.Sugar().Error("fail get app role user: %v", err)
 		return nil, 0, fmt.Errorf("fail get app role user: %v", err)
 	}
 
@@ -106,6 +109,7 @@ func GetUserRolesByUser(ctx context.Context, appID, userID string, limit, offset
 		},
 	}, limit, offset)
 	if err != nil {
+		logger.Sugar().Error("fail get role: %v", err)
 		return nil, 0, err
 	}
 

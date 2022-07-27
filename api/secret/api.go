@@ -2,6 +2,7 @@ package secret
 
 import (
 	"context"
+
 	"github.com/NpoolPlatform/message/npool/appusergw/appusersecret"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"

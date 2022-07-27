@@ -2,6 +2,7 @@ package role
 
 import (
 	"context"
+
 	"github.com/NpoolPlatform/message/npool/appusergw/approle"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"

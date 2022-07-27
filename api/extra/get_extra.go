@@ -1,7 +1,9 @@
+//nolint:nolintlint,dupl
 package extra
 
 import (
 	"context"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -16,7 +18,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) GetExtra(ctx context.Context, in *appuserextra.GetExtraRequest) (*appuserextra.GetExtraResponse, error) {
+func (s *Server) GetExtra(ctx context.Context,
+	in *appuserextra.GetExtraRequest) (*appuserextra.GetExtraResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetExtra")
@@ -45,7 +48,8 @@ func (s *Server) GetExtra(ctx context.Context, in *appuserextra.GetExtraRequest)
 	}, nil
 }
 
-func (s *Server) GetAppUserExtra(ctx context.Context, in *appuserextra.GetAppUserExtraRequest) (*appuserextra.GetAppUserExtraResponse, error) {
+func (s *Server) GetAppUserExtra(ctx context.Context,
+	in *appuserextra.GetAppUserExtraRequest) (*appuserextra.GetAppUserExtraResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetAppUserExtra")

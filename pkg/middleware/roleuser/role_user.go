@@ -3,9 +3,11 @@ package roleuser
 import (
 	"context"
 	"fmt"
+
 	"github.com/NpoolPlatform/api-manager/pkg/db/ent"
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
 	"github.com/NpoolPlatform/message/npool/appusermgrv2/approleuser"
@@ -18,6 +20,7 @@ func CreateRoleUser(ctx context.Context, in *approleuser.AppRoleUserReq) (*appro
 	}
 
 	if role.GetRole() == constant.GenesisRole {
+		logger.Sugar().Errorw("permission denied")
 		return nil, fmt.Errorf("permission denied")
 	}
 
@@ -42,6 +45,7 @@ func CreateRoleUser(ctx context.Context, in *approleuser.AppRoleUserReq) (*appro
 				return nil, err
 			}
 		} else {
+			logger.Sugar().Errorw("fail get app role user: %v", err)
 			return nil, fmt.Errorf("fail get app role user: %v", err)
 		}
 	}

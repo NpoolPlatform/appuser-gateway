@@ -2,6 +2,7 @@ package banapp
 
 import (
 	"context"
+
 	"github.com/NpoolPlatform/message/npool/appusergw/banapp"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"

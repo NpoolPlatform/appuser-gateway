@@ -1,7 +1,9 @@
+//nolint:nolintlint,dupl
 package roleuser
 
 import (
 	"context"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	mw "github.com/NpoolPlatform/appuser-gateway/pkg/middleware/roleuser"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -41,7 +43,8 @@ func (s *Server) CreateRoleUser(ctx context.Context, in *approleuser.CreateRoleU
 	}, nil
 }
 
-func (s *Server) CreateAppUserRoleUser(ctx context.Context, in *approleuser.CreateAppUserRoleUserRequest) (*approleuser.CreateAppUserRoleUserResponse, error) {
+func (s *Server) CreateAppUserRoleUser(ctx context.Context,
+	in *approleuser.CreateAppUserRoleUserRequest) (*approleuser.CreateAppUserRoleUserResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppUserRoleUser")
@@ -76,7 +79,8 @@ func (s *Server) CreateAppUserRoleUser(ctx context.Context, in *approleuser.Crea
 	}, nil
 }
 
-func (s *Server) CreateUserRoleUser(ctx context.Context, in *approleuser.CreateUserRoleUserRequest) (*approleuser.CreateUserRoleUserResponse, error) {
+func (s *Server) CreateUserRoleUser(ctx context.Context,
+	in *approleuser.CreateUserRoleUserRequest) (*approleuser.CreateUserRoleUserResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateUserRoleUser")

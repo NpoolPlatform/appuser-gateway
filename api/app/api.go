@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+
 	"github.com/NpoolPlatform/message/npool/appusergw/app"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"

@@ -1,7 +1,9 @@
+//nolint:nolintlint,dupl
 package banappuser
 
 import (
 	"context"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	grpc "github.com/NpoolPlatform/appuser-manager/pkg/client"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -14,7 +16,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) DeleteBanAppUser(ctx context.Context, in *banappuser.DeleteBanAppUserRequest) (*banappuser.DeleteBanAppUserResponse, error) {
+func (s *Server) DeleteBanAppUser(ctx context.Context,
+	in *banappuser.DeleteBanAppUserRequest) (*banappuser.DeleteBanAppUserResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteBanAppUser")

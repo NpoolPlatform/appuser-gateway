@@ -2,6 +2,7 @@ package banappuser
 
 import (
 	"context"
+
 	"github.com/NpoolPlatform/message/npool/appusergw/banappuser"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"

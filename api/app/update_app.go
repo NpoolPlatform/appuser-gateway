@@ -1,3 +1,4 @@
+//nolint:nolintlint,dupl
 package app
 
 import (

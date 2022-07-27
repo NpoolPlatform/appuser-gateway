@@ -1,7 +1,9 @@
+//nolint:nolintlint,dupl
 package admin
 
 import (
 	"context"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	mw "github.com/NpoolPlatform/appuser-gateway/pkg/middleware/admin"
 	appusermw "github.com/NpoolPlatform/appuser-middleware/pkg/client"
@@ -63,7 +65,8 @@ func (s *Server) CreateGenesisRole(ctx context.Context, in *admin.CreateGenesisR
 	}, nil
 }
 
-func (s *Server) CreateGenesisRoleUser(ctx context.Context, in *admin.CreateGenesisRoleUserRequest) (*admin.CreateGenesisRoleUserResponse, error) {
+func (s *Server) CreateGenesisRoleUser(ctx context.Context,
+	in *admin.CreateGenesisRoleUserRequest) (*admin.CreateGenesisRoleUserResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateGenesisRole")
