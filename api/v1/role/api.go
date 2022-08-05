@@ -1,0 +1,21 @@
+package role
+
+import (
+	"context"
+
+	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/approle"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"google.golang.org/grpc"
+)
+
+type Server struct {
+	approle.UnimplementedAppRoleGwServer
+}
+
+func Register(server grpc.ServiceRegistrar) {
+	approle.RegisterAppRoleGwServer(server, &Server{})
+}
+
+func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
+	return approle.RegisterAppRoleGwHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
+}
