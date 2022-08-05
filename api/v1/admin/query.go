@@ -20,7 +20,6 @@ import (
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
 	appcrud "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/app"
 	approlecrud "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
-	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
@@ -76,12 +75,8 @@ func (s *Server) GetGenesisRole(ctx context.Context, in *admin.GetGenesisRoleReq
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetAppRoles")
 
 	resp, _, err := appusermgrapprole.GetAppRoles(ctx, &approlecrud.Conds{
-		AppID: &npool.StringVal{
-			Value: uuid.UUID{}.String(),
-			Op:    cruder.EQ,
-		},
-		Role: &npool.StringVal{
-			Value: bconstant.GenesisRole,
+		Roles: &npool.StringSliceVal{
+			Value: []string{bconstant.GenesisRole, bconstant.ChurchRole},
 			Op:    cruder.EQ,
 		},
 	}, 1, 0)
