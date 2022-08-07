@@ -60,7 +60,7 @@ func (s *Server) GetAdminApps(ctx context.Context, in *admin.GetAdminAppsRequest
 	}, nil
 }
 
-func (s *Server) GetGenesisRole(ctx context.Context, in *admin.GetGenesisRoleRequest) (*admin.GetGenesisRoleResponse, error) {
+func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesRequest) (*admin.GetGenesisRolesResponse, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetGenesisRole")
@@ -79,19 +79,19 @@ func (s *Server) GetGenesisRole(ctx context.Context, in *admin.GetGenesisRoleReq
 			Value: []string{bconstant.GenesisRole, bconstant.ChurchRole},
 			Op:    cruder.EQ,
 		},
-	}, 1, 0)
+	}, 2, 0)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRole", "err", err)
-		return &admin.GetGenesisRoleResponse{}, status.Error(codes.Internal, err.Error())
+		return &admin.GetGenesisRolesResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	if len(resp) == 0 {
 		logger.Sugar().Errorw("GetGenesisRole", "err", "genesis role not found")
-		return &admin.GetGenesisRoleResponse{}, status.Error(codes.NotFound, "genesis role not found")
+		return &admin.GetGenesisRolesResponse{}, status.Error(codes.NotFound, "genesis role not found")
 	}
 
-	return &admin.GetGenesisRoleResponse{
-		Info: resp[0],
+	return &admin.GetGenesisRolesResponse{
+		Infos: resp,
 	}, nil
 }
 
