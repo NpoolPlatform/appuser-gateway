@@ -39,6 +39,8 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 		return &user.SignupResponse{}, err
 	}
 
+	span = commontracer.TraceInvoker(span, "user", "middleware", "Signup")
+
 	userInfo, err := mw.Signup(ctx, in)
 	if err != nil {
 		return nil, err
@@ -68,7 +70,7 @@ func (s *Server) CreateUser(ctx context.Context, in *user.CreateUserRequest) (*u
 		return &user.CreateUserResponse{}, err
 	}
 
-	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
+	span = commontracer.TraceInvoker(span, "user", "middleware", "CreateUser")
 
 	resp, err := usermwcli.CreateUser(ctx, in.GetInfo())
 	if err != nil {

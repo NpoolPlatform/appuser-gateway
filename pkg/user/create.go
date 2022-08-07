@@ -3,6 +3,11 @@ package user
 import (
 	"context"
 	"fmt"
+	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+	tracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/user"
+	"go.opentelemetry.io/otel"
+	scodes "go.opentelemetry.io/otel/codes"
 
 	rolemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 	appusermgrconst "github.com/NpoolPlatform/appuser-manager/pkg/const"
@@ -27,6 +32,19 @@ import (
 
 //nolint:gocyclo
 func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Signup")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = tracer.Trace(span, in)
+	span = commontracer.TraceInvoker(span, "user", "middleware", "Signup")
 	app, err := appmwcli.GetApp(ctx, in.GetAppID())
 	if err != nil {
 		return nil, err
@@ -44,6 +62,7 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 	inviterID := ""
 
 	if in.GetInvitationCode() != "" {
+		span = commontracer.TraceInvoker(span, "user", "manager", "GetUserInvitationCodeOnly")
 		code, err := inspirecli.GetUserInvitationCodeOnly(ctx, &inspirepb.Conds{
 			InvitationCode: &npool.StringVal{
 				Op:    cruder.EQ,
@@ -68,6 +87,7 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		}
 	}
 
+	span = commontracer.TraceInvoker(span, "user", "verify", "VerifyCode")
 	err = VerifyCode(
 		ctx,
 		in.GetAppID(),
@@ -93,6 +113,8 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 
 	userID := uuid.NewString()
 	importedFromAppID := uuid.UUID{}.String()
+
+	span = commontracer.TraceInvoker(span, "user", "manager", "GetAppRoleOnly")
 
 	role, err := rolemgrcli.GetAppRoleOnly(ctx, &rolemgrpb.Conds{
 		AppID: &npool.StringVal{
@@ -147,6 +169,9 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		dispose.TransOptions.WaitResult = true
 		dispose.TransOptions.TimeoutToFail = 10
 		dispose.Actions = actions
+
+		span = commontracer.TraceInvoker(span, "user", "dtm", "WithSaga")
+
 		err = dtm.WithSaga(ctx, &dispose, nil, func(ctx context.Context) error {
 			userInfo, err = usermwcli.GetUser(ctx, in.GetAppID(), userID)
 			if err != nil {
@@ -158,6 +183,8 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 			return nil, fmt.Errorf("fail dtm: %v", err)
 		}
 	} else {
+
+		span = commontracer.TraceInvoker(span, "user", "middleware", "CreateUser")
 		userInfo, err = usermwcli.CreateUser(ctx, &usermwp.UserReq{
 			ID:                &userID,
 			AppID:             &in.AppID,
