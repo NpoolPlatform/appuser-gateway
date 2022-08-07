@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	tracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/user"
@@ -183,7 +184,6 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 			return nil, fmt.Errorf("fail dtm: %v", err)
 		}
 	} else {
-
 		span = commontracer.TraceInvoker(span, "user", "middleware", "CreateUser")
 		userInfo, err = usermwcli.CreateUser(ctx, &usermwp.UserReq{
 			ID:                &userID,
