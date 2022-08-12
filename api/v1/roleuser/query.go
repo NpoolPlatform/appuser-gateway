@@ -1,4 +1,3 @@
-//nolint:nolintlint,dupl
 package roleuser
 
 import (
@@ -44,7 +43,7 @@ func (s *Server) GetRoleUsers(ctx context.Context, in *approleuser.GetRoleUsersR
 
 	span = commontracer.TraceInvoker(span, "role", "manager", "GetAppRoleUsers")
 
-	resp, _, err := approleusermgrcli.GetAppRoleUsers(ctx, &approleusercrud.Conds{
+	resp, total, err := approleusermgrcli.GetAppRoleUsers(ctx, &approleusercrud.Conds{
 		AppID: &npool.StringVal{
 			Value: in.GetAppID(),
 			Op:    cruder.EQ,
@@ -53,7 +52,7 @@ func (s *Server) GetRoleUsers(ctx context.Context, in *approleuser.GetRoleUsersR
 			Value: in.GetRoleID(),
 			Op:    cruder.EQ,
 		},
-	}, in.GetLimit(), in.GetOffset())
+	}, in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetRoleUsers", "err", err)
 		return &approleuser.GetRoleUsersResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
@@ -61,6 +60,7 @@ func (s *Server) GetRoleUsers(ctx context.Context, in *approleuser.GetRoleUsersR
 
 	return &approleuser.GetRoleUsersResponse{
 		Infos: resp,
+		Total: total,
 	}, nil
 }
 
@@ -88,7 +88,7 @@ func (s *Server) GetAppRoleUsers(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "role", "manager", "GetAppRoleUsers")
 
-	resp, _, err := approleusermgrcli.GetAppRoleUsers(ctx, &approleusercrud.Conds{
+	resp, total, err := approleusermgrcli.GetAppRoleUsers(ctx, &approleusercrud.Conds{
 		AppID: &npool.StringVal{
 			Value: in.GetTargetAppID(),
 			Op:    cruder.EQ,
@@ -97,7 +97,7 @@ func (s *Server) GetAppRoleUsers(ctx context.Context,
 			Value: in.GetRoleID(),
 			Op:    cruder.EQ,
 		},
-	}, in.GetLimit(), in.GetOffset())
+	}, in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetAppRoleUsers", "err", err)
 		return &approleuser.GetAppRoleUsersResponse{}, status.Error(codes.Internal, err.Error())
@@ -105,5 +105,6 @@ func (s *Server) GetAppRoleUsers(ctx context.Context,
 
 	return &approleuser.GetAppRoleUsersResponse{
 		Infos: resp,
+		Total: total,
 	}, nil
 }

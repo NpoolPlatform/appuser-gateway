@@ -36,7 +36,7 @@ func GetAppGenesisAppRoleUsers(ctx context.Context) ([]*approleuserpb.AppRoleUse
 			Op:    cruder.IN,
 			Value: []string{constant.GenesisRole, constant.ChurchRole},
 		},
-	}, 2, 0)
+	}, 0, 2)
 	if err != nil {
 		logger.Sugar().Errorw("CreateGenesisRole", "error", err)
 		return nil, err
@@ -56,7 +56,7 @@ func GetAppGenesisAppRoleUsers(ctx context.Context) ([]*approleuserpb.AppRoleUse
 			Op:    cruder.IN,
 			Value: roleIDs,
 		},
-	}, 2, 0)
+	}, 0, 2)
 	if err != nil {
 		logger.Sugar().Errorw("GetAppGenesisAppRoleUsers", "error", err)
 		return nil, err

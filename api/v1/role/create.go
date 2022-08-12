@@ -1,4 +1,3 @@
-//nolint:nolintlint,dupl
 package role
 
 import (
@@ -33,7 +32,7 @@ func (s *Server) CreateRole(ctx context.Context, in *approle.CreateRoleRequest) 
 
 	span = tracer.Trace(span, in.GetInfo())
 
-	err = validate(in.GetInfo(), in.GetUserID())
+	err = validate(ctx, in.GetInfo(), in.GetUserID())
 	if err != nil {
 		logger.Sugar().Errorw("CreateRole", "err", err)
 		return nil, err
@@ -73,10 +72,11 @@ func (s *Server) CreateAppRole(ctx context.Context, in *approle.CreateAppRoleReq
 	}
 
 	appID := in.GetTargetAppID()
+
 	info := in.GetInfo()
 	info.AppID = &appID
 
-	err = validate(in.GetInfo(), in.GetUserID())
+	err = validate(ctx, in.GetInfo(), in.GetUserID())
 	if err != nil {
 		logger.Sugar().Errorw("CreateAppRole", "err", err)
 		return &approle.CreateAppRoleResponse{}, err

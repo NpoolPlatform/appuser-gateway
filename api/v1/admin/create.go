@@ -3,22 +3,21 @@ package admin
 
 import (
 	"context"
-	"fmt"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	tracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/admin"
-	"github.com/google/uuid"
+	"github.com/NpoolPlatform/message/npool/authinggateway"
 	"google.golang.org/grpc/codes"
 
 	mw "github.com/NpoolPlatform/appuser-gateway/pkg/admin"
-	constants "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	appusermwadmin "github.com/NpoolPlatform/appuser-middleware/pkg/client/admin"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
+
+	authcli "github.com/NpoolPlatform/authing-gateway/pkg/client"
 )
 
 func (s *Server) CreateAdminApps(ctx context.Context, in *admin.CreateAdminAppsRequest) (*admin.CreateAdminAppsResponse, error) {
@@ -87,14 +86,9 @@ func (s *Server) CreateGenesisUser(ctx context.Context,
 		}
 	}()
 
-	role := constants.GenesisRole
-	if in.GetTargetAppID() == constants.ChurchAppID {
-		role = constants.ChurchRole
-	}
-
 	span = tracer.Trace(span, in)
 
-	err = validate(ctx, in, role)
+	err = validate(ctx, in)
 	if err != nil {
 		logger.Sugar().Errorw("CreateGenesisUser", "err", err)
 		return nil, err
@@ -102,11 +96,9 @@ func (s *Server) CreateGenesisUser(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "admin", "middleware", "CreateGenesisUser")
 
-	resp, err := appusermwadmin.CreateGenesisUser(
+	resp, err := mw.CreateGenesisUser(
 		ctx,
 		in.GetTargetAppID(),
-		uuid.NewString(),
-		role,
 		in.GetEmailAddress(),
 		in.GetPasswordHash(),
 	)
@@ -121,6 +113,24 @@ func (s *Server) CreateGenesisUser(ctx context.Context,
 }
 
 func (s *Server) AuthorizeGenesis(ctx context.Context, in *admin.AuthorizeGenesisRequest) (*admin.AuthorizeGenesisResponse, error) {
-	// TODO: Wait for authing-gateway refactoring to complete the API
-	return &admin.AuthorizeGenesisResponse{}, status.Error(codes.Internal, fmt.Errorf("NOT IMPLEMENTED").Error())
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "AuthorizeGenesis")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+	infos, err := authcli.CreateGenesisAppUserAuth(ctx, &authinggateway.CreateGenesisAppUserAuthRequest{})
+	if err != nil {
+		logger.Sugar().Errorw("AuthorizeGenesis", "err", err)
+		return &admin.AuthorizeGenesisResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &admin.AuthorizeGenesisResponse{
+		Infos: infos,
+	}, nil
 }

@@ -3,6 +3,11 @@ package admin
 import (
 	"context"
 
+	tracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/admin"
+	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
+	"github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
@@ -11,11 +16,11 @@ import (
 	serconst "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 
 	appmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/app"
-	approleapp "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
+	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	appcrud "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/app"
-	approlecrud "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
+	approlepb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
@@ -23,7 +28,6 @@ import (
 
 func CreateAdminApps(ctx context.Context) ([]*appcrud.App, error) {
 	var err error
-	apps := []*appcrud.App{}
 	createApps := []*appcrud.AppReq{}
 
 	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "CreateAdminApps")
@@ -38,21 +42,34 @@ func CreateAdminApps(ctx context.Context) ([]*appcrud.App, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "middleware", "GetApps")
 
-	genesisApp, _, err := appmgrcli.GetApps(ctx, &appcrud.Conds{
-		ID: &npool.StringVal{
-			Value: constant.GenesisAppID,
+	appInfos, total, err := appmgrcli.GetApps(ctx, &appcrud.Conds{
+		IDs: &npool.StringSliceVal{
+			Value: []string{constant.GenesisAppID, constant.ChurchAppID},
 			Op:    cruder.EQ,
 		},
-	}, 1, 0)
+	}, 0, 2)
 
 	if err != nil {
 		logger.Sugar().Errorw("CreateAdminApps", "error", err)
 		return nil, err
 	}
 
-	apps = append(apps, genesisApp...)
+	if total == 2 {
+		return appInfos, nil
+	}
 
-	if len(genesisApp) > 0 {
+	createGenesis := true
+	createChurch := true
+	for _, val := range appInfos {
+		if val.ID == constant.GenesisAppID {
+			createGenesis = false
+		}
+		if val.ID == constant.ChurchAppID {
+			createChurch = false
+		}
+	}
+
+	if createGenesis {
 		genesisApp := appcrud.App{
 			Description: "NOT SET",
 			ID:          constant.GenesisAppID,
@@ -69,22 +86,7 @@ func CreateAdminApps(ctx context.Context) ([]*appcrud.App, error) {
 		})
 	}
 
-	span = commontracer.TraceInvoker(span, "admin", "middleware", "GetApps")
-
-	churchApp, _, err := appmgrcli.GetApps(ctx, &appcrud.Conds{
-		ID: &npool.StringVal{
-			Value: constant.ChurchAppID,
-			Op:    cruder.EQ,
-		},
-	}, 1, 0)
-	if err != nil {
-		logger.Sugar().Errorw("CreateAdminApps", "error", err)
-		return nil, err
-	}
-
-	apps = append(apps, churchApp...)
-
-	if len(churchApp) > 0 {
+	if createChurch {
 		churchApp := appcrud.App{
 			Description: "NOT SET",
 			ID:          constant.ChurchAppID,
@@ -101,21 +103,18 @@ func CreateAdminApps(ctx context.Context) ([]*appcrud.App, error) {
 		})
 	}
 
-	if len(createApps) > 0 {
-		span = commontracer.TraceInvoker(span, "admin", "middleware", "CreateApps")
+	span = commontracer.TraceInvoker(span, "admin", "middleware", "CreateApps")
 
-		resp, err := appmgrcli.CreateApps(ctx, createApps)
-		if err != nil {
-			logger.Sugar().Errorw("CreateAdminApps", "error", err)
-			return nil, err
-		}
-		apps = append(apps, resp...)
+	resp, err := appmgrcli.CreateApps(ctx, createApps)
+	if err != nil {
+		logger.Sugar().Errorw("CreateAdminApps", "error", err)
+		return nil, err
 	}
 
-	return apps, nil
+	return resp, nil
 }
 
-func CreateGenesisRoles(ctx context.Context) ([]*approlecrud.AppRole, error) {
+func CreateGenesisRoles(ctx context.Context) ([]*approlepb.AppRole, error) {
 	var err error
 
 	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "CreateGenesisRole")
@@ -127,43 +126,128 @@ func CreateGenesisRoles(ctx context.Context) ([]*approlecrud.AppRole, error) {
 		}
 	}()
 
-	genesisRole := approlecrud.AppRole{
-		AppID:       uuid.UUID{}.String(),
-		CreatedBy:   uuid.UUID{}.String(),
-		Role:        constant.GenesisRole,
-		Description: "NOT SET",
-		Default:     false,
+	appRoles, total, err := approlemgrcli.GetAppRoles(ctx, &approlepb.Conds{
+		Roles: &npool.StringSliceVal{
+			Op:    cruder.IN,
+			Value: []string{constant.GenesisRole, constant.ChurchRole},
+		},
+	}, 0, 2)
+	if err != nil {
+		logger.Sugar().Errorw("CreateGenesisRole", "error", err)
+		return nil, err
 	}
 
-	churchRole := approlecrud.AppRole{
-		AppID:       uuid.UUID{}.String(),
-		CreatedBy:   uuid.UUID{}.String(),
-		Role:        constant.ChurchRole,
-		Description: "NOT SET",
-		Default:     false,
+	if total == 2 {
+		return appRoles, nil
 	}
 
-	span = commontracer.TraceInvoker(span, "admin", "middleware", "CreateAppRoles")
+	createGenesis := true
+	createChurch := true
+	for _, val := range appRoles {
+		if val.AppID == constant.GenesisAppID {
+			createGenesis = false
+		}
+		if val.AppID == constant.ChurchAppID {
+			createChurch = false
+		}
+	}
 
-	resp, err := approleapp.CreateAppRoles(ctx, []*approlecrud.AppRoleReq{
-		{
+	createAppRoles := []*approlepb.AppRoleReq{}
+
+	if createGenesis {
+		genesisRole := approlepb.AppRole{
+			AppID:       constant.GenesisAppID,
+			CreatedBy:   uuid.UUID{}.String(),
+			Role:        constant.GenesisRole,
+			Description: "NOT SET",
+			Default:     false,
+		}
+
+		createAppRoles = append(createAppRoles, &approlepb.AppRoleReq{
 			AppID:       &genesisRole.AppID,
 			CreatedBy:   &genesisRole.CreatedBy,
 			Role:        &genesisRole.Role,
 			Description: &genesisRole.Description,
 			Default:     &genesisRole.Default,
-		}, {
+		})
+	}
+
+	if createChurch {
+		churchRole := approlepb.AppRole{
+			AppID:       constant.ChurchAppID,
+			CreatedBy:   uuid.UUID{}.String(),
+			Role:        constant.ChurchRole,
+			Description: "NOT SET",
+			Default:     false,
+		}
+
+		createAppRoles = append(createAppRoles, &approlepb.AppRoleReq{
 			AppID:       &churchRole.AppID,
 			CreatedBy:   &churchRole.CreatedBy,
 			Role:        &churchRole.Role,
 			Description: &churchRole.Description,
 			Default:     &churchRole.Default,
-		},
-	})
+		})
+	}
+
+	span = commontracer.TraceInvoker(span, "admin", "middleware", "CreateAppRoles")
+
+	resp, err := approlemgrcli.CreateAppRoles(ctx, createAppRoles)
 	if err != nil {
 		logger.Sugar().Errorw("CreateGenesisRole", "error", err)
 		return nil, err
 	}
 
 	return resp, nil
+}
+
+func CreateGenesisUser(ctx context.Context, appID, emailAddress, passwordHash string) (*user.User, error) {
+	var err error
+
+	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "CreateGenesisUser")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = tracer.Trace(span, &admin.CreateGenesisUserRequest{
+		TargetAppID:  appID,
+		EmailAddress: emailAddress,
+		PasswordHash: passwordHash,
+	})
+
+	span = commontracer.TraceInvoker(span, "app", "db", "CreateGenesisUser")
+
+	appRole, err := approlemgrcli.GetAppRoleOnly(ctx, &approlepb.Conds{
+		AppID: &npool.StringVal{
+			Value: appID,
+			Op:    cruder.EQ,
+		},
+	})
+	if err != nil || appRole == nil {
+		logger.Sugar().Errorw("CreateGenesisUser", "error", err, "appRole", appRole)
+		return nil, err
+	}
+
+	roleID := appRole.ID
+	importFromApp := uuid.UUID{}.String()
+	userID := uuid.NewString()
+
+	userInfo, err := usermwcli.CreateUser(ctx, &user.UserReq{
+		ID:                &userID,
+		AppID:             &appID,
+		EmailAddress:      &emailAddress,
+		ImportedFromAppID: &importFromApp,
+		PasswordHash:      &passwordHash,
+		RoleIDs:           []string{roleID},
+	})
+	if err != nil {
+		logger.Sugar().Errorw("CreateGenesisUser", "error", err)
+		return nil, err
+	}
+
+	return userInfo, nil
 }

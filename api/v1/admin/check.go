@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func validate(ctx context.Context, info *admin.CreateGenesisUserRequest, role string) error {
+func validate(ctx context.Context, info *admin.CreateGenesisUserRequest) error {
 	if info.GetTargetAppID() == "" {
 		logger.Sugar().Errorw("validate", "TargetAppID", info.GetTargetAppID())
 		return status.Error(codes.InvalidArgument, "AppID is empty")
@@ -40,15 +40,15 @@ func validate(ctx context.Context, info *admin.CreateGenesisUserRequest, role st
 	resp, err := approle.GetAppRoleOnly(ctx, &approlepb.Conds{
 		AppID: &npool.StringVal{
 			Op:    cruder.EQ,
-			Value: uuid.UUID{}.String(),
-		},
-		Role: &npool.StringVal{
-			Op:    cruder.EQ,
-			Value: role,
+			Value: info.GetTargetAppID(),
 		},
 	})
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
+	}
+
+	if resp == nil {
+		return status.Error(codes.Internal, "fail get app role")
 	}
 
 	exist, err := approleuser.ExistAppRoleUserConds(ctx, &approleuserpb.Conds{

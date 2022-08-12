@@ -1,8 +1,9 @@
-//nolint:nolintlint,dupl
 package user
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	tracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/user"
@@ -43,7 +44,8 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 
 	userInfo, err := mw.Signup(ctx, in)
 	if err != nil {
-		return nil, err
+		logger.Sugar().Errorw("Signup", "err", err)
+		return &user.SignupResponse{}, status.Error(codes.Internal, err.Error())
 	}
 	return &user.SignupResponse{
 		Info: userInfo,
@@ -64,7 +66,10 @@ func (s *Server) CreateUser(ctx context.Context, in *user.CreateUserRequest) (*u
 
 	span = mgrtracer.Trace(span, in.GetInfo())
 
-	err = validate(in.GetInfo())
+	userID := uuid.NewString()
+	in.Info.ID = &userID
+
+	err = validate(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("CreateUser", "err", err)
 		return &user.CreateUserResponse{}, err

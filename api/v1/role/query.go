@@ -1,4 +1,4 @@
-//nolint:nolintlint,dupl
+//nolint:dupl
 package role
 
 import (
@@ -48,7 +48,7 @@ func (s *Server) GetRoles(ctx context.Context, in *approle.GetRolesRequest) (*ap
 			Value: in.GetAppID(),
 			Op:    cruder.EQ,
 		},
-	}, in.GetLimit(), in.GetOffset())
+	}, in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetRoles", "err", err)
 		return &approle.GetRolesResponse{}, status.Error(codes.Internal, err.Error())
@@ -86,7 +86,7 @@ func (s *Server) GetAppRoles(ctx context.Context, in *approle.GetAppRolesRequest
 			Value: in.GetTargetAppID(),
 			Op:    cruder.EQ,
 		},
-	}, in.GetLimit(), in.GetOffset())
+	}, in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetAppRoles", "err", err)
 		return &approle.GetAppRolesResponse{}, status.Error(codes.Internal, err.Error())

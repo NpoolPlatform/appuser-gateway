@@ -3,10 +3,11 @@ package admin
 
 import (
 	"context"
-	"fmt"
 
 	mw "github.com/NpoolPlatform/appuser-gateway/pkg/admin"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+	authcli "github.com/NpoolPlatform/authing-gateway/pkg/client"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 
 	bconstant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
@@ -44,7 +45,7 @@ func (s *Server) GetAdminApps(ctx context.Context, in *admin.GetAdminAppsRequest
 			Value: []string{bconstant.GenesisAppID, bconstant.ChurchAppID},
 			Op:    cruder.IN,
 		},
-	}, 2, 0)
+	}, 0, 2)
 	if err != nil {
 		logger.Sugar().Errorw("GetAdminApps", "err", err)
 		return &admin.GetAdminAppsResponse{}, status.Error(codes.Internal, err.Error())
@@ -79,7 +80,7 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesR
 			Value: []string{bconstant.GenesisRole, bconstant.ChurchRole},
 			Op:    cruder.EQ,
 		},
-	}, 2, 0)
+	}, 0, 2)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRole", "err", err)
 		return &admin.GetGenesisRolesResponse{}, status.Error(codes.Internal, err.Error())
@@ -122,6 +123,30 @@ func (s *Server) GetGenesisRoleUsers(ctx context.Context,
 }
 
 func (s *Server) GetGenesisAuths(ctx context.Context, in *admin.GetGenesisAuthsRequest) (*admin.GetGenesisAuthsResponse, error) {
-	// TODO: Wait for authing-gateway refactoring to complete the API
-	return &admin.GetGenesisAuthsResponse{}, status.Error(codes.Internal, fmt.Errorf("NOT IMPLEMENTED").Error())
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "AuthorizeGenesis")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		logger.Sugar().Errorw("validate", "AppID", in.GetAppID(), "error", err)
+		return &admin.GetGenesisAuthsResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
+	}
+
+	infos, err := authcli.GetAuthsByOtherApp(ctx, in.GetAppID())
+	if err != nil {
+		logger.Sugar().Errorw("GetGenesisAuths", "err", err)
+		return &admin.GetGenesisAuthsResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &admin.GetGenesisAuthsResponse{
+		Infos: infos,
+	}, nil
 }

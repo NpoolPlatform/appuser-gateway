@@ -1,4 +1,4 @@
-//nolint:nolintlint,dupl
+//nolint:dupl
 package app
 
 import (
@@ -67,7 +67,7 @@ func (s *Server) GetApps(ctx context.Context, in *app.GetAppsRequest) (*app.GetA
 	commontracer.TraceOffsetLimit(span, int(in.GetOffset()), int(in.GetLimit()))
 	span = commontracer.TraceInvoker(span, "app", "middleware", "GetApps")
 
-	resp, total, err := appmwcli.GetApps(ctx, in.GetLimit(), in.GetOffset())
+	resp, total, err := appmwcli.GetApps(ctx, in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetApps", "err", err)
 		return &app.GetAppsResponse{}, status.Error(codes.Internal, err.Error())
@@ -101,7 +101,7 @@ func (s *Server) GetUserApps(ctx context.Context, in *app.GetUserAppsRequest) (*
 
 	span = commontracer.TraceInvoker(span, "app", "middleware", "GetUserApps")
 
-	resp, total, err := appmwcli.GetUserApps(ctx, in.GetTargetUserID(), in.GetLimit(), in.GetLimit())
+	resp, total, err := appmwcli.GetUserApps(ctx, in.GetTargetUserID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetUserApps", "err", err)
 		return &app.GetUserAppsResponse{}, status.Error(codes.Internal, err.Error())

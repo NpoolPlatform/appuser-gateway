@@ -1,4 +1,4 @@
-//nolint:nolintlint,dupl
+//nolint:dupl
 package user
 
 import (
@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	mw "github.com/NpoolPlatform/appuser-gateway/pkg/user"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
 	"go.opentelemetry.io/otel"
@@ -40,7 +40,7 @@ func (s *Server) GetUsers(ctx context.Context, in *user.GetUsersRequest) (*user.
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
 
-	resp, err := usermwcli.GetUsers(ctx, in.GetAppID(), in.GetOffset(), in.GetLimit())
+	resp, err := mw.GetUsers(ctx, in.GetAppID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetUsers", "err", err)
 		return &user.GetUsersResponse{}, status.Error(codes.Internal, err.Error())
@@ -73,7 +73,7 @@ func (s *Server) GetAppUsers(ctx context.Context, in *user.GetAppUsersRequest) (
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
 
-	resp, err := usermwcli.GetUsers(ctx, in.GetTargetAppID(), in.GetOffset(), in.GetLimit())
+	resp, err := mw.GetUsers(ctx, in.GetTargetAppID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetAppUsers", "err", err)
 		return &user.GetAppUsersResponse{}, status.Error(codes.Internal, err.Error())

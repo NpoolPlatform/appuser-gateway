@@ -18,11 +18,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func validate(info *mgruser.UserReq) error {
-	err := mw.Validate(info)
+func validate(ctx context.Context, info *mgruser.UserReq) error {
+	err := mw.Validate(ctx, info)
 	if err != nil {
 		logger.Sugar().Errorw("validate", "err", err)
 		return status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	if info.ImportedFromAppID != nil {
+		if _, err := uuid.Parse(info.GetImportedFromAppID()); err != nil {
+			logger.Sugar().Errorw("validate", "ImportedFromAppID", info.GetImportedFromAppID(), "error", err)
+			return status.Error(codes.InvalidArgument, "ImportedFromAppID is invalid")
+		}
 	}
 
 	return nil

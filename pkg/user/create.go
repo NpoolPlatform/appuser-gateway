@@ -45,17 +45,21 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 	}()
 
 	span = tracer.Trace(span, in)
-	span = commontracer.TraceInvoker(span, "user", "middleware", "Signup")
+	span = commontracer.TraceInvoker(span, "user", "middleware", "GetApp")
+
 	app, err := appmwcli.GetApp(ctx, in.GetAppID())
 	if err != nil {
+		logger.Sugar().Errorw("Signup", "err", err)
 		return nil, err
 	}
 	if app == nil {
+		logger.Sugar().Errorw("Signup", "err", "fail get app")
 		return nil, fmt.Errorf("fail get app")
 	}
 
 	if app.InvitationCodeMust {
 		if in.GetInvitationCode() == "" {
+			logger.Sugar().Errorw("Signup", "err", "invitation code is must")
 			return nil, fmt.Errorf("invitation code is must")
 		}
 	}
@@ -71,24 +75,26 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 			},
 		})
 		if err != nil {
-			logger.Sugar().Errorw("validate", "err", err)
+			logger.Sugar().Errorw("Signup", "err", err)
 			return nil, err
 		}
 
 		if code == nil {
 			if app.InvitationCodeMust {
-				logger.Sugar().Errorw("validate", "invitation code is must")
+				logger.Sugar().Errorw("Signup", "invitation code is must")
 				return nil, fmt.Errorf("fail get invitation code")
 			}
 		} else {
 			if code.AppID != in.GetAppID() {
+				logger.Sugar().Errorw("Signup", "err", "invalid invitation code for app")
 				return nil, fmt.Errorf("invalid invitation code for app")
 			}
 			inviterID = code.UserID
 		}
 	}
 
-	span = commontracer.TraceInvoker(span, "user", "verify", "VerifyCode")
+	span = commontracer.TraceInvoker(span, "user", "Signup", "VerifyCode")
+
 	err = VerifyCode(
 		ctx,
 		in.GetAppID(),
@@ -100,6 +106,7 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		false,
 	)
 	if err != nil {
+		logger.Sugar().Errorw("Signup", "err", err)
 		return nil, err
 	}
 
@@ -128,9 +135,11 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		},
 	})
 	if err != nil {
+		logger.Sugar().Errorw("Signup", "err", err)
 		return nil, err
 	}
 	if role == nil {
+		logger.Sugar().Errorw("Signup", "err", "fail get role")
 		return nil, fmt.Errorf("fail get role")
 	}
 
@@ -150,7 +159,7 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 					ImportedFromAppID: &importedFromAppID,
 					Username:          &in.Username,
 					PasswordHash:      &in.PasswordHash,
-					RoleID:            &role.ID,
+					RoleIDs:           []string{role.ID},
 				},
 			},
 			{
@@ -176,15 +185,18 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		err = dtm.WithSaga(ctx, &dispose, nil, func(ctx context.Context) error {
 			userInfo, err = usermwcli.GetUser(ctx, in.GetAppID(), userID)
 			if err != nil {
-				return fmt.Errorf("fail create registration invitation: %v", err)
+				logger.Sugar().Errorw("Signup", "err", err)
+				return err
 			}
 			return nil
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fail dtm: %v", err)
+			logger.Sugar().Errorw("Signup", "err", err)
+			return nil, err
 		}
 	} else {
 		span = commontracer.TraceInvoker(span, "user", "middleware", "CreateUser")
+
 		userInfo, err = usermwcli.CreateUser(ctx, &usermwp.UserReq{
 			ID:                &userID,
 			AppID:             &in.AppID,
@@ -193,9 +205,10 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 			ImportedFromAppID: &importedFromAppID,
 			Username:          &in.Username,
 			PasswordHash:      &in.PasswordHash,
-			RoleID:            &role.ID,
+			RoleIDs:           []string{role.ID},
 		})
 		if err != nil {
+			logger.Sugar().Errorw("Signup", "err", err)
 			return nil, err
 		}
 	}
