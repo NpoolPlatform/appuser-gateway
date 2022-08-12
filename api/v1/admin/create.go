@@ -124,13 +124,13 @@ func (s *Server) AuthorizeGenesis(ctx context.Context, in *admin.AuthorizeGenesi
 			span.RecordError(err)
 		}
 	}()
-	infos, err := authcli.CreateGenesisAppUserAuth(ctx, &authinggateway.CreateGenesisAppUserAuthRequest{})
+	resp, err := authcli.CreateGenesisAppUserAuth(ctx, &authinggateway.CreateGenesisAppUserAuthRequest{})
 	if err != nil {
 		logger.Sugar().Errorw("AuthorizeGenesis", "err", err)
 		return &admin.AuthorizeGenesisResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &admin.AuthorizeGenesisResponse{
-		Infos: infos,
+		Infos: resp.Infos,
 	}, nil
 }

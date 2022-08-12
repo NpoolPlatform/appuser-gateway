@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220714064853-e3bf392e2c17
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20220807091054-871fc936ff5e
-	github.com/NpoolPlatform/message v0.0.0-20220811102620-92bd6bb8919d
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20220812032117-44ecffa2bb95
+	github.com/NpoolPlatform/message v0.0.0-20220812100206-67b8140ad838
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
@@ -18,7 +18,7 @@ require (
 
 require (
 	github.com/NpoolPlatform/appuser-manager v0.0.0-20220811022802-b95cf3ec361f
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220807115752-39d71b3e99c0
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220812103815-89d337885fee
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220811120222-11c6ac6bb784
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20220718040915-92c7ad036846
 	github.com/NpoolPlatform/ledger-manager v0.0.0-20220802044528-293b8a8ee2c8
@@ -37,7 +37,7 @@ require (
 require (
 	ariga.io/atlas v0.5.1-0.20220717122844-8593d7eb1a8e // indirect
 	entgo.io/ent v0.11.2 // indirect
-	github.com/NpoolPlatform/authing-gateway v0.0.0-20220811064046-e0780f2ddfe1
+	github.com/NpoolPlatform/authing-gateway v0.0.0-20220812024652-220faad5fcb9
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
@@ -125,11 +125,4 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-)
-
-replace (
-	github.com/NpoolPlatform/appuser-middleware => ../appuser-middleware
-	github.com/NpoolPlatform/authing-gateway => ../authing-gateway
-	github.com/NpoolPlatform/message => ../message
-
 )

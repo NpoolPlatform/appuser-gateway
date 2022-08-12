@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
+
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
 
 	"github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
-	appusermgrconst "github.com/NpoolPlatform/appuser-manager/pkg/const"
 	appusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
 	thirdgwpb "github.com/NpoolPlatform/message/npool/thirdgateway"
 	thindcli "github.com/NpoolPlatform/third-gateway/pkg/client"
@@ -63,11 +64,11 @@ func VerifyCode(ctx context.Context, appID, userID, account, accountType, code, 
 		}
 
 		switch accountType {
-		case appusermgrconst.SignupByMobile:
+		case signmethod.SignMethodType_Mobile.String():
 			if user.GetPhoneNo() != account {
 				return fmt.Errorf("invalid mobile")
 			}
-		case appusermgrconst.SignupByEmail:
+		case signmethod.SignMethodType_Email.String():
 			if user.EmailAddress != account {
 				return fmt.Errorf("invalid email")
 			}
@@ -75,9 +76,9 @@ func VerifyCode(ctx context.Context, appID, userID, account, accountType, code, 
 	}
 
 	switch accountType {
-	case appusermgrconst.SignupByMobile:
+	case signmethod.SignMethodType_Mobile.String():
 		err = verifyByMobile(ctx, appID, account, code, usedFor)
-	case appusermgrconst.SignupByEmail:
+	case signmethod.SignMethodType_Email.String():
 		err = verifyByEmail(ctx, appID, account, code, usedFor)
 	default:
 		err = verifyByGoogle(ctx, appID, userID, code)

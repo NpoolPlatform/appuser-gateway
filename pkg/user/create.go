@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	tracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/user"
@@ -11,7 +13,6 @@ import (
 	scodes "go.opentelemetry.io/otel/codes"
 
 	rolemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
-	appusermgrconst "github.com/NpoolPlatform/appuser-manager/pkg/const"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	appusermwconst "github.com/NpoolPlatform/appuser-middleware/pkg/const"
@@ -113,9 +114,9 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 	emailAddress := ""
 	phoneNO := ""
 
-	if in.GetAccountType() == appusermgrconst.SignupByMobile {
+	if in.GetAccountType() == signmethod.SignMethodType_Mobile.String() {
 		phoneNO = in.GetAccount()
-	} else if in.GetAccountType() == appusermgrconst.SignupByEmail {
+	} else if in.GetAccountType() == signmethod.SignMethodType_Email.String() {
 		emailAddress = in.GetAccount()
 	}
 
@@ -151,17 +152,18 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 				ServiceName: appusermwsvconst.ServiceName,
 				Action:      appusermwconst.CreateUser,
 				Revert:      appusermwconst.CreateUserRevert,
-				Param: &usermwp.UserReq{
-					ID:                &userID,
-					AppID:             &in.AppID,
-					EmailAddress:      &emailAddress,
-					PhoneNO:           &phoneNO,
-					ImportedFromAppID: &importedFromAppID,
-					Username:          &in.Username,
-					PasswordHash:      &in.PasswordHash,
-					RoleIDs:           []string{role.ID},
-				},
-			},
+				Param: &usermwp.CreateUserRequest{
+					Info: &usermwp.UserReq{
+						ID:                &userID,
+						AppID:             &in.AppID,
+						EmailAddress:      &emailAddress,
+						PhoneNO:           &phoneNO,
+						ImportedFromAppID: &importedFromAppID,
+						Username:          &in.Username,
+						PasswordHash:      &in.PasswordHash,
+						RoleIDs:           []string{role.ID},
+					},
+				}},
 			{
 				ServiceName: inspiresvcswconst.ServiceName,
 				Action:      inspireconst.CreateRegistrationInvitation,
@@ -177,7 +179,7 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		}
 		dispose := dtm.SagaDispose{}
 		dispose.TransOptions.WaitResult = true
-		dispose.TransOptions.TimeoutToFail = 10
+		dispose.TransOptions.TimeoutToFail = 2
 		dispose.Actions = actions
 
 		span = commontracer.TraceInvoker(span, "user", "dtm", "WithSaga")
