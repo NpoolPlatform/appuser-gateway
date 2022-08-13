@@ -44,17 +44,17 @@ func CreateAdminApps(ctx context.Context) ([]*appcrud.App, error) {
 
 	appInfos, total, err := appmgrcli.GetApps(ctx, &appcrud.Conds{
 		IDs: &npool.StringSliceVal{
+			Op:    cruder.IN,
 			Value: []string{constant.GenesisAppID, constant.ChurchAppID},
-			Op:    cruder.EQ,
 		},
-	}, 0, 2)
+	}, 0, 2) // nolint
 
 	if err != nil {
 		logger.Sugar().Errorw("CreateAdminApps", "error", err)
 		return nil, err
 	}
 
-	if total == 2 {
+	if total == 2 { // nolint
 		return appInfos, nil
 	}
 
@@ -131,13 +131,13 @@ func CreateGenesisRoles(ctx context.Context) ([]*approlepb.AppRole, error) {
 			Op:    cruder.IN,
 			Value: []string{constant.GenesisRole, constant.ChurchRole},
 		},
-	}, 0, 2)
+	}, 0, 2) // nolint
 	if err != nil {
 		logger.Sugar().Errorw("CreateGenesisRole", "error", err)
 		return nil, err
 	}
 
-	if total == 2 {
+	if total == 2 { // nolint
 		return appRoles, nil
 	}
 

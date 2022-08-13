@@ -9,13 +9,13 @@ import (
 )
 
 type Server struct {
-	approleuser.UnimplementedAppRoleUserGwServer
+	approleuser.UnimplementedGatewayServer
 }
 
 func Register(server grpc.ServiceRegistrar) {
-	approleuser.RegisterAppRoleUserGwServer(server, &Server{})
+	approleuser.RegisterGatewayServer(server, &Server{})
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
-	return approleuser.RegisterAppRoleUserGwHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
+	return approleuser.RegisterGatewayHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
 }

@@ -45,7 +45,7 @@ func (s *Server) GetAdminApps(ctx context.Context, in *admin.GetAdminAppsRequest
 			Value: []string{bconstant.GenesisAppID, bconstant.ChurchAppID},
 			Op:    cruder.IN,
 		},
-	}, 0, 2)
+	}, 0, 2) // nolint
 	if err != nil {
 		logger.Sugar().Errorw("GetAdminApps", "err", err)
 		return &admin.GetAdminAppsResponse{}, status.Error(codes.Internal, err.Error())
@@ -80,7 +80,7 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesR
 			Value: []string{bconstant.GenesisRole, bconstant.ChurchRole},
 			Op:    cruder.EQ,
 		},
-	}, 0, 2)
+	}, 0, 2) // nolint
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRole", "err", err)
 		return &admin.GetGenesisRolesResponse{}, status.Error(codes.Internal, err.Error())
