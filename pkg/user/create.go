@@ -101,7 +101,7 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		in.GetAppID(),
 		"",
 		in.GetAccount(),
-		in.GetAccountType(),
+		in.GetAccountType().String(),
 		in.GetVerificationCode(),
 		thirdgwconst.UsedForSignup,
 		false,
@@ -114,9 +114,9 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 	emailAddress := ""
 	phoneNO := ""
 
-	if in.GetAccountType() == signmethod.SignMethodType_Mobile.String() {
+	if in.GetAccountType().String() == signmethod.SignMethodType_Mobile.String() {
 		phoneNO = in.GetAccount()
-	} else if in.GetAccountType() == signmethod.SignMethodType_Email.String() {
+	} else if in.GetAccountType().String() == signmethod.SignMethodType_Email.String() {
 		emailAddress = in.GetAccount()
 	}
 
@@ -159,7 +159,6 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 						EmailAddress:      &emailAddress,
 						PhoneNO:           &phoneNO,
 						ImportedFromAppID: &importedFromAppID,
-						Username:          &in.Username,
 						PasswordHash:      &in.PasswordHash,
 						RoleIDs:           []string{role.ID},
 					},
@@ -205,7 +204,6 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 			EmailAddress:      &emailAddress,
 			PhoneNO:           &phoneNO,
 			ImportedFromAppID: &importedFromAppID,
-			Username:          &in.Username,
 			PasswordHash:      &in.PasswordHash,
 			RoleIDs:           []string{role.ID},
 		})

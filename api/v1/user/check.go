@@ -41,10 +41,7 @@ func signUpValidate(ctx context.Context, info *user.SignupRequest) error {
 		logger.Sugar().Errorw("validate", "AppID", info.GetAppID(), "error", err)
 		return status.Error(codes.InvalidArgument, "AppID is invalid")
 	}
-	if info.GetUsername() == "" {
-		logger.Sugar().Errorw("validate", "Username", info.GetUsername())
-		return status.Error(codes.InvalidArgument, "Username is invalid")
-	}
+
 	if info.GetPasswordHash() == "" {
 		logger.Sugar().Errorw("validate", "PasswordHash", info.GetPasswordHash())
 		return status.Error(codes.InvalidArgument, "PasswordHash is invalid")
@@ -53,14 +50,14 @@ func signUpValidate(ctx context.Context, info *user.SignupRequest) error {
 		logger.Sugar().Errorw("validate", "Account", info.GetAccount())
 		return status.Error(codes.InvalidArgument, "Account is invalid")
 	}
-	if info.GetAccountType() == "" {
+	if info.GetAccountType().String() == "" {
 		logger.Sugar().Errorw("validate", "AccountType", info.GetAccountType())
 		return status.Error(codes.InvalidArgument, "AccountType is invalid")
 	}
 
 	methodExist := false
 	for _, val := range signmethod.SignMethodType_name {
-		if info.GetAccountType() == val {
+		if info.GetAccountType().String() == val {
 			methodExist = true
 		}
 	}

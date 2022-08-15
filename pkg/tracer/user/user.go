@@ -15,7 +15,7 @@ func trace(span trace1.Span, in *npool.SignupRequest, index int) trace1.Span {
 		attribute.String(fmt.Sprintf("Username.%v", index), in.GetPasswordHash()),
 		attribute.String(fmt.Sprintf("PasswordHash.%v", index), in.GetPasswordHash()),
 		attribute.String(fmt.Sprintf("Account.%v", index), in.GetAccount()),
-		attribute.String(fmt.Sprintf("AccountType.%v", index), in.GetAccountType()),
+		attribute.String(fmt.Sprintf("AccountType.%v", index), in.GetAccountType().String()),
 		attribute.String(fmt.Sprintf("VerificationCode.%v", index), in.GetVerificationCode()),
 		attribute.String(fmt.Sprintf("InvitationCode.%v", index), in.GetInvitationCode()),
 	)

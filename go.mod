@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220714064853-e3bf392e2c17
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20220812032117-44ecffa2bb95
-	github.com/NpoolPlatform/message v0.0.0-20220813040740-adfb180ecd8f
+	github.com/NpoolPlatform/message v0.0.0-20220815134136-761618261753
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
@@ -17,8 +17,8 @@ require (
 )
 
 require (
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20220813041802-fb43d9fcaece
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220813042624-b76499b6435d
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20220814171621-90105949caf3
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220815123553-31986f753726
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220811120222-11c6ac6bb784
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20220718040915-92c7ad036846
 	github.com/NpoolPlatform/ledger-manager v0.0.0-20220802044528-293b8a8ee2c8
@@ -126,3 +126,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/NpoolPlatform/appuser-middleware => ../appuser-middleware

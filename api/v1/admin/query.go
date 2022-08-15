@@ -10,17 +10,9 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 
-	bconstant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	appusermgrapp "github.com/NpoolPlatform/appuser-manager/pkg/client/app"
-	appusermgrapprole "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
-
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	"github.com/NpoolPlatform/message/npool"
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
-	appcrud "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/app"
-	approlecrud "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
@@ -40,12 +32,7 @@ func (s *Server) GetAdminApps(ctx context.Context, in *admin.GetAdminAppsRequest
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetApps")
 
-	resp, _, err := appusermgrapp.GetApps(ctx, &appcrud.Conds{
-		IDs: &npool.StringSliceVal{
-			Value: []string{bconstant.GenesisAppID, bconstant.ChurchAppID},
-			Op:    cruder.IN,
-		},
-	}, 0, 2) // nolint
+	resp, err := mw.GetAdminApps(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetAdminApps", "err", err)
 		return &admin.GetAdminAppsResponse{}, status.Error(codes.Internal, err.Error())
@@ -53,7 +40,7 @@ func (s *Server) GetAdminApps(ctx context.Context, in *admin.GetAdminAppsRequest
 
 	if len(resp) == 0 {
 		logger.Sugar().Errorw("GetAdminApps", "err", "admin app no found")
-		return nil, status.Error(codes.NotFound, "admin app no found")
+		return &admin.GetAdminAppsResponse{}, status.Error(codes.NotFound, "admin app no found")
 	}
 
 	return &admin.GetAdminAppsResponse{
@@ -75,17 +62,11 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesR
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetAppRoles")
 
-	resp, _, err := appusermgrapprole.GetAppRoles(ctx, &approlecrud.Conds{
-		Roles: &npool.StringSliceVal{
-			Value: []string{bconstant.GenesisRole, bconstant.ChurchRole},
-			Op:    cruder.EQ,
-		},
-	}, 0, 2) // nolint
+	resp, err := mw.CreateGenesisRoles(ctx)
 	if err != nil {
-		logger.Sugar().Errorw("GetGenesisRole", "err", err)
+		logger.Sugar().Errorw("GetGenesisRole", "err", "genesis role not found")
 		return &admin.GetGenesisRolesResponse{}, status.Error(codes.Internal, err.Error())
 	}
-
 	if len(resp) == 0 {
 		logger.Sugar().Errorw("GetGenesisRole", "err", "genesis role not found")
 		return &admin.GetGenesisRolesResponse{}, status.Error(codes.NotFound, "genesis role not found")
