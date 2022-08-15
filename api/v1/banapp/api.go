@@ -9,13 +9,13 @@ import (
 )
 
 type Server struct {
-	banapp.UnimplementedBanAppGwServer
+	banapp.UnimplementedGatewayServer
 }
 
 func Register(server grpc.ServiceRegistrar) {
-	banapp.RegisterBanAppGwServer(server, &Server{})
+	banapp.RegisterGatewayServer(server, &Server{})
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
-	return banapp.RegisterBanAppGwHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
+	return banapp.RegisterGatewayHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
 }

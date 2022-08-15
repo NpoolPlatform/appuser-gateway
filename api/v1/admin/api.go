@@ -9,13 +9,13 @@ import (
 )
 
 type Server struct {
-	admin.UnimplementedAdminGwServer
+	admin.UnimplementedGatewayServer
 }
 
 func Register(server grpc.ServiceRegistrar) {
-	admin.RegisterAdminGwServer(server, &Server{})
+	admin.RegisterGatewayServer(server, &Server{})
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
-	return admin.RegisterAdminGwHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
+	return admin.RegisterGatewayHandlerFromEndpoint(context.Background(), mux, endpoint, opts)
 }
