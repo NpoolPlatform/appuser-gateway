@@ -148,6 +148,7 @@ func CreateGenesisRoles(ctx context.Context) ([]*approlepb.AppRole, error) {
 		defaultVal := false
 		genesisRoles[key].Default = &defaultVal
 	}
+
 	resp, err := approlemgrcli.CreateAppRoles(ctx, genesisRoles)
 	if err != nil {
 		logger.Sugar().Errorw("CreateGenesisRole", "error", err)
