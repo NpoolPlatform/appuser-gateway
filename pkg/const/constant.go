@@ -7,6 +7,9 @@ import (
 const (
 	DBTimeout = 5 * time.Second
 
+	KeyGenesisApp  = "genesis_app"
+	KeyGenesisRole = "genesis_role"
+
 	GenesisRole = "genesis"
 	ChurchRole  = "church"
 
