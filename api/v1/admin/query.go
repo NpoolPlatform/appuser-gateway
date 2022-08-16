@@ -62,7 +62,7 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesR
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetAppRoles")
 
-	resp, err := mw.CreateGenesisRoles(ctx)
+	resp, err := mw.GetGenesisRoles(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRole", "err", "genesis role not found")
 		return &admin.GetGenesisRolesResponse{}, status.Error(codes.Internal, err.Error())
@@ -92,7 +92,7 @@ func (s *Server) GetGenesisRoleUsers(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "admin", "pkg", "GetGenesisRoleUsers")
 
-	resp, err := mw.GetAppGenesisAppRoleUsers(ctx)
+	resp, err := mw.GetGenesisRoleUsers(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRoleUsers", "err", err)
 		return &admin.GetGenesisRoleUsersResponse{}, status.Error(codes.Internal, err.Error())

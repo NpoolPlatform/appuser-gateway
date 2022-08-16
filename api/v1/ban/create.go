@@ -1,0 +1,143 @@
+package ban
+
+import (
+	"context"
+
+	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+	banappmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/banapp"
+	banappusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/banappuser"
+	tracer "github.com/NpoolPlatform/appuser-manager/pkg/tracer/banapp"
+	tracerbanuser "github.com/NpoolPlatform/appuser-manager/pkg/tracer/banappuser"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	"github.com/NpoolPlatform/message/npool"
+	"google.golang.org/grpc/codes"
+
+	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/ban"
+	appcrud "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/banapp"
+	"go.opentelemetry.io/otel"
+	scodes "go.opentelemetry.io/otel/codes"
+	"google.golang.org/grpc/status"
+)
+
+func (s *Server) CreateBanApp(ctx context.Context, in *ban.CreateBanAppRequest) (*ban.CreateBanAppResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanApp")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	err = validate(in.GetInfo())
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return nil, err
+	}
+
+	span = tracer.Trace(span, in.GetInfo())
+	span = commontracer.TraceInvoker(span, "banapp", "middleware", "ExistBanAppConds")
+
+	exist, err := banappmgrcli.ExistBanAppConds(ctx, &appcrud.Conds{
+		AppID: &npool.StringVal{
+			Value: in.GetInfo().GetAppID(),
+			Op:    cruder.EQ,
+		}})
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.CreateBanAppResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	if exist {
+		logger.Sugar().Errorw("CreateBanApp", "err", "ban app already exists")
+		return &ban.CreateBanAppResponse{}, status.Error(codes.AlreadyExists, "ban app already exists")
+	}
+
+	span = commontracer.TraceInvoker(span, "banapp", "manager", "CreateBanApp")
+
+	resp, err := banappmgrcli.CreateBanApp(ctx, in.GetInfo())
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.CreateBanAppResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &ban.CreateBanAppResponse{
+		Info: resp,
+	}, nil
+}
+
+func (s *Server) CreateBanUser(ctx context.Context,
+	in *ban.CreateBanUserRequest) (*ban.CreateBanUserResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBanAppUser")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = tracerbanuser.Trace(span, in.GetInfo())
+
+	err = validateBanUser(in.GetInfo())
+	if err != nil {
+		return nil, err
+	}
+
+	span = commontracer.TraceInvoker(span, "banappuser", "middleware", "CreateBanAppUser")
+
+	resp, err := banappusermgrcli.CreateBanAppUser(ctx, in.GetInfo())
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanUser", "err", err)
+		return &ban.CreateBanUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return &ban.CreateBanUserResponse{
+		Info: resp,
+	}, nil
+}
+
+func (s *Server) CreateAppBanUser(ctx context.Context,
+	in *ban.CreateAppBanUserRequest) (*ban.CreateAppBanUserResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppBanUser")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	targetAppID := in.GetTargetAppID()
+	targetUserID := in.GetTargetUserID()
+	in.Info.AppID = &targetAppID
+	in.Info.UserID = &targetUserID
+
+	span = tracerbanuser.Trace(span, in.GetInfo())
+
+	err = validateBanUser(in.GetInfo())
+	if err != nil {
+		logger.Sugar().Errorw("CreateAppBanUser", "err", err)
+		return nil, err
+	}
+
+	span = commontracer.TraceInvoker(span, "banappuser", "middleware", "CreateBanAppUser")
+
+	resp, err := banappusermgrcli.CreateBanAppUser(ctx, in.GetInfo())
+	if err != nil {
+		logger.Sugar().Errorw("CreateAppBanUser", "err", err)
+		return &ban.CreateAppBanUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return &ban.CreateAppBanUserResponse{
+		Info: resp,
+	}, nil
+}

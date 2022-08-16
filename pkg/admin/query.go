@@ -3,14 +3,15 @@ package admin
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	constants "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 	"github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
-	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/app"
-	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/role"
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
+	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -62,9 +63,9 @@ func GetAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
 
 func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 	var err error
-	roles := []string{}
+	appRoles := []*approlepb.AppRoleReq{}
 
-	_, span := otel.Tracer(constants.ServiceName).Start(ctx, "GetGenesisRole")
+	_, span := otel.Tracer(constants.ServiceName).Start(ctx, "GetGenesisRoles")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -73,14 +74,19 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 		}
 	}()
 
-	span = commontracer.TraceInvoker(span, "admin", "manager", "GetAppRoles")
+	span = commontracer.TraceInvoker(span, "admin", "manager", "GetGenesisRoles")
 
 	hostname := config.GetStringValueWithNameSpace("", config.KeyHostname)
 	genesisRoleStr := config.GetStringValueWithNameSpace(hostname, constant.KeyGenesisRole)
 
-	err = json.Unmarshal([]byte(genesisRoleStr), &roles)
+	err = json.Unmarshal([]byte(genesisRoleStr), &appRoles)
 	if err != nil {
 		return nil, err
+	}
+
+	roles := []string{}
+	for _, val := range appRoles {
+		roles = append(roles, val.GetRole())
 	}
 
 	roleInfos, _, err := approlemgrcli.GetAppRoles(ctx, &approlepb.Conds{
@@ -99,14 +105,20 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 		roleIDs = append(roleIDs, val.GetID())
 	}
 
-	return rolemwcli.GetManyRoles(ctx, roleIDs)
+	infos, _, err := rolemwcli.GetManyRoles(ctx, roleIDs)
+	if err != nil {
+		logger.Sugar().Errorw("GetGenesisRoles", "error", err)
+		return nil, err
+	}
+
+	return infos, nil
 }
 
-func GetAppGenesisAppRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
+func GetGenesisRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
 	var err error
 	genesisRoles := []*approlepb.AppRoleReq{}
 
-	_, span := otel.Tracer(constants.ServiceName).Start(ctx, "CreateGenesisRole")
+	_, span := otel.Tracer(constants.ServiceName).Start(ctx, "GetGenesisRoleUsers")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -115,12 +127,12 @@ func GetAppGenesisAppRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error
 		}
 	}()
 
-	span = commontracer.TraceInvoker(span, "admin", "middleware", "CreateAppRoles")
+	span = commontracer.TraceInvoker(span, "admin", "middleware", "GetGenesisRoleUsers")
 
 	hostname := config.GetStringValueWithNameSpace("", config.KeyHostname)
-	genesisAppStr := config.GetStringValueWithNameSpace(hostname, constant.KeyGenesisApp)
+	genesisRoleStr := config.GetStringValueWithNameSpace(hostname, constant.KeyGenesisRole)
 
-	err = json.Unmarshal([]byte(genesisAppStr), &genesisRoles)
+	err = json.Unmarshal([]byte(genesisRoleStr), &genesisRoles)
 	if err != nil {
 		return nil, err
 	}
@@ -137,19 +149,21 @@ func GetAppGenesisAppRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error
 		},
 	}, 0, int32(len(roles)))
 	if err != nil {
-		logger.Sugar().Errorw("CreateGenesisRole", "error", err)
+		logger.Sugar().Errorw("GetGenesisRoleUsers", "error", err)
 		return nil, err
 	}
 
 	roleIDs := []string{}
+	appIDs := []string{}
 	for _, val := range roleInfos {
 		roleIDs = append(roleIDs, val.ID)
+		appIDs = append(appIDs, val.AppID)
 	}
 
 	roleUsers, _, err := approleuser.GetAppRoleUsers(ctx, &approleuserpb.Conds{
 		AppIDs: &npool.StringSliceVal{
 			Op:    cruder.IN,
-			Value: []string{constant.GenesisAppID, constant.ChurchAppID},
+			Value: appIDs,
 		},
 		RoleIDs: &npool.StringSliceVal{
 			Op:    cruder.IN,
@@ -157,14 +171,23 @@ func GetAppGenesisAppRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error
 		},
 	}, 0, 0)
 	if err != nil {
-		logger.Sugar().Errorw("GetAppGenesisAppRoleUsers", "error", err)
+		logger.Sugar().Errorw("GetGenesisRoleUsers", "error", err)
 		return nil, err
 	}
-
+	if len(roleUsers) == 0 {
+		logger.Sugar().Errorw("GetGenesisRoleUsers", "error", "not found")
+		return nil, fmt.Errorf("role user not found")
+	}
 	roleUserIds := []string{}
 	for _, val := range roleUsers {
 		roleUserIds = append(roleUserIds, val.GetID())
 	}
 
-	return rolemwcli.GetManyRoleUsers(ctx, roleUserIds)
+	infos, _, err := rolemwcli.GetManyRoleUsers(ctx, roleUserIds)
+	if err != nil {
+		logger.Sugar().Errorw("GetGenesisRoleUsers", "error", err)
+		return nil, err
+	}
+
+	return infos, nil
 }
