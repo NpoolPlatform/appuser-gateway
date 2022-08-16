@@ -3,6 +3,9 @@ package ban
 import (
 	"context"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
+	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	banappmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/banapp"
@@ -15,7 +18,7 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/ban"
-	appcrud "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/banapp"
+	banapppb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/banapp"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
@@ -33,18 +36,22 @@ func (s *Server) CreateBanApp(ctx context.Context, in *ban.CreateBanAppRequest) 
 		}
 	}()
 
-	err = validate(in.GetInfo())
+	banApp := &banapppb.BanAppReq{
+		AppID:   &in.TargetAppID,
+		Message: &in.Message,
+	}
+	err = validate(banApp)
 	if err != nil {
 		logger.Sugar().Errorw("CreateBanApp", "err", err)
 		return nil, err
 	}
 
-	span = tracer.Trace(span, in.GetInfo())
+	span = tracer.Trace(span, banApp)
 	span = commontracer.TraceInvoker(span, "banapp", "middleware", "ExistBanAppConds")
 
-	exist, err := banappmgrcli.ExistBanAppConds(ctx, &appcrud.Conds{
+	exist, err := banappmgrcli.ExistBanAppConds(ctx, &banapppb.Conds{
 		AppID: &npool.StringVal{
-			Value: in.GetInfo().GetAppID(),
+			Value: in.TargetAppID,
 			Op:    cruder.EQ,
 		}})
 	if err != nil {
@@ -59,14 +66,19 @@ func (s *Server) CreateBanApp(ctx context.Context, in *ban.CreateBanAppRequest) 
 
 	span = commontracer.TraceInvoker(span, "banapp", "manager", "CreateBanApp")
 
-	resp, err := banappmgrcli.CreateBanApp(ctx, in.GetInfo())
+	_, err = banappmgrcli.CreateBanApp(ctx, banApp)
 	if err != nil {
 		logger.Sugar().Errorw("CreateBanApp", "err", err)
 		return &ban.CreateBanAppResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
+	info, err := appmwcli.GetApp(ctx, in.TargetAppID)
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.CreateBanAppResponse{}, status.Error(codes.Internal, err.Error())
+	}
 	return &ban.CreateBanAppResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }
 
@@ -83,6 +95,9 @@ func (s *Server) CreateBanUser(ctx context.Context,
 		}
 	}()
 
+	info := in.Info
+	info.UserID = &in.TargetUserID
+
 	span = tracerbanuser.Trace(span, in.GetInfo())
 
 	err = validateBanUser(in.GetInfo())
@@ -92,10 +107,16 @@ func (s *Server) CreateBanUser(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "banappuser", "middleware", "CreateBanAppUser")
 
-	resp, err := banappusermgrcli.CreateBanAppUser(ctx, in.GetInfo())
+	_, err = banappusermgrcli.CreateBanAppUser(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("CreateBanUser", "err", err)
 		return &ban.CreateBanUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := usermwcli.GetUser(ctx, in.GetInfo().GetAppID(), in.GetInfo().GetUserID())
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.CreateBanUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &ban.CreateBanUserResponse{
@@ -131,13 +152,19 @@ func (s *Server) CreateAppBanUser(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "banappuser", "middleware", "CreateBanAppUser")
 
-	resp, err := banappusermgrcli.CreateBanAppUser(ctx, in.GetInfo())
+	_, err = banappusermgrcli.CreateBanAppUser(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("CreateAppBanUser", "err", err)
 		return &ban.CreateAppBanUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
+	info, err := usermwcli.GetUser(ctx, in.GetInfo().GetAppID(), in.GetInfo().GetUserID())
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.CreateAppBanUserResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
 	return &ban.CreateAppBanUserResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }

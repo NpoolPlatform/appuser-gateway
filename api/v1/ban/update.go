@@ -4,6 +4,9 @@ package ban
 import (
 	"context"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
+	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+
 	tracerbanuser "github.com/NpoolPlatform/appuser-manager/pkg/tracer/banappuser"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
@@ -54,7 +57,7 @@ func (s *Server) UpdateBanApp(ctx context.Context, in *ban.UpdateBanAppRequest) 
 
 	span = commontracer.TraceInvoker(span, "banapp", "manager", "UpdateBanApp")
 
-	resp, err := banappmgrcli.UpdateBanApp(ctx, &banappcrud.BanAppReq{
+	_, err = banappmgrcli.UpdateBanApp(ctx, &banappcrud.BanAppReq{
 		Message: in.GetInfo().Message,
 	})
 	if err != nil {
@@ -62,8 +65,14 @@ func (s *Server) UpdateBanApp(ctx context.Context, in *ban.UpdateBanAppRequest) 
 		return &ban.UpdateBanAppResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
+	info, err := appmwcli.GetApp(ctx, in.GetInfo().GetAppID())
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.UpdateBanAppResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
 	return &ban.UpdateBanAppResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }
 
@@ -95,13 +104,19 @@ func (s *Server) UpdateBanAppUser(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "banappuser", "manager", "UpdateBanAppUser")
 
-	resp, err := banappusermgrcli.UpdateBanAppUser(ctx, in.GetInfo())
+	_, err = banappusermgrcli.UpdateBanAppUser(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("UpdateBanAppUser", "err", err)
 		return &ban.UpdateBanUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
+	info, err := usermwcli.GetUser(ctx, in.GetInfo().GetAppID(), in.GetInfo().GetUserID())
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.UpdateBanUserResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
 	return &ban.UpdateBanUserResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }

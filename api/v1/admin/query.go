@@ -60,7 +60,7 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesR
 		}
 	}()
 
-	span = commontracer.TraceInvoker(span, "admin", "manager", "GetAppRoles")
+	span = commontracer.TraceInvoker(span, "admin", "manager", "GetGenesisRoles")
 
 	resp, err := mw.GetGenesisRoles(ctx)
 	if err != nil {
