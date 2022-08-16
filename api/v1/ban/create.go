@@ -3,6 +3,8 @@ package ban
 import (
 	"context"
 
+	banappuserpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/banappuser"
+
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 
@@ -95,25 +97,28 @@ func (s *Server) CreateBanUser(ctx context.Context,
 		}
 	}()
 
-	info := in.Info
-	info.UserID = &in.TargetUserID
+	banUser := &banappuserpb.BanAppUserReq{
+		AppID:   &in.AppID,
+		UserID:  &in.TargetUserID,
+		Message: &in.Message,
+	}
 
-	span = tracerbanuser.Trace(span, in.GetInfo())
+	span = tracerbanuser.Trace(span, banUser)
 
-	err = validateBanUser(in.GetInfo())
+	err = validateBanUser(banUser)
 	if err != nil {
 		return nil, err
 	}
 
 	span = commontracer.TraceInvoker(span, "banappuser", "middleware", "CreateBanAppUser")
 
-	_, err = banappusermgrcli.CreateBanAppUser(ctx, in.GetInfo())
+	_, err = banappusermgrcli.CreateBanAppUser(ctx, banUser)
 	if err != nil {
 		logger.Sugar().Errorw("CreateBanUser", "err", err)
 		return &ban.CreateBanUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := usermwcli.GetUser(ctx, in.GetInfo().GetAppID(), in.GetInfo().GetUserID())
+	resp, err := usermwcli.GetUser(ctx, in.GetAppID(), in.GetTargetUserID())
 	if err != nil {
 		logger.Sugar().Errorw("CreateBanApp", "err", err)
 		return &ban.CreateBanUserResponse{}, status.Error(codes.Internal, err.Error())
@@ -137,14 +142,15 @@ func (s *Server) CreateAppBanUser(ctx context.Context,
 		}
 	}()
 
-	targetAppID := in.GetTargetAppID()
-	targetUserID := in.GetTargetUserID()
-	in.Info.AppID = &targetAppID
-	in.Info.UserID = &targetUserID
+	banUser := &banappuserpb.BanAppUserReq{
+		AppID:   &in.TargetAppID,
+		UserID:  &in.TargetUserID,
+		Message: &in.Message,
+	}
 
-	span = tracerbanuser.Trace(span, in.GetInfo())
+	span = tracerbanuser.Trace(span, banUser)
 
-	err = validateBanUser(in.GetInfo())
+	err = validateBanUser(banUser)
 	if err != nil {
 		logger.Sugar().Errorw("CreateAppBanUser", "err", err)
 		return nil, err
@@ -152,13 +158,13 @@ func (s *Server) CreateAppBanUser(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "banappuser", "middleware", "CreateBanAppUser")
 
-	_, err = banappusermgrcli.CreateBanAppUser(ctx, in.GetInfo())
+	_, err = banappusermgrcli.CreateBanAppUser(ctx, banUser)
 	if err != nil {
 		logger.Sugar().Errorw("CreateAppBanUser", "err", err)
 		return &ban.CreateAppBanUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	info, err := usermwcli.GetUser(ctx, in.GetInfo().GetAppID(), in.GetInfo().GetUserID())
+	info, err := usermwcli.GetUser(ctx, in.GetTargetAppID(), in.GetTargetUserID())
 	if err != nil {
 		logger.Sugar().Errorw("CreateBanApp", "err", err)
 		return &ban.CreateAppBanUserResponse{}, status.Error(codes.Internal, err.Error())
