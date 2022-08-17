@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	tracer "github.com/NpoolPlatform/appuser-middleware/pkg/tracer/app"
 	"github.com/google/uuid"

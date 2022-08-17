@@ -121,13 +121,13 @@ func checkInvitationCode(ctx context.Context, appID, code string, must bool) (st
 		return "", err
 	}
 
-	if code == nil && must {
+	if ivc == nil && must {
 		return "", fmt.Errorf("invalid code")
 	}
 
-	if code.AppID != appID {
+	if ivc.AppID != appID {
 		return "", fmt.Errorf("invalid invitation code")
 	}
 
-	return code.UserID, nil
+	return ivc.UserID, nil
 }
