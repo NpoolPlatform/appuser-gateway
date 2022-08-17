@@ -40,14 +40,14 @@ func (s *Server) GetRoles(ctx context.Context, in *role.GetRolesRequest) (*role.
 
 	span = commontracer.TraceInvoker(span, "role", "manager", "GetAppRoles")
 
-	resp, total, err := rolemwcli.GetRoles(ctx, in.GetAppID(), in.GetOffset(), in.GetLimit())
+	infos, total, err := rolemwcli.GetRoles(ctx, in.GetAppID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetRoles", "err", err)
 		return &role.GetRolesResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &role.GetRolesResponse{
-		Infos: resp,
+		Infos: infos,
 		Total: total,
 	}, nil
 }
@@ -74,14 +74,14 @@ func (s *Server) GetAppRoles(ctx context.Context, in *role.GetAppRolesRequest) (
 
 	span = commontracer.TraceInvoker(span, "role", "manager", "GetAppRoles")
 
-	resp, total, err := rolemwcli.GetRoles(ctx, in.GetTargetAppID(), in.GetOffset(), in.GetLimit())
+	infos, total, err := rolemwcli.GetRoles(ctx, in.GetTargetAppID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetRoles", "err", err)
 		return &role.GetAppRolesResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &role.GetAppRolesResponse{
-		Infos: resp,
+		Infos: infos,
 		Total: total,
 	}, nil
 }
@@ -109,14 +109,14 @@ func (s *Server) GetRoleUsers(ctx context.Context, in *role.GetRoleUsersRequest)
 
 	span = commontracer.TraceInvoker(span, "role", "manager", "GetAppRoleUsers")
 
-	resp, total, err := rolemwcli.GetRoleUsers(ctx, in.GetAppID(), in.GetRoleID(), in.GetOffset(), in.GetLimit())
+	infos, total, err := rolemwcli.GetRoleUsers(ctx, in.GetAppID(), in.GetRoleID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetRoleUsers", "err", err)
 		return &role.GetRoleUsersResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &role.GetRoleUsersResponse{
-		Infos: resp,
+		Infos: infos,
 		Total: total,
 	}, nil
 }
@@ -145,14 +145,14 @@ func (s *Server) GetAppRoleUsers(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "role", "manager", "GetAppRoleUsers")
 
-	resp, total, err := rolemwcli.GetRoleUsers(ctx, in.GetTargetAppID(), in.GetRoleID(), in.GetOffset(), in.GetLimit())
+	infos, total, err := rolemwcli.GetRoleUsers(ctx, in.GetTargetAppID(), in.GetRoleID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetRoleUsers", "err", err)
 		return &role.GetAppRoleUsersResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &role.GetAppRoleUsersResponse{
-		Infos: resp,
+		Infos: infos,
 		Total: total,
 	}, nil
 }

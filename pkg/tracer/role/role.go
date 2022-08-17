@@ -12,8 +12,8 @@ import (
 func traceCreate(span trace1.Span, in *npool.CreateRoleRequest, index int) trace1.Span {
 	span.SetAttributes(
 		attribute.String(fmt.Sprintf("AppID.%v", index), in.GetAppID()),
-		attribute.String(fmt.Sprintf("Username.%v", index), in.GetUserID()),
-		attribute.Bool(fmt.Sprintf("UserID.%v", index), in.GetDefault()),
+		attribute.String(fmt.Sprintf("UserID.%v", index), in.GetUserID()),
+		attribute.Bool(fmt.Sprintf("Default.%v", index), in.GetDefault()),
 		attribute.String(fmt.Sprintf("RoleName.%v", index), in.GetRoleName()),
 	)
 	return span

@@ -39,7 +39,7 @@ func (s *Server) UpdateBanApp(ctx context.Context, in *ban.UpdateBanAppRequest) 
 
 	span = tracer.Trace(span, in.GetInfo())
 
-	err = validate(in.GetInfo())
+	err = validate(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("UpdateBanApp", "err", err)
 		return nil, err
@@ -91,7 +91,7 @@ func (s *Server) UpdateBanAppUser(ctx context.Context,
 
 	span = tracerbanuser.Trace(span, in.GetInfo())
 
-	err = validateBanUser(in.GetInfo())
+	err = validateBanUser(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("UpdateBanAppUser", "err", err)
 		return nil, err

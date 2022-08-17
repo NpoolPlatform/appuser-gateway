@@ -46,13 +46,13 @@ func (s *Server) UpdateRole(ctx context.Context, in *role.UpdateRoleRequest) (*r
 		return &role.UpdateRoleResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	resp, err := rolemwcli.GetRole(ctx, appRole.ID)
+	info, err := rolemwcli.GetRole(ctx, appRole.ID)
 	if err != nil {
 		logger.Sugar().Errorw("CreateRole", "err", err)
 		return &role.UpdateRoleResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &role.UpdateRoleResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }

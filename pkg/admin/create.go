@@ -20,6 +20,7 @@ import (
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	serconst "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	appusermgrconst "github.com/NpoolPlatform/appuser-manager/pkg/message/const"
 
 	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
@@ -49,7 +50,7 @@ func CreateAdminApps(ctx context.Context) ([]*appmw.App, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "apollo", "GetStringValueWithNameSpace")
 
-	hostname := config.GetStringValueWithNameSpace("", config.KeyHostname)
+	hostname := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, config.KeyHostname)
 	genesisAppStr := config.GetStringValueWithNameSpace(hostname, constant.KeyGenesisApp)
 
 	err = json.Unmarshal([]byte(genesisAppStr), &genesisApps)
@@ -117,7 +118,7 @@ func CreateGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "apollo", "GetStringValueWithNameSpace")
 
-	hostname := config.GetStringValueWithNameSpace("", config.KeyHostname)
+	hostname := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, config.KeyHostname)
 	genesisRoleStr := config.GetStringValueWithNameSpace(hostname, constant.KeyGenesisRole)
 
 	err = json.Unmarshal([]byte(genesisRoleStr), &genesisRoles)

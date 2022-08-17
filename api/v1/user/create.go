@@ -77,13 +77,13 @@ func (s *Server) CreateUser(ctx context.Context, in *user.CreateUserRequest) (*u
 
 	span = commontracer.TraceInvoker(span, "user", "middleware", "CreateUser")
 
-	resp, err := usermwcli.CreateUser(ctx, in.GetInfo())
+	info, err := usermwcli.CreateUser(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("CreateUser", "err", err)
 		return &user.CreateUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &user.CreateUserResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }

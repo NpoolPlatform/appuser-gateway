@@ -112,7 +112,7 @@ func (s *Server) GetGenesisAuths(ctx context.Context, in *admin.GetGenesisAuthsR
 		return &admin.GetGenesisAuthsResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
 	}
 
-	infos, err := authcli.GetAuthsByOtherApp(ctx, in.GetAppID())
+	infos, err := authcli.GetAuths(ctx, in.GetAppID())
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisAuths", "err", err)
 		return &admin.GetGenesisAuthsResponse{}, status.Error(codes.Internal, err.Error())

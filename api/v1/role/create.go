@@ -3,11 +3,11 @@ package role
 import (
 	"context"
 
-	approleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
-	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
-
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	tracerrole "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/role"
+	approleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
+	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
+	approleusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approleuser"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 
@@ -57,14 +57,14 @@ func (s *Server) CreateRole(ctx context.Context, in *role.CreateRoleRequest) (*r
 		return &role.CreateRoleResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	resp, err := rolemwcli.GetRole(ctx, appRole.ID)
+	info, err := rolemwcli.GetRole(ctx, appRole.ID)
 	if err != nil {
 		logger.Sugar().Errorw("CreateRole", "err", err)
 		return &role.CreateRoleResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &role.CreateRoleResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }
 
@@ -116,14 +116,14 @@ func (s *Server) CreateAppRole(ctx context.Context, in *role.CreateAppRoleReques
 		return &role.CreateAppRoleResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	resp, err := rolemwcli.GetRole(ctx, appRole.ID)
+	info, err := rolemwcli.GetRole(ctx, appRole.ID)
 	if err != nil {
 		logger.Sugar().Errorw("CreateAppRole", "err", err)
 		return &role.CreateAppRoleResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &role.CreateAppRoleResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }
 
@@ -139,9 +139,14 @@ func (s *Server) CreateRoleUser(ctx context.Context, in *role.CreateRoleUserRequ
 		}
 	}()
 
-	span = tracer.Trace(span, in.GetInfo())
+	roleUserReq := &approleusermgrpb.AppRoleUserReq{
+		AppID:  &in.AppID,
+		RoleID: &in.RoleID,
+		UserID: &in.TargetUserID,
+	}
 
-	err = validateRoleUser(ctx, in.GetInfo())
+	span = tracer.Trace(span, roleUserReq)
+	err = validateRoleUser(ctx, roleUserReq)
 	if err != nil {
 		logger.Sugar().Errorw("CreateRoleUser", "err", err)
 		return nil, err
@@ -149,20 +154,20 @@ func (s *Server) CreateRoleUser(ctx context.Context, in *role.CreateRoleUserRequ
 
 	span = commontracer.TraceInvoker(span, "role", "manager", "CreateAppRoleUser")
 
-	roleUser, err := approleusermgrcli.CreateAppRoleUser(ctx, in.GetInfo())
+	roleUser, err := approleusermgrcli.CreateAppRoleUser(ctx, roleUserReq)
 	if err != nil {
 		logger.Sugar().Errorw("CreateRoleUser", "err", err)
 		return &role.CreateRoleUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	resp, err := rolemwcli.GetRoleUser(ctx, roleUser.ID)
+	info, err := rolemwcli.GetRoleUser(ctx, roleUser.ID)
 	if err != nil {
 		logger.Sugar().Errorw("CreateRoleUser", "err", err)
 		return &role.CreateRoleUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &role.CreateRoleUserResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }
 
@@ -178,13 +183,15 @@ func (s *Server) CreateAppRoleUser(ctx context.Context, in *role.CreateAppRoleUs
 		}
 	}()
 
-	span.SetAttributes(
-		attribute.String("TargetAppID", in.GetTargetAppID()),
-		attribute.String("TargetUserID", in.GetTargetUserID()),
-	)
-	span = tracer.Trace(span, in.GetInfo())
+	roleUserReq := &approleusermgrpb.AppRoleUserReq{
+		AppID:  &in.TargetAppID,
+		RoleID: &in.RoleID,
+		UserID: &in.TargetUserID,
+	}
 
-	err = validateRoleUser(ctx, in.GetInfo())
+	span = tracer.Trace(span, roleUserReq)
+
+	err = validateRoleUser(ctx, roleUserReq)
 	if err != nil {
 		logger.Sugar().Errorw("CreateRoleUser", "err", err)
 		return nil, err
@@ -202,19 +209,19 @@ func (s *Server) CreateAppRoleUser(ctx context.Context, in *role.CreateAppRoleUs
 
 	span = commontracer.TraceInvoker(span, "role", "manager", "CreateAppRoleUser")
 
-	roleUser, err := approleusermgrcli.CreateAppRoleUser(ctx, in.GetInfo())
+	roleUser, err := approleusermgrcli.CreateAppRoleUser(ctx, roleUserReq)
 	if err != nil {
 		logger.Sugar().Errorw("CreateRoleUser", "err", err)
 		return &role.CreateAppRoleUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	resp, err := rolemwcli.GetRoleUser(ctx, roleUser.ID)
+	info, err := rolemwcli.GetRoleUser(ctx, roleUser.ID)
 	if err != nil {
 		logger.Sugar().Errorw("CreateRoleUser", "err", err)
 		return &role.CreateAppRoleUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &role.CreateAppRoleUserResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }

@@ -40,14 +40,14 @@ func (s *Server) GetUsers(ctx context.Context, in *user.GetUsersRequest) (*user.
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
 
-	resp, err := mw.GetUsers(ctx, in.GetAppID(), in.GetOffset(), in.GetLimit())
+	info, err := mw.GetUsers(ctx, in.GetAppID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetUsers", "err", err)
 		return &user.GetUsersResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &user.GetUsersResponse{
-		Infos: resp,
+		Infos: info,
 	}, nil
 }
 
@@ -73,13 +73,13 @@ func (s *Server) GetAppUsers(ctx context.Context, in *user.GetAppUsersRequest) (
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
 
-	resp, err := mw.GetUsers(ctx, in.GetTargetAppID(), in.GetOffset(), in.GetLimit())
+	info, err := mw.GetUsers(ctx, in.GetTargetAppID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetAppUsers", "err", err)
 		return &user.GetAppUsersResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &user.GetAppUsersResponse{
-		Infos: resp,
+		Infos: info,
 	}, nil
 }

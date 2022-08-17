@@ -42,7 +42,7 @@ func (s *Server) CreateBanApp(ctx context.Context, in *ban.CreateBanAppRequest) 
 		AppID:   &in.TargetAppID,
 		Message: &in.Message,
 	}
-	err = validate(banApp)
+	err = validate(ctx, banApp)
 	if err != nil {
 		logger.Sugar().Errorw("CreateBanApp", "err", err)
 		return nil, err
@@ -105,7 +105,7 @@ func (s *Server) CreateBanUser(ctx context.Context,
 
 	span = tracerbanuser.Trace(span, banUser)
 
-	err = validateBanUser(banUser)
+	err = validateBanUser(ctx, banUser)
 	if err != nil {
 		return nil, err
 	}
@@ -118,14 +118,14 @@ func (s *Server) CreateBanUser(ctx context.Context,
 		return &ban.CreateBanUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := usermwcli.GetUser(ctx, in.GetAppID(), in.GetTargetUserID())
+	info, err := usermwcli.GetUser(ctx, in.GetAppID(), in.GetTargetUserID())
 	if err != nil {
 		logger.Sugar().Errorw("CreateBanApp", "err", err)
 		return &ban.CreateBanUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &ban.CreateBanUserResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }
 
@@ -150,7 +150,7 @@ func (s *Server) CreateAppBanUser(ctx context.Context,
 
 	span = tracerbanuser.Trace(span, banUser)
 
-	err = validateBanUser(banUser)
+	err = validateBanUser(ctx, banUser)
 	if err != nil {
 		logger.Sugar().Errorw("CreateAppBanUser", "err", err)
 		return nil, err

@@ -40,14 +40,14 @@ func (s *Server) DeleteBanApp(ctx context.Context, in *ban.DeleteBanAppRequest) 
 
 	span = commontracer.TraceInvoker(span, "banapp", "manager", "DeleteBanApp")
 
-	resp, err := banappmgrcli.DeleteBanApp(ctx, in.GetID())
+	info, err := banappmgrcli.DeleteBanApp(ctx, in.GetID())
 	if err != nil {
 		logger.Sugar().Errorw("DeleteBanApp", "err", err)
 		return &ban.DeleteBanAppResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &ban.DeleteBanAppResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }
 
@@ -73,13 +73,13 @@ func (s *Server) DeleteBanUser(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "banappuser", "manager", "DeleteBanAppUser")
 
-	resp, err := banappusermgrcli.DeleteBanAppUser(ctx, in.GetID())
+	info, err := banappusermgrcli.DeleteBanAppUser(ctx, in.GetID())
 	if err != nil {
 		logger.Sugar().Errorw("DeleteBanUser", "err", err)
 		return &ban.DeleteBanUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &ban.DeleteBanUserResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }

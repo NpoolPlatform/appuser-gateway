@@ -29,9 +29,19 @@ func validate(ctx context.Context, info *role.CreateRoleRequest) error {
 		return status.Error(codes.InvalidArgument, "UserID is invalid")
 	}
 
+	if info.GetRoleName() == "" {
+		logger.Sugar().Errorw("validate", "RoleName", info.GetRoleName())
+		return status.Error(codes.PermissionDenied, "RoleName empty")
+	}
+
 	if info.GetRoleName() == constant.GenesisRole {
 		logger.Sugar().Errorw("validate", "RoleName", info.GetRoleName())
 		return status.Error(codes.PermissionDenied, "permission denied")
+	}
+
+	if _, err := uuid.Parse(info.GetAppID()); err != nil {
+		logger.Sugar().Errorw("validate", "AppID", info.GetAppID(), "err", err)
+		return status.Error(codes.InvalidArgument, "AppID is invalid")
 	}
 
 	exist, err := approlemgrcli.ExistAppRoleConds(ctx, &approlepb.Conds{
@@ -45,12 +55,33 @@ func validate(ctx context.Context, info *role.CreateRoleRequest) error {
 		},
 	})
 	if err != nil {
+		logger.Sugar().Errorw("validate", "err", err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
 	if exist {
 		return status.Error(codes.AlreadyExists, "role name already exists")
 	}
+
+	exist, err = approlemgrcli.ExistAppRoleConds(ctx, &approlepb.Conds{
+		AppID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: info.GetAppID(),
+		},
+		Default: &npool.BoolVal{
+			Op:    cruder.EQ,
+			Value: true,
+		},
+	})
+	if err != nil {
+		logger.Sugar().Errorw("validate", "err", err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	if exist {
+		return status.Error(codes.AlreadyExists, "default role already exists")
+	}
+
 	return nil
 }
 

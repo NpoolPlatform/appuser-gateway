@@ -37,13 +37,13 @@ func (s *Server) DeleteRoleUser(ctx context.Context, in *role.DeleteRoleUserRequ
 
 	span = commontracer.TraceInvoker(span, "role", "manager", "DeleteAppRoleUser")
 
-	resp, err := approleusermgrcli.DeleteAppRoleUser(ctx, in.GetID())
+	info, err := approleusermgrcli.DeleteAppRoleUser(ctx, in.GetID())
 	if err != nil {
 		logger.Sugar().Errorw("DeleteRoleUser", "err", err)
 		return &role.DeleteRoleUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &role.DeleteRoleUserResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }

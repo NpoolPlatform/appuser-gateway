@@ -31,13 +31,13 @@ func (s *Server) UpdateUser(ctx context.Context, in *user.UpdateUserRequest) (*u
 	span = tracer.Trace(span, in.GetInfo())
 	span = commontracer.TraceInvoker(span, "role", "middleware", "UpdateUser")
 
-	resp, err := usermwcli.UpdateUser(ctx, in.GetInfo())
+	info, err := usermwcli.UpdateUser(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("UpdateUser", "err", err)
 		return &user.UpdateUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &user.UpdateUserResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }

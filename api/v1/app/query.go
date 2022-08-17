@@ -125,14 +125,14 @@ func (s *Server) GetSignMethods(ctx context.Context, in *app.GetSignMethodsReque
 		}
 	}()
 
-	signMethods := []*signmethod.SignMethod{}
+	infos := []*signmethod.SignMethod{}
 	for _, val := range signmethod.SignMethodType_name {
-		signMethods = append(signMethods, &signmethod.SignMethod{
+		infos = append(infos, &signmethod.SignMethod{
 			Method: val,
 		})
 	}
 	return &app.GetSignMethodsResponse{
-		Infos: signMethods,
+		Infos: infos,
 	}, nil
 }
 
@@ -148,13 +148,13 @@ func (s *Server) GetRecaptchas(ctx context.Context, in *app.GetRecaptchasRequest
 		}
 	}()
 
-	recaptchas := []*recaptcha.Recaptcha{}
+	infos := []*recaptcha.Recaptcha{}
 	for _, val := range recaptcha.RecaptchaType_name {
-		recaptchas = append(recaptchas, &recaptcha.Recaptcha{
+		infos = append(infos, &recaptcha.Recaptcha{
 			Recaptcha: val,
 		})
 	}
 	return &app.GetRecaptchasResponse{
-		Infos: recaptchas,
+		Infos: infos,
 	}, nil
 }
