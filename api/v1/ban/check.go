@@ -11,6 +11,11 @@ import (
 )
 
 func validate(info *banapppb.BanAppReq) error {
+	if info == nil {
+		logger.Sugar().Errorw("validate", "err", "params is empty")
+		return status.Error(codes.InvalidArgument, "params is empty")
+	}
+
 	err := banapp.Validate(info)
 	if err != nil {
 		logger.Sugar().Errorw("validate", "err", err)

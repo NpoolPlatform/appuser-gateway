@@ -19,6 +19,11 @@ import (
 )
 
 func validate(ctx context.Context, info *mgruser.UserReq) error {
+	if info == nil {
+		logger.Sugar().Errorw("validate", "err", "params is empty")
+		return status.Error(codes.InvalidArgument, "params is empty")
+	}
+
 	err := mw.Validate(ctx, info)
 	if err != nil {
 		logger.Sugar().Errorw("validate", "err", err)
@@ -37,6 +42,11 @@ func validate(ctx context.Context, info *mgruser.UserReq) error {
 
 //nolint:gocyclo,nolintlint
 func signUpValidate(ctx context.Context, info *user.SignupRequest) error {
+	if info == nil {
+		logger.Sugar().Errorw("validate", "err", "params is empty")
+		return status.Error(codes.InvalidArgument, "params is empty")
+	}
+
 	if _, err := uuid.Parse(info.GetAppID()); err != nil {
 		logger.Sugar().Errorw("validate", "AppID", info.GetAppID(), "error", err)
 		return status.Error(codes.InvalidArgument, "AppID is invalid")

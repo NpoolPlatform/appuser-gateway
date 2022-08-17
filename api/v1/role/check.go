@@ -19,6 +19,11 @@ import (
 )
 
 func validate(ctx context.Context, info *role.CreateRoleRequest) error {
+	if info == nil {
+		logger.Sugar().Errorw("validate", "err", "params is empty")
+		return status.Error(codes.InvalidArgument, "params is empty")
+	}
+
 	if _, err := uuid.Parse(info.GetUserID()); err != nil {
 		logger.Sugar().Errorw("validate", "userId", info.GetUserID(), "err", err)
 		return status.Error(codes.InvalidArgument, "UserID is invalid")

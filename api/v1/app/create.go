@@ -2,9 +2,9 @@ package app
 
 import (
 	"context"
-
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	tracer "github.com/NpoolPlatform/appuser-middleware/pkg/tracer/app"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
@@ -29,6 +29,9 @@ func (s *Server) CreateApp(ctx context.Context, in *app.CreateAppRequest) (*app.
 	}()
 
 	span = tracer.Trace(span, in.GetInfo())
+
+	appID := uuid.NewString()
+	in.Info.ID = &appID
 
 	err = validate(ctx, in.Info)
 	if err != nil {
