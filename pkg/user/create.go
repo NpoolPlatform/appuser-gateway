@@ -26,16 +26,10 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		return nil, err
 	}
 	if app == nil {
-		return nil, fmt.Errorf("fail get app")
+		return nil, fmt.Errorf("invalid app")
 	}
 
-	if app.InvitationCodeMust {
-		if in.GetInvitationCode() == "" {
-			return nil, fmt.Errorf("invitation code is must")
-		}
-	}
-
-	inviterID, err := checkInvitationCode(ctx, app.InvitationCodeMust, in.GetInvitationCode(), in.GetAppID())
+	inviterID, err := checkInvitationCode(ctx, in.GetAppID(), in.GetInvitationCode(), app.InvitationCodeMust)
 	if err != nil {
 		logger.Sugar().Errorw("Signup", "err", err)
 		return nil, err
@@ -78,7 +72,7 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		return nil, err
 	}
 	if role == nil {
-		return nil, fmt.Errorf("fail get role")
+		return nil, fmt.Errorf("invalid default role")
 	}
 
 	userID := uuid.NewString()
@@ -95,46 +89,45 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		return nil, err
 	}
 
-	if in.GetInvitationCode() != "" && inviterID != "" {
-		_, err = inspirecli.CreateInvitation(ctx, in.AppID, inviterID, userID)
-		if err != nil {
-			return nil, err
-		}
+	if in.GetInvitationCode() == "" || inviterID == "" {
+		return userInfo, nil
 	}
 
-	return userInfo, err
+	// TODO: revert user info
+	_, err = inspirecli.CreateInvitation(ctx, in.AppID, inviterID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return userInfo, nil
 }
 
-func checkInvitationCode(ctx context.Context, invitationCodeMust bool, invitationCode, appID string) (string, error) {
-	if invitationCodeMust {
-		if invitationCode == "" {
-			return "", fmt.Errorf("invitation code is must")
-		}
+func checkInvitationCode(ctx context.Context, appID, code string, must bool) (string, error) {
+	if must && code == "" {
+		return "", fmt.Errorf("invitation code is must")
 	}
 
-	if invitationCode != "" {
-		code, err := inspirecli.GetUserInvitationCodeOnly(ctx, &inspirepb.Conds{
-			InvitationCode: &npool.StringVal{
-				Op:    cruder.EQ,
-				Value: invitationCode,
-			},
-		})
-		if err != nil {
-			logger.Sugar().Errorw("validate", "err", err)
-			return "", err
-		}
-
-		if code == nil {
-			if invitationCodeMust {
-				logger.Sugar().Errorw("validate", "invitation code is must")
-				return "", fmt.Errorf("fail get invitation code")
-			}
-		} else {
-			if code.AppID != appID {
-				return "", fmt.Errorf("invalid invitation code for app")
-			}
-			return code.UserID, nil
-		}
+	if code == "" {
+		return "", nil
 	}
-	return "", nil
+
+	ivc, err := inspirecli.GetUserInvitationCodeOnly(ctx, &inspirepb.Conds{
+		InvitationCode: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: code,
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if code == nil && must {
+		return "", fmt.Errorf("invalid code")
+	}
+
+	if code.AppID != appID {
+		return "", fmt.Errorf("invalid invitation code")
+	}
+
+	return code.UserID, nil
 }

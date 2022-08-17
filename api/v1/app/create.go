@@ -40,13 +40,13 @@ func (s *Server) CreateApp(ctx context.Context, in *app.CreateAppRequest) (*app.
 
 	span = commontracer.TraceInvoker(span, "app", "middleware", "CreateApp")
 
-	resp, err := appmwcli.CreateApp(ctx, in.GetInfo())
+	info, err := appmwcli.CreateApp(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("CreateApp", "err", err)
 		return &app.CreateAppResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &app.CreateAppResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }

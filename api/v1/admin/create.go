@@ -35,14 +35,14 @@ func (s *Server) CreateAdminApps(ctx context.Context, in *admin.CreateAdminAppsR
 
 	span = commontracer.TraceInvoker(span, "admin", "pkg", "CreateAdminApps")
 
-	resp, err := mw.CreateAdminApps(ctx)
+	info, err := mw.CreateAdminApps(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("CreateAdminApps", "err", err)
 		return &admin.CreateAdminAppsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &admin.CreateAdminAppsResponse{
-		Infos: resp,
+		Infos: info,
 	}, nil
 }
 
@@ -61,14 +61,14 @@ func (s *Server) CreateGenesisRoles(ctx context.Context, in *admin.CreateGenesis
 
 	span = commontracer.TraceInvoker(span, "admin", "pkg", "CreateGenesisRoles")
 
-	resp, err := mw.CreateGenesisRoles(ctx)
+	infos, err := mw.CreateGenesisRoles(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("CreateGenesisRoles", "err", err)
 		return &admin.CreateGenesisRolesResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &admin.CreateGenesisRolesResponse{
-		Infos: resp,
+		Infos: infos,
 	}, nil
 }
 
@@ -96,7 +96,7 @@ func (s *Server) CreateGenesisUser(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "admin", "middleware", "CreateGenesisUser")
 
-	resp, err := mw.CreateGenesisUser(
+	info, err := mw.CreateGenesisUser(
 		ctx,
 		in.GetTargetAppID(),
 		in.GetEmailAddress(),
@@ -108,7 +108,7 @@ func (s *Server) CreateGenesisUser(ctx context.Context,
 	}
 
 	return &admin.CreateGenesisUserResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }
 

@@ -56,13 +56,13 @@ func (s *Server) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*app.
 
 	span = commontracer.TraceInvoker(span, "admin", "middleware", "UpdateApp")
 
-	resp, err := appmwcli.UpdateApp(ctx, in.GetInfo())
+	info, err := appmwcli.UpdateApp(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorw("UpdateApp", "err", err)
 		return &app.UpdateAppResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &app.UpdateAppResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }
