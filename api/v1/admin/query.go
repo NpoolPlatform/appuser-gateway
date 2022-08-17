@@ -32,19 +32,14 @@ func (s *Server) GetAdminApps(ctx context.Context, in *admin.GetAdminAppsRequest
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetApps")
 
-	resp, err := mw.GetAdminApps(ctx)
+	infos, err := mw.GetAdminApps(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetAdminApps", "err", err)
 		return &admin.GetAdminAppsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	if len(resp) == 0 {
-		logger.Sugar().Errorw("GetAdminApps", "err", "admin app no found")
-		return &admin.GetAdminAppsResponse{}, status.Error(codes.NotFound, "admin app no found")
-	}
-
 	return &admin.GetAdminAppsResponse{
-		Infos: resp,
+		Infos: infos,
 	}, nil
 }
 
@@ -62,18 +57,14 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesR
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetGenesisRoles")
 
-	resp, err := mw.GetGenesisRoles(ctx)
+	infos, err := mw.GetGenesisRoles(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRole", "err", "genesis role not found")
 		return &admin.GetGenesisRolesResponse{}, status.Error(codes.Internal, err.Error())
 	}
-	if len(resp) == 0 {
-		logger.Sugar().Errorw("GetGenesisRole", "err", "genesis role not found")
-		return &admin.GetGenesisRolesResponse{}, status.Error(codes.NotFound, "genesis role not found")
-	}
 
 	return &admin.GetGenesisRolesResponse{
-		Infos: resp,
+		Infos: infos,
 	}, nil
 }
 
@@ -92,14 +83,14 @@ func (s *Server) GetGenesisRoleUsers(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "admin", "pkg", "GetGenesisRoleUsers")
 
-	resp, err := mw.GetGenesisRoleUsers(ctx)
+	infos, err := mw.GetGenesisRoleUsers(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRoleUsers", "err", err)
 		return &admin.GetGenesisRoleUsersResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &admin.GetGenesisRoleUsersResponse{
-		Infos: resp,
+		Infos: infos,
 	}, nil
 }
 

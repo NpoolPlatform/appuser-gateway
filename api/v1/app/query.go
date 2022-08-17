@@ -41,14 +41,14 @@ func (s *Server) GetApp(ctx context.Context, in *app.GetAppRequest) (*app.GetApp
 
 	span = commontracer.TraceInvoker(span, "app", "middleware", "GetApp")
 
-	resp, err := appmwcli.GetApp(ctx, in.GetAppID())
+	info, err := appmwcli.GetApp(ctx, in.GetAppID())
 	if err != nil {
 		logger.Sugar().Errorw("GetApp", "err", err)
 		return &app.GetAppResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &app.GetAppResponse{
-		Info: resp,
+		Info: info,
 	}, nil
 }
 
@@ -67,14 +67,14 @@ func (s *Server) GetApps(ctx context.Context, in *app.GetAppsRequest) (*app.GetA
 	commontracer.TraceOffsetLimit(span, int(in.GetOffset()), int(in.GetLimit()))
 	span = commontracer.TraceInvoker(span, "app", "middleware", "GetApps")
 
-	resp, total, err := appmwcli.GetApps(ctx, in.GetOffset(), in.GetLimit())
+	infos, total, err := appmwcli.GetApps(ctx, in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetApps", "err", err)
 		return &app.GetAppsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &app.GetAppsResponse{
-		Infos: resp,
+		Infos: infos,
 		Total: total,
 	}, nil
 }
@@ -101,14 +101,14 @@ func (s *Server) GetUserApps(ctx context.Context, in *app.GetUserAppsRequest) (*
 
 	span = commontracer.TraceInvoker(span, "app", "middleware", "GetUserApps")
 
-	resp, total, err := appmwcli.GetUserApps(ctx, in.GetTargetUserID(), in.GetOffset(), in.GetLimit())
+	infos, total, err := appmwcli.GetUserApps(ctx, in.GetTargetUserID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
 		logger.Sugar().Errorw("GetUserApps", "err", err)
 		return &app.GetUserAppsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &app.GetUserAppsResponse{
-		Infos: resp,
+		Infos: infos,
 		Total: total,
 	}, nil
 }
