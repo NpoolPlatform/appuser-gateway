@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/service-name"
+	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
+
+	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/app"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	rabbitmqconst "github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/const"
 	redisconst "github.com/NpoolPlatform/go-service-framework/pkg/redis/const"
 
