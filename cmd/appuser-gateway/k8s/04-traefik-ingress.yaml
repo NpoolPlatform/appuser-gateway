@@ -8,12 +8,13 @@ metadata:
     k8s.kuboard.cn/workload: appuser-gateway-traefik-app
     kubernetes.io/ingress.class: "traefik-internet"
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.middlewares: kube-system-strip-appuser-gateway-prefix@kubernetescrd,
-                                                      kube-system-common-headers@kubernetescrd,
-                                                      kube-system-headers-appid-to-body@kubernetescrd,
-                                                      kube-system-headers-userid-to-body@kubernetescrd,
-                                                      kube-system-headers-app-login-token-to-body@kubernetescrd,
-                                                      kube-system-app-rbac-auth@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares:
+      kube-system-strip-appuser-gateway-prefix@kubernetescrd,
+      kube-system-common-headers@kubernetescrd,
+      kube-system-headers-appid-to-body@kubernetescrd,
+      kube-system-headers-userid-to-body@kubernetescrd,
+      kube-system-headers-app-login-token-to-body@kubernetescrd,
+      kube-system-app-rbac-auth@kubernetescrd
 
 spec:
   rules:
@@ -51,75 +52,76 @@ metadata:
     k8s.kuboard.cn/workload: appuser-gateway-traefik-app-user
     kubernetes.io/ingress.class: "traefik-internet"
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.middlewares: kube-system-strip-appuser-gateway-prefix@kubernetescrd,
-                                                      kube-system-common-headers@kubernetescrd,
-                                                      kube-system-headers-appid-to-body@kubernetescrd,
-                                                      kube-system-headers-userid-to-body@kubernetescrd,
-                                                      kube-system-headers-app-login-token-to-body@kubernetescrd,
-                                                      kube-system-app-user-role-rbac-auth@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares:
+      kube-system-strip-appuser-gateway-prefix@kubernetescrd,
+      kube-system-common-headers@kubernetescrd,
+      kube-system-headers-appid-to-body@kubernetescrd,
+      kube-system-headers-userid-to-body@kubernetescrd,
+      kube-system-headers-app-login-token-to-body@kubernetescrd,
+      kube-system-app-user-role-rbac-auth@kubernetescrd
 
 spec:
   rules:
     - host: api.npool.top
       http: &http_rules
         paths:
-          - path: /api/appuser-gateway/v1/create/app
+          - path: /api/appuser/v1/create/app
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/create/ban
+          - path: /api/appuser/v1/create/ban
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/ban
+          - path: /api/appuser/v1/get/ban
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/delete/app
+          - path: /api/appuser/v1/delete/app
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/delete/ban
+          - path: /api/appuser/v1/delete/ban
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/update/app
+          - path: /api/appuser/v1/update/app
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/app/userinfos
+          - path: /api/appuser/v1/get/app/userinfos
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/app/users
+          - path: /api/appuser/v1/get/app/users
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/app/user
+          - path: /api/appuser/v1/get/app/user
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/app/userinfo
+          - path: /api/appuser/v1/get/app/userinfo
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/apps
+          - path: /api/appuser/v1/get/apps
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/apps/by/creator
+          - path: /api/appuser/v1/get/apps/by/creator
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/appinfos/by/creator
+          - path: /api/appuser/v1/get/appinfos/by/creator
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/appinfos
+          - path: /api/appuser/v1/get/appinfos
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/verify/app
+          - path: /api/appuser/v1/verify/app
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
