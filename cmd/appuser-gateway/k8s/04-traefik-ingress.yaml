@@ -20,15 +20,15 @@ spec:
     - host: api.npool.top
       http: &http_rules
         paths:
-          - path: /api/appuser-gateway/version
+          - path: /api/appuser/version
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/app
+          - path: /api/appuser/v1/get/app
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
-          - path: /api/appuser-gateway/v1/get/appinfo
+          - path: /api/appuser/v1/get/appinfo
             backend:
               serviceName: appuser-gateway
               servicePort: 50230
