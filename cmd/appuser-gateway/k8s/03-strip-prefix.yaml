@@ -6,4 +6,4 @@ metadata:
 spec:
   stripPrefix:
     prefixes:
-      - /api/appuser-gateway
+      - /api/appuser
