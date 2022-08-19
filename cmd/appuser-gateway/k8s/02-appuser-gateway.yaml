@@ -48,7 +48,7 @@ spec:
             name: appuser-gateway-config
             items:
               - key: service-conf
-                path: AppUserManager.viper.yaml
+                path: AppUserGateway.viper.yaml
 ---
 apiVersion: v1
 kind: Service
