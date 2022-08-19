@@ -58,16 +58,13 @@ metadata:
 spec:
   ports:
   - name: http
-    port: 50230
-    targetPort: 50230
+    port: 50330
+    targetPort: 50330
   - name: grpc
-    port: 50231
-    targetPort: 50231
+    port: 50331
+    targetPort: 50331
   - name: prometheus
-    port: 50232
-    targetPort: 50232
-  - name: prometheus
-    port: 50282
-    targetPort: 50282
+    port: 50333
+    targetPort: 50333
   selector:
     app: appuser-gateway
