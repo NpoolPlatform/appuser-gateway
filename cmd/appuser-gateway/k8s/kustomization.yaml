@@ -1,8 +1,7 @@
-commonLabels:
-  # app: appuser-gateway
-
 resources:
-- 01-appuser-gateway.yaml
-- 02-strip-prefix.yaml
-- 03-traefik-ingress.yaml
-- 04-traefik-vpn-ingress.yaml
+- 01-appuser-gateway.viper.yaml
+- 02-appuser-gateway.yaml
+- 03-strip-prefix.yaml
+- 04-traefik-ingress.yaml
+- 05-traefik-vpn-ingress.yaml
+- 06-service-monitor.yaml
