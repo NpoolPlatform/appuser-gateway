@@ -21,7 +21,7 @@ spec:
         imagePullPolicy: Always
         volumeMounts:
           - name: service-config
-            mountPath: /app
+            mountPath: /etc/AppUserGateway
         env:
         - name: ENV_ENVIRONMENT_TARGET
           valueFrom:
