@@ -5,22 +5,31 @@ import (
 	"encoding/json"
 	"fmt"
 
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
-	constants "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
-	"github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
-	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
-	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	"github.com/NpoolPlatform/message/npool"
+
+	constant1 "github.com/NpoolPlatform/appuser-gateway/pkg/const"
+	constant2 "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	constant3 "github.com/NpoolPlatform/appuser-manager/pkg/message/const"
+
+	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+
+	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
+	approlemgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
+
+	approleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
+	approleusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approleuser"
+
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appcrud "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/app"
-	approlepb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
-	approleuserpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approleuser"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
+
+	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
 	rolemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role"
+
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	commonpb "github.com/NpoolPlatform/message/npool"
+
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 )
@@ -29,7 +38,7 @@ func GetAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
 	var err error
 	genesisApps := []*appcrud.App{}
 
-	_, span := otel.Tracer(constants.ServiceName).Start(ctx, "GetAdminApps")
+	_, span := otel.Tracer(constant2.ServiceName).Start(ctx, "GetAdminApps")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -40,8 +49,7 @@ func GetAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetApps")
 
-	hostname := config.GetStringValueWithNameSpace("", config.KeyHostname)
-	genesisAppStr := config.GetStringValueWithNameSpace(hostname, constant.KeyGenesisApp)
+	genesisAppStr := config.GetStringValueWithNameSpace(constant3.ServiceName, constant1.KeyGenesisApp)
 
 	err = json.Unmarshal([]byte(genesisAppStr), &genesisApps)
 	if err != nil {
@@ -63,9 +71,9 @@ func GetAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
 
 func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 	var err error
-	appRoles := []*approlepb.AppRoleReq{}
+	appRoles := []*approlemgrpb.AppRoleReq{}
 
-	_, span := otel.Tracer(constants.ServiceName).Start(ctx, "GetGenesisRoles")
+	_, span := otel.Tracer(constant2.ServiceName).Start(ctx, "GetGenesisRoles")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -76,8 +84,7 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetGenesisRoles")
 
-	hostname := config.GetStringValueWithNameSpace("", config.KeyHostname)
-	genesisRoleStr := config.GetStringValueWithNameSpace(hostname, constant.KeyGenesisRole)
+	genesisRoleStr := config.GetStringValueWithNameSpace(constant3.ServiceName, constant1.KeyGenesisRole)
 
 	err = json.Unmarshal([]byte(genesisRoleStr), &appRoles)
 	if err != nil {
@@ -89,8 +96,8 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 		roles = append(roles, val.GetRole())
 	}
 
-	roleInfos, _, err := approlemgrcli.GetAppRoles(ctx, &approlepb.Conds{
-		Roles: &npool.StringSliceVal{
+	roleInfos, _, err := approlemgrcli.GetAppRoles(ctx, &approlemgrpb.Conds{
+		Roles: &commonpb.StringSliceVal{
 			Value: roles,
 			Op:    cruder.IN,
 		},
@@ -116,9 +123,9 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 
 func GetGenesisRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
 	var err error
-	genesisRoles := []*approlepb.AppRoleReq{}
+	genesisRoles := []*approlemgrpb.AppRoleReq{}
 
-	_, span := otel.Tracer(constants.ServiceName).Start(ctx, "GetGenesisRoleUsers")
+	_, span := otel.Tracer(constant2.ServiceName).Start(ctx, "GetGenesisRoleUsers")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -129,8 +136,7 @@ func GetGenesisRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "middleware", "GetGenesisRoleUsers")
 
-	hostname := config.GetStringValueWithNameSpace("", config.KeyHostname)
-	genesisRoleStr := config.GetStringValueWithNameSpace(hostname, constant.KeyGenesisRole)
+	genesisRoleStr := config.GetStringValueWithNameSpace(constant3.ServiceName, constant1.KeyGenesisRole)
 
 	err = json.Unmarshal([]byte(genesisRoleStr), &genesisRoles)
 	if err != nil {
@@ -142,8 +148,8 @@ func GetGenesisRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
 		roles = append(roles, genesisRoles[key].GetRole())
 	}
 
-	roleInfos, _, err := approlemgrcli.GetAppRoles(ctx, &approlepb.Conds{
-		Roles: &npool.StringSliceVal{
+	roleInfos, _, err := approlemgrcli.GetAppRoles(ctx, &approlemgrpb.Conds{
+		Roles: &commonpb.StringSliceVal{
 			Op:    cruder.IN,
 			Value: roles,
 		},
@@ -160,12 +166,12 @@ func GetGenesisRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
 		appIDs = append(appIDs, val.AppID)
 	}
 
-	roleUsers, _, err := approleuser.GetAppRoleUsers(ctx, &approleuserpb.Conds{
-		AppIDs: &npool.StringSliceVal{
+	roleUsers, _, err := approleusermgrcli.GetAppRoleUsers(ctx, &approleusermgrpb.Conds{
+		AppIDs: &commonpb.StringSliceVal{
 			Op:    cruder.IN,
 			Value: appIDs,
 		},
-		RoleIDs: &npool.StringSliceVal{
+		RoleIDs: &commonpb.StringSliceVal{
 			Op:    cruder.IN,
 			Value: roleIDs,
 		},
