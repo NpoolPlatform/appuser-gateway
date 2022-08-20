@@ -3,20 +3,27 @@ package admin
 import (
 	"context"
 
-	"github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
-	"github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	"github.com/NpoolPlatform/message/npool"
-	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
-	approlepb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
-	approleuserpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approleuser"
-	"github.com/google/uuid"
+
+	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
+	approleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
+
+	admingwpb "github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
+
+	approlemgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
+	approleusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approleuser"
+
+	commonpb "github.com/NpoolPlatform/message/npool"
+
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/google/uuid"
 )
 
-func validate(ctx context.Context, info *admin.CreateGenesisUserRequest) error {
+func validate(ctx context.Context, info *admingwpb.CreateGenesisUserRequest) error {
 	if info.GetTargetAppID() == "" {
 		logger.Sugar().Errorw("validate", "TargetAppID", info.GetTargetAppID())
 		return status.Error(codes.InvalidArgument, "AppID is empty")
@@ -37,8 +44,8 @@ func validate(ctx context.Context, info *admin.CreateGenesisUserRequest) error {
 		return status.Error(codes.InvalidArgument, "PasswordHash is empty")
 	}
 
-	resp, err := approle.GetAppRoleOnly(ctx, &approlepb.Conds{
-		AppID: &npool.StringVal{
+	resp, err := approlemgrcli.GetAppRoleOnly(ctx, &approlemgrpb.Conds{
+		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: info.GetTargetAppID(),
 		},
@@ -51,12 +58,12 @@ func validate(ctx context.Context, info *admin.CreateGenesisUserRequest) error {
 		return status.Error(codes.Internal, "fail get app role")
 	}
 
-	exist, err := approleuser.ExistAppRoleUserConds(ctx, &approleuserpb.Conds{
-		AppID: &npool.StringVal{
+	exist, err := approleusermgrcli.ExistAppRoleUserConds(ctx, &approleusermgrpb.Conds{
+		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: info.GetTargetAppID(),
 		},
-		RoleID: &npool.StringVal{
+		RoleID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: resp.ID,
 		},

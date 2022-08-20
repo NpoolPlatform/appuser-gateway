@@ -50,8 +50,7 @@ func CreateAdminApps(ctx context.Context) ([]*appmw.App, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "apollo", "GetStringValueWithNameSpace")
 
-	hostname := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, config.KeyHostname)
-	genesisAppStr := config.GetStringValueWithNameSpace(hostname, constant.KeyGenesisApp)
+	genesisAppStr := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, constant.KeyGenesisApp)
 
 	err = json.Unmarshal([]byte(genesisAppStr), &genesisApps)
 	if err != nil {
@@ -118,8 +117,7 @@ func CreateGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "apollo", "GetStringValueWithNameSpace")
 
-	hostname := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, config.KeyHostname)
-	genesisRoleStr := config.GetStringValueWithNameSpace(hostname, constant.KeyGenesisRole)
+	genesisRoleStr := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, constant.KeyGenesisRole)
 
 	err = json.Unmarshal([]byte(genesisRoleStr), &genesisRoles)
 	if err != nil {
