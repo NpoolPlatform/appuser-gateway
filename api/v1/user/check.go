@@ -86,7 +86,7 @@ func signUpValidate(ctx context.Context, info *user.SignupRequest) error {
 			Op:    cruder.EQ,
 			Value: info.GetAppID(),
 		},
-		PhoneNo: &npool.StringVal{
+		PhoneNO: &npool.StringVal{
 			Op:    cruder.EQ,
 			Value: info.GetAccount(),
 		},

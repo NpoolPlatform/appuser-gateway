@@ -35,7 +35,7 @@ func Signup(ctx context.Context, in *user.SignupRequest) (*usermwp.User, error) 
 		return nil, err
 	}
 
-	err = VerifyCode(
+	err = verifyCode(
 		ctx,
 		in.GetAppID(),
 		"",

@@ -41,7 +41,7 @@ func verifyByGoogle(ctx context.Context, appID, userID, code string) error {
 	})
 }
 
-func VerifyCode(ctx context.Context, appID, userID, account, accountType, code, usedFor string, accountMatch bool) error {
+func verifyCode(ctx context.Context, appID, userID, account, accountType, code, usedFor string, accountMatch bool) error {
 	var err error
 
 	if accountMatch {
@@ -65,7 +65,7 @@ func VerifyCode(ctx context.Context, appID, userID, account, accountType, code, 
 
 		switch accountType {
 		case signmethod.SignMethodType_Mobile.String():
-			if user.GetPhoneNo() != account {
+			if user.GetPhoneNO() != account {
 				return fmt.Errorf("invalid mobile")
 			}
 		case signmethod.SignMethodType_Email.String():
