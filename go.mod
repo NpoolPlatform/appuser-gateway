@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220714064853-e3bf392e2c17
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20220812032117-44ecffa2bb95
-	github.com/NpoolPlatform/message v0.0.0-20220821080901-b1b1b2476179
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20220818105452-9457611ae070
+	github.com/NpoolPlatform/message v0.0.0-20220821103752-496e283301b1
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
@@ -18,16 +18,19 @@ require (
 
 require (
 	github.com/NpoolPlatform/appuser-manager v0.0.0-20220821040815-6c39a10f0f36
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220821071844-42f6ffb8c904
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220821100848-dba3ad3f3d54
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220811120222-11c6ac6bb784
 	github.com/NpoolPlatform/ledger-manager v0.0.0-20220802044528-293b8a8ee2c8
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20220801075201-cab5db8b6290
-	github.com/NpoolPlatform/third-gateway v0.0.0-20220808033714-72ad73b09ef3
+	github.com/NpoolPlatform/third-gateway v0.0.0-20220821090429-d93a8f8007b7
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/go-redis/redis/v8 v8.11.4
 	go.opentelemetry.io/otel v1.8.0
 	go.opentelemetry.io/otel/trace v1.8.0
 )
 
 require (
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/gin-gonic/gin v1.7.7 // indirect
 	github.com/google/btree v1.0.1 // indirect
 	github.com/hashicorp/consul/sdk v0.9.0 // indirect
