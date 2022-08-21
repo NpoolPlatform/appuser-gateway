@@ -134,6 +134,7 @@ func migrationAuthingGateway(ctx context.Context) (err error) {
 
 	for _, val := range appRoleAuths {
 		auths = append(auths, &ent.Auth{
+			AppID:     val.AppID,
 			RoleID:    val.RoleID,
 			Resource:  val.Resource,
 			Method:    val.Method,
@@ -144,6 +145,7 @@ func migrationAuthingGateway(ctx context.Context) (err error) {
 
 	for _, val := range appUserAuths {
 		auths = append(auths, &ent.Auth{
+			AppID:     val.AppID,
 			UserID:    val.UserID,
 			Resource:  val.Resource,
 			Method:    val.Method,
