@@ -92,6 +92,56 @@ func (s *Server) Login(ctx context.Context, in *user.LoginRequest) (*user.LoginR
 	}, nil
 }
 
+func (s *Server) LoginVerify(ctx context.Context, in *user.LoginVerifyRequest) (*user.LoginVerifyResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "LoginVerify")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		logger.Sugar().Errorw("validate", "AppID", in.GetAppID(), "error", err)
+		return &user.LoginVerifyResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
+	}
+
+	if _, err := uuid.Parse(in.GetUserID()); err != nil {
+		logger.Sugar().Errorw("validate", "UserID", in.GetUserID(), "error", err)
+		return &user.LoginVerifyResponse{}, status.Error(codes.InvalidArgument, "UserID is invalid")
+	}
+
+	if in.GetToken() == "" {
+		logger.Sugar().Errorw("validate", "Token", in.GetToken())
+		return &user.LoginVerifyResponse{}, status.Error(codes.InvalidArgument, "Token is invalid")
+	}
+
+	if in.GetVerificationCode() == "" {
+		logger.Sugar().Errorw("validate", "VerificationCode", in.GetVerificationCode())
+		return &user.LoginVerifyResponse{}, status.Error(codes.InvalidArgument, "VerificationCode is invalid")
+	}
+
+	span = commontracer.TraceInvoker(span, "user", "middleware", "LoginVerify")
+
+	info, err := user1.LoginVerify(
+		ctx,
+		in.GetAppID(),
+		in.GetUserID(),
+		in.GetToken(),
+		in.GetVerificationCode(),
+	)
+	if err != nil {
+		logger.Sugar().Errorw("LoginVerify", "err", err)
+		return &user.LoginVerifyResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	return &user.LoginVerifyResponse{
+		Info: info,
+	}, nil
+}
+
 func (s *Server) Logined(ctx context.Context, in *user.LoginedRequest) (*user.LoginedResponse, error) {
 	var err error
 

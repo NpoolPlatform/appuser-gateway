@@ -15,6 +15,8 @@ import (
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	thirdgwcli "github.com/NpoolPlatform/third-gateway/pkg/client"
 
+	thirdgwconst "github.com/NpoolPlatform/third-gateway/pkg/const"
+
 	commonpb "github.com/NpoolPlatform/message/npool"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -147,12 +149,62 @@ func Login(
 	return user, nil
 }
 
+func LoginVerify(ctx context.Context, appID, userID, token, code string) (*usermwpb.User, error) {
+	meta, err := queryAppUser(ctx, uuid.MustParse(appID), uuid.MustParse(userID))
+	if err != nil {
+		return nil, err
+	}
+	if meta == nil {
+		return nil, nil
+	}
+
+	if err := verifyToken(meta, token); err != nil {
+		return nil, err
+	}
+
+	if err := createCache(ctx, meta); err != nil {
+		return nil, err
+	}
+
+	account := meta.User.EmailAddress
+	accountType := meta.User.SigninVerifyType
+
+	switch meta.User.SigninVerifyType {
+	case signmethod.SignMethodType_Email:
+	case signmethod.SignMethodType_Mobile:
+		account = meta.User.PhoneNO
+	case signmethod.SignMethodType_Google:
+	default:
+		return nil, fmt.Errorf("not supported")
+	}
+	if err := verifyCode(
+		ctx,
+		appID, userID,
+		account, accountType,
+		code,
+		thirdgwconst.UsedForSignin,
+		true,
+	); err != nil {
+		return nil, err
+	}
+
+	meta.User.LoginVerified = true
+	if err := createCache(ctx, meta); err != nil {
+		return nil, err
+	}
+
+	return meta.User, nil
+}
+
 func Logined(ctx context.Context, appID, userID, token string) (*usermwpb.User, error) {
 	meta, err := queryAppUser(ctx, uuid.MustParse(appID), uuid.MustParse(userID))
 	if err != nil {
 		return nil, err
 	}
 	if meta == nil {
+		return nil, nil
+	}
+	if !meta.User.LoginVerified {
 		return nil, nil
 	}
 

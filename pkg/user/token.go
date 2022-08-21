@@ -17,14 +17,13 @@ import (
 )
 
 type Metadata struct {
-	AppID         uuid.UUID
-	Account       string
-	AccountType   signmethod.SignMethodType
-	UserID        uuid.UUID
-	ClientIP      net.IP
-	UserAgent     string
-	User          *usermwpb.User
-	LoginVerified bool
+	AppID       uuid.UUID
+	Account     string
+	AccountType signmethod.SignMethodType
+	UserID      uuid.UUID
+	ClientIP    net.IP
+	UserAgent   string
+	User        *usermwpb.User
 }
 
 func MetadataFromContext(ctx context.Context) (*Metadata, error) {
