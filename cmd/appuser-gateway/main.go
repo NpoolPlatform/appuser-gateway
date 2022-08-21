@@ -15,6 +15,7 @@ import (
 	redisconst "github.com/NpoolPlatform/go-service-framework/pkg/redis/const"
 
 	appusermgrconst "github.com/NpoolPlatform/appuser-manager/pkg/message/const"
+	authconst "github.com/NpoolPlatform/authing-gateway/pkg/message/const"
 
 	cli "github.com/urfave/cli/v2"
 )
@@ -38,6 +39,7 @@ func main() {
 		rabbitmqconst.RabbitMQServiceName,
 		redisconst.RedisServiceName,
 		appusermgrconst.ServiceName,
+		authconst.ServiceName,
 	)
 	if err != nil {
 		logger.Sugar().Errorf("fail to create %v: %v", servicename.ServiceName, err)
