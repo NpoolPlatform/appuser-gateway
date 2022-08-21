@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/NpoolPlatform/appuser-gateway/api"
+	"github.com/NpoolPlatform/appuser-gateway/pkg/migrator"
 
 	"github.com/NpoolPlatform/appuser-manager/pkg/db"
 
@@ -22,6 +23,10 @@ var runCmd = &cli.Command{
 	Usage:   "Run the daemon",
 	Action: func(c *cli.Context) error {
 		if err := db.Init(); err != nil {
+			return err
+		}
+
+		if err := migrator.Migrate(c.Context); err != nil {
 			return err
 		}
 
