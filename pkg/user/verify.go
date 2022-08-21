@@ -12,11 +12,11 @@ import (
 	"github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
 	appusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
 	thirdgwpb "github.com/NpoolPlatform/message/npool/thirdgateway"
-	thindcli "github.com/NpoolPlatform/third-gateway/pkg/client"
+	thirdgwcli "github.com/NpoolPlatform/third-gateway/pkg/client"
 )
 
 func verifyByMobile(ctx context.Context, appID, phoneNO, code, usedFor string) error {
-	return thindcli.VerifySMSCode(ctx, &thirdgwpb.VerifySMSCodeRequest{
+	return thirdgwcli.VerifySMSCode(ctx, &thirdgwpb.VerifySMSCodeRequest{
 		AppID:   appID,
 		PhoneNO: phoneNO,
 		UsedFor: usedFor,
@@ -25,7 +25,7 @@ func verifyByMobile(ctx context.Context, appID, phoneNO, code, usedFor string) e
 }
 
 func verifyByEmail(ctx context.Context, appID, emailAddr, code, usedFor string) error {
-	return thindcli.VerifyEmailCode(ctx, &thirdgwpb.VerifyEmailCodeRequest{
+	return thirdgwcli.VerifyEmailCode(ctx, &thirdgwpb.VerifyEmailCodeRequest{
 		AppID:        appID,
 		EmailAddress: emailAddr,
 		UsedFor:      usedFor,
@@ -34,11 +34,20 @@ func verifyByEmail(ctx context.Context, appID, emailAddr, code, usedFor string) 
 }
 
 func verifyByGoogle(ctx context.Context, appID, userID, code string) error {
-	return thindcli.VerifyGoogleAuthentication(ctx, &thirdgwpb.VerifyGoogleAuthenticationRequest{
+	return thirdgwcli.VerifyGoogleAuthentication(ctx, &thirdgwpb.VerifyGoogleAuthenticationRequest{
 		AppID:  appID,
 		UserID: userID,
 		Code:   code,
 	})
+}
+
+func VerifyCode(
+	ctx context.Context,
+	appID, userID, account string,
+	accountType signmethod.SignMethodType,
+	code, usedFor string,
+) error {
+	return verifyCode(ctx, appID, userID, account, accountType, code, usedFor, true)
 }
 
 func verifyCode(
