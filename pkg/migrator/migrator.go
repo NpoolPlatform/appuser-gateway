@@ -94,6 +94,8 @@ func migrationAuthingGateway(ctx context.Context) (err error) {
 		return err
 	}
 
+	defer auth.Close()
+
 	authCli := authingent.NewClient(authingent.Driver(entsql.OpenDB(dialect.MySQL, auth)))
 
 	appAuths, err := authCli.
@@ -154,26 +156,25 @@ func migrationAuthingGateway(ctx context.Context) (err error) {
 		})
 	}
 
-	tx, err := cli.Tx(ctx)
-	if err != nil {
+	err = db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
+		bulk := make([]*ent.AuthCreate, len(auths))
+		for i, val := range auths {
+			bulk[i] = tx.Auth.
+				Create().
+				SetAppID(val.AppID).
+				SetRoleID(val.RoleID).
+				SetUserID(val.UserID).
+				SetResource(val.Resource).
+				SetMethod(val.Method).
+				SetCreatedAt(val.CreatedAt).
+				SetUpdatedAt(val.UpdatedAt)
+		}
+		_, err = tx.Auth.CreateBulk(bulk...).Save(_ctx)
 		return err
-	}
-	bulk := make([]*ent.AuthCreate, len(auths))
-	for i, val := range auths {
-		bulk[i] = tx.Auth.
-			Create().
-			SetAppID(val.AppID).
-			SetRoleID(val.RoleID).
-			SetUserID(val.UserID).
-			SetResource(val.Resource).
-			SetMethod(val.Method).
-			SetCreatedAt(val.CreatedAt).
-			SetUpdatedAt(val.UpdatedAt)
-	}
-	_, err = tx.Auth.CreateBulk(bulk...).Save(ctx)
+	})
 	if err != nil {
 		return err
 	}
 
-	return tx.Commit()
+	return nil
 }
