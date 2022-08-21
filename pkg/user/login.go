@@ -3,17 +3,80 @@ package user
 import (
 	"context"
 	"fmt"
+	"time"
 
+	loginhispb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/login/history"
 	recaptcha "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/recaptcha"
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
+	loginhiscli "github.com/NpoolPlatform/appuser-manager/pkg/client/login/history"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	thirdgwcli "github.com/NpoolPlatform/third-gateway/pkg/client"
 
+	commonpb "github.com/NpoolPlatform/message/npool"
+
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+
+	"github.com/go-resty/resty/v2"
+
 	"github.com/google/uuid"
 )
+
+func addHistory(appID, userID, clientIP, userAgent string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) //nolint
+	defer cancel()
+
+	location := ""
+	histories, _, err := loginhiscli.GetHistories(ctx, &loginhispb.Conds{
+		ClientIP: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: clientIP,
+		},
+		Location: &commonpb.StringVal{
+			Op:    cruder.NEQ,
+			Value: "",
+		},
+	}, 0, 1)
+	if err != nil {
+		return
+	}
+	if len(histories) > 0 {
+		location = histories[0].Location
+	} else {
+		type resp struct {
+			Error   bool   `json:"error"`
+			City    string `json:"city"`
+			Country string `json:"country_name"`
+			IP      string `json:"ip"`
+			Reason  string `json:"reason"`
+		}
+
+		r, err := resty.
+			New().
+			R().
+			SetResult(&resp{}).
+			Get(fmt.Sprintf("https://ipapi.co/%v/json", clientIP))
+		if err == nil {
+			rc, ok := r.Result().(*resp)
+			if ok && !rc.Error {
+				location = fmt.Sprintf("%v, %v", rc.City, rc.Country)
+			}
+		}
+	}
+
+	_, _ = loginhiscli.CreateHistory(
+		ctx,
+		&loginhispb.HistoryReq{
+			AppID:     &appID,
+			UserID:    &userID,
+			ClientIP:  &clientIP,
+			UserAgent: &userAgent,
+			Location:  &location,
+		},
+	)
+}
 
 func Login(
 	ctx context.Context,
@@ -79,7 +142,7 @@ func Login(
 		return nil, err
 	}
 
-	// TODO: add login history
+	go addHistory(appID, user.ID, meta.ClientIP.String(), meta.UserAgent)
 
 	return user, nil
 }

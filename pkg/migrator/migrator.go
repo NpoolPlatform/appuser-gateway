@@ -62,7 +62,7 @@ func open(hostname string) (conn *sql.DB, err error) {
 	// https://github.com/go-sql-driver/mysql
 	// See "Important settings" section.
 
-	conn.SetConnMaxLifetime(time.Minute * 3)
+	conn.SetConnMaxLifetime(time.Minute * 3) //nolint
 	conn.SetMaxOpenConns(maxOpen)
 	conn.SetMaxIdleConns(maxIdle)
 

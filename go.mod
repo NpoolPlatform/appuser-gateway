@@ -3,9 +3,9 @@ module github.com/NpoolPlatform/appuser-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/api-manager v0.0.0-20220714064853-e3bf392e2c17
+	github.com/NpoolPlatform/api-manager v0.0.0-20220820093920-25cb3a5d5e3a
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20220818105452-9457611ae070
-	github.com/NpoolPlatform/message v0.0.0-20220821103752-496e283301b1
+	github.com/NpoolPlatform/message v0.0.0-20220821115921-fdb81c699cb6
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
@@ -17,11 +17,11 @@ require (
 )
 
 require (
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20220821040815-6c39a10f0f36
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20220821120339-78fe3bc52e72
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220821100848-dba3ad3f3d54
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220811120222-11c6ac6bb784
 	github.com/NpoolPlatform/ledger-manager v0.0.0-20220802044528-293b8a8ee2c8
-	github.com/NpoolPlatform/libent-cruder v0.0.0-20220801075201-cab5db8b6290
+	github.com/NpoolPlatform/libent-cruder v0.0.0-20220821121920-9559f5776d15
 	github.com/NpoolPlatform/third-gateway v0.0.0-20220821090429-d93a8f8007b7
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.4
