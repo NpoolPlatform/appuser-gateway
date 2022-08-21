@@ -52,19 +52,11 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 		logger.Sugar().Errorw("validate", "Account", in.GetAccount())
 		return &user.SignupResponse{}, status.Error(codes.InvalidArgument, "Account is invalid")
 	}
-	if in.GetAccountType().String() == "" {
-		logger.Sugar().Errorw("validate", "AccountType", in.GetAccountType())
-		return &user.SignupResponse{}, status.Error(codes.InvalidArgument, "AccountType is invalid")
-	}
 
-	methodExist := false
-	for _, val := range signmethod.SignMethodType_name {
-		if in.GetAccountType().String() == val {
-			methodExist = true
-			break
-		}
-	}
-	if !methodExist {
+	switch in.GetAccountType() {
+	case signmethod.SignMethodType_Mobile:
+	case signmethod.SignMethodType_Email:
+	default:
 		logger.Sugar().Errorw("validate", "AccountType", in.GetAccountType())
 		return &user.SignupResponse{}, status.Error(codes.InvalidArgument, "AccountType is invalid")
 	}
@@ -113,7 +105,15 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 
 	span = commontracer.TraceInvoker(span, "user", "middleware", "Signup")
 
-	userInfo, err := user1.Signup(ctx, in)
+	userInfo, err := user1.Signup(
+		ctx,
+		in.GetAppID(),
+		in.GetAccount(),
+		in.GetPasswordHash(),
+		in.GetAccountType(),
+		in.GetVerificationCode(),
+		in.InvitationCode,
+	)
 	if err != nil {
 		logger.Sugar().Errorw("Signup", "err", err)
 		return &user.SignupResponse{}, status.Error(codes.Internal, err.Error())
