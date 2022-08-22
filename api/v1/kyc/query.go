@@ -90,7 +90,7 @@ func (s *Server) GetKycs(ctx context.Context, in *kyc.GetKycsRequest) (resp *kyc
 
 	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKycs")
 
-	infos, _, err := mwcli.GetKycs(ctx, &mwpb.Conds{
+	infos, total, err := mwcli.GetKycs(ctx, &mwpb.Conds{
 		Conds: &mgrpb.Conds{
 			AppID: &npool.StringVal{
 				Op:    cruder.EQ,
@@ -105,6 +105,7 @@ func (s *Server) GetKycs(ctx context.Context, in *kyc.GetKycsRequest) (resp *kyc
 
 	return &kyc.GetKycsResponse{
 		Infos: infos,
+		Total: total,
 	}, nil
 }
 
@@ -125,7 +126,7 @@ func (s *Server) GetAppKycs(ctx context.Context, in *kyc.GetAppKycsRequest) (res
 
 	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKycs")
 
-	infos, _, err := mwcli.GetKycs(ctx, &mwpb.Conds{
+	infos, total, err := mwcli.GetKycs(ctx, &mwpb.Conds{
 		Conds: &mgrpb.Conds{
 			AppID: &npool.StringVal{
 				Op:    cruder.EQ,
@@ -140,5 +141,6 @@ func (s *Server) GetAppKycs(ctx context.Context, in *kyc.GetAppKycsRequest) (res
 
 	return &kyc.GetAppKycsResponse{
 		Infos: infos,
+		Total: total,
 	}, nil
 }
