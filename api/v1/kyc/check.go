@@ -113,6 +113,12 @@ func validateKycUpdate(ctx context.Context, info *kyc.UpdateKycRequest) error {
 			logger.Sugar().Errorw("validateKycUpdate", "err", err)
 			return status.Error(codes.Internal, err.Error())
 		}
+
+		if info.GetIDNumber() == kycInfo.IDNumber {
+			logger.Sugar().Errorw("validateKycUpdate", "IDNumber already exists")
+			return status.Error(codes.InvalidArgument, "IDNumber already exists")
+		}
+
 		return checkIDNumberDuplicate(ctx, kycInfo.DocumentType.String(), info.GetIDNumber())
 	}
 	return nil
