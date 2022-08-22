@@ -1,3 +1,4 @@
+//nolint:nolintlint
 package migrator
 
 import (
