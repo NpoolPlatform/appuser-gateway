@@ -8,6 +8,7 @@ import (
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
+	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
@@ -97,6 +98,14 @@ func QueryAppAccount(ctx context.Context, appID uuid.UUID, account string, accou
 	}
 
 	return &meta, nil
+}
+
+func QueryAppUser(ctx context.Context, appID, userID uuid.UUID) (*usermwpb.User, error) {
+	meta, err := queryAppUser(ctx, appID, userID)
+	if err != nil {
+		return nil, err
+	}
+	return meta.User, nil
 }
 
 func queryAppUser(ctx context.Context, appID, userID uuid.UUID) (*Metadata, error) {

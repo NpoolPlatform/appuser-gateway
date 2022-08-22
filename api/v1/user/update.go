@@ -87,6 +87,8 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		return &npool.UpdateUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
+	_ = user1.UpdateCache(ctx, info)
+
 	return &npool.UpdateUserResponse{
 		Info: info,
 	}, nil
