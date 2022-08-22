@@ -18,7 +18,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateKyc(ctx context.Context, in *npool.CreateKycRequest) (resp *npool.CreateKycResponse, err error) {
+func (s *Server) UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (resp *npool.UpdateKycResponse, err error) {
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateKyc")
 	defer span.End()
 	defer func() {
@@ -29,39 +29,28 @@ func (s *Server) CreateKyc(ctx context.Context, in *npool.CreateKycRequest) (res
 	}()
 
 	tracer.Trace(span, &mgrpb.KycReq{
-		AppID:        &in.AppID,
-		UserID:       &in.UserID,
-		DocumentType: &in.DocumentType,
-		IDNumber:     in.IDNumber,
-		FrontImg:     &in.FrontImg,
-		BackImg:      in.BackImg,
-		SelfieImg:    &in.SelfieImg,
-		EntityType:   &in.EntityType,
+		AppID:     &in.AppID,
+		UserID:    &in.UserID,
+		IDNumber:  in.IDNumber,
+		FrontImg:  in.FrontImg,
+		BackImg:   in.BackImg,
+		SelfieImg: in.SelfieImg,
 	})
 
-	err = validateKycCreate(ctx, in)
+	err = validateKycUpdate(ctx, in)
 	if err != nil {
-		return &npool.CreateKycResponse{}, err
+		return &npool.UpdateKycResponse{}, err
 	}
 
-	span = commontracer.TraceInvoker(span, "kyc", "kyc", "CreateKyc")
+	span = commontracer.TraceInvoker(span, "kyc", "kyc", "UpdateKyc")
 
-	info, err := kyc1.CreateKyc(ctx,
-		in.GetAppID(),
-		in.GetUserID(),
-		in.GetFrontImg(),
-		in.GetSelfieImg(),
-		in.IDNumber,
-		in.BackImg,
-		in.GetDocumentType(),
-		in.GetEntityType(),
-	)
+	info, err := kyc1.UpdateKyc(ctx, in)
 	if err != nil {
-		logger.Sugar().Errorw("CreateKyc", "error", err)
-		return &npool.CreateKycResponse{}, status.Error(codes.Internal, "fail create kyc")
+		logger.Sugar().Errorw("UpdateKyc", "error", err)
+		return &npool.UpdateKycResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.CreateKycResponse{
+	return &npool.UpdateKycResponse{
 		Info: info,
 	}, nil
 }

@@ -3,6 +3,11 @@ package kyc
 import (
 	"context"
 
+	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+	"go.opentelemetry.io/otel"
+	scodes "go.opentelemetry.io/otel/codes"
+
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/kyc"
@@ -16,7 +21,16 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Server) UploadKycImage(ctx context.Context, in *npool.UploadKycImageRequest) (*npool.UploadKycImageResponse, error) {
+func (s *Server) UploadKycImage(ctx context.Context, in *npool.UploadKycImageRequest) (resp *npool.UploadKycImageResponse, err error) {
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateKyc")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		logger.Sugar().Errorw("UploadKycImage", "AppID", in.GetAppID())
 		return &npool.UploadKycImageResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
@@ -39,7 +53,9 @@ func (s *Server) UploadKycImage(ctx context.Context, in *npool.UploadKycImageReq
 		return &npool.UploadKycImageResponse{}, status.Error(codes.InvalidArgument, "ImageType is invalid")
 	}
 
-	err := kyc1.UploadKycImage(ctx,
+	commontracer.TraceInvoker(span, "kyc", "kyc", "UploadKycImage")
+
+	err = kyc1.UploadKycImage(ctx,
 		in.GetAppID(),
 		in.GetUserID(),
 		in.GetImageType(),
@@ -53,7 +69,16 @@ func (s *Server) UploadKycImage(ctx context.Context, in *npool.UploadKycImageReq
 	return &npool.UploadKycImageResponse{}, nil
 }
 
-func (s *Server) GetKycImage(ctx context.Context, in *npool.GetKycImageRequest) (*npool.GetKycImageResponse, error) {
+func (s *Server) GetKycImage(ctx context.Context, in *npool.GetKycImageRequest) (resp *npool.GetKycImageResponse, err error) {
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateKyc")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		logger.Sugar().Errorw("GetKycImage", "AppID", in.GetAppID())
 		return &npool.GetKycImageResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
@@ -71,6 +96,8 @@ func (s *Server) GetKycImage(ctx context.Context, in *npool.GetKycImageRequest) 
 		logger.Sugar().Errorw("GetKycImage", "ImageType", in.GetImageType())
 		return &npool.GetKycImageResponse{}, status.Error(codes.InvalidArgument, "ImageType is invalid")
 	}
+
+	span = commontracer.TraceInvoker(span, "kyc", "kyc", "GetKycImage")
 
 	imgBase64, err := kyc1.GetKycImage(ctx,
 		in.GetAppID(),

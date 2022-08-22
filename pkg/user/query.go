@@ -43,7 +43,9 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 			logger.Sugar().Errorw("GetUsers", "err", err)
 			return nil, err
 		}
-		resp[key].InvitationCode = code.GetInvitationCode()
+		if code.GetInvitationCode() != "" {
+			resp[key].InvitationCode = &code.InvitationCode
+		}
 	}
 	return resp, nil
 }

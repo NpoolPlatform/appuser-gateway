@@ -23,5 +23,5 @@ func Authenticate(ctx context.Context, appID string, userID, token *string, reso
 		}
 	}
 
-	return authingcli.ExistAuth(ctx, appID, userID, resource, method)
+	return authingcli.ExistAuth(ctx, appID, fmt.Sprintf("%p", userID), resource, method)
 }
