@@ -107,12 +107,15 @@ func validateKycUpdate(ctx context.Context, info *kyc.UpdateKycRequest) error {
 		return status.Error(codes.InvalidArgument, "SelfieImg is infovalid")
 	}
 
-	kycInfo, err := mgrcli.GetKyc(ctx, info.KycID)
-	if err != nil {
-		logger.Sugar().Errorw("validateKycUpdate", "err", err)
-		return status.Error(codes.Internal, err.Error())
+	if info.IDNumber != nil && info.GetIDNumber() != "" {
+		kycInfo, err := mgrcli.GetKyc(ctx, info.KycID)
+		if err != nil {
+			logger.Sugar().Errorw("validateKycUpdate", "err", err)
+			return status.Error(codes.Internal, err.Error())
+		}
+		return checkIDNumberDuplicate(ctx, kycInfo.DocumentType.String(), info.GetIDNumber())
 	}
-	return checkIDNumberDuplicate(ctx, kycInfo.DocumentType.String(), info.GetIDNumber())
+	return nil
 }
 
 func checkIDNumberDuplicate(ctx context.Context, documentType, idNumber string) error {
