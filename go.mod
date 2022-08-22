@@ -17,7 +17,7 @@ require (
 )
 
 require (
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20220821120339-78fe3bc52e72
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20220822073332-7735c7b7393e
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220821131255-b84d979e86a3
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220811120222-11c6ac6bb784
 	github.com/NpoolPlatform/ledger-manager v0.0.0-20220802044528-293b8a8ee2c8
