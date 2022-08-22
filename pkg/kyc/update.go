@@ -20,7 +20,7 @@ import (
 )
 
 func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc, err error) {
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateKyc")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateKyc")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -47,6 +47,7 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 		span = commontracer.TraceInvoker(span, "kyc", "manager", "UpdateKyc")
 
 		kyc, err := kycmgrcli.UpdateKyc(ctx, &kycmgrpb.KycReq{
+			ID:        &in.KycID,
 			AppID:     &in.AppID,
 			UserID:    &in.UserID,
 			IDNumber:  in.IDNumber,
