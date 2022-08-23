@@ -55,7 +55,9 @@ func (s *Server) CreateUser(ctx context.Context, in *npool.CreateUserRequest) (*
 
 	span = commontracer.TraceInvoker(span, "user", "middleware", "CreateUser")
 
+	userID := uuid.NewString()
 	info, err := usermwcli.CreateUser(ctx, &usermwpb.UserReq{
+		ID:                &userID,
 		AppID:             &in.AppID,
 		EmailAddress:      in.EmailAddress,
 		PhoneNO:           in.PhoneNO,
