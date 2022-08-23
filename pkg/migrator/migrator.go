@@ -40,6 +40,7 @@ const (
 	keyDBName   = "database_name"
 	maxOpen     = 10
 	maxIdle     = 10
+	MaxLife     = 3
 )
 
 func dsn(hostname string) (string, error) {
@@ -75,7 +76,7 @@ func open(hostname string) (conn *sql.DB, err error) {
 	// https://github.com/go-sql-driver/mysql
 	// See "Important settings" section.
 
-	conn.SetConnMaxLifetime(time.Minute * 3)
+	conn.SetConnMaxLifetime(time.Minute * MaxLife)
 	conn.SetMaxOpenConns(maxOpen)
 	conn.SetMaxIdleConns(maxIdle)
 
