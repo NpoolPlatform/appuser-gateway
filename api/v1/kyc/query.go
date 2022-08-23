@@ -15,7 +15,7 @@ import (
 
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/kyc"
 
-	mw "github.com/NpoolPlatform/appuser-gateway/pkg/kyc"
+	mkyc "github.com/NpoolPlatform/appuser-gateway/pkg/kyc"
 	mgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/kyc"
 	mwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 
@@ -46,7 +46,7 @@ func (s *Server) GetKyc(ctx context.Context, in *kyc.GetKycRequest) (resp *kyc.G
 
 	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKycs")
 
-	infos, _, err := mw.GetKycs(ctx, &mwpb.Conds{
+	infos, _, err := mkyc.GetKycs(ctx, &mwpb.Conds{
 		Conds: &mgrpb.Conds{
 			AppID: &npool.StringVal{
 				Op:    cruder.EQ,
@@ -90,7 +90,7 @@ func (s *Server) GetKycs(ctx context.Context, in *kyc.GetKycsRequest) (resp *kyc
 
 	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKycs")
 
-	infos, total, err := mw.GetKycs(ctx, &mwpb.Conds{
+	infos, total, err := mkyc.GetKycs(ctx, &mwpb.Conds{
 		Conds: &mgrpb.Conds{
 			AppID: &npool.StringVal{
 				Op:    cruder.EQ,
@@ -127,7 +127,7 @@ func (s *Server) GetAppKycs(ctx context.Context, in *kyc.GetAppKycsRequest) (res
 
 	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKycs")
 
-	infos, total, err := mw.GetKycs(ctx, &mwpb.Conds{
+	infos, total, err := mkyc.GetKycs(ctx, &mwpb.Conds{
 		Conds: &mgrpb.Conds{
 			AppID: &npool.StringVal{
 				Op:    cruder.EQ,
