@@ -2,6 +2,7 @@ package kyc
 
 import (
 	"context"
+	"strings"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
@@ -43,7 +44,8 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 		return nil, err
 	}
 
-	if reviewInfo.State != reviewmgrpb.ReviewState_Wait.String() {
+	// TODO: review state wait for review migration remove ToUpper
+	if strings.ToUpper(reviewInfo.State[:1])+reviewInfo.State[1:] == reviewmgrpb.ReviewState_Wait.String() {
 		span = commontracer.TraceInvoker(span, "kyc", "manager", "UpdateKyc")
 
 		kyc, err := kycmgrcli.UpdateKyc(ctx, &kycmgrpb.KycReq{
@@ -67,6 +69,7 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 	span = commontracer.TraceInvoker(span, "kyc", "manager", "UpdateKyc")
 
 	kyc, err := kycmgrcli.UpdateKyc(ctx, &kycmgrpb.KycReq{
+		ID:        &in.KycID,
 		AppID:     &in.AppID,
 		UserID:    &in.UserID,
 		IDNumber:  in.IDNumber,
@@ -94,5 +97,5 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 
 	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKyc")
 
-	return kycmwcli.GetKyc(ctx, kyc.ID)
+	return GetKyc(ctx, kyc.ID)
 }
