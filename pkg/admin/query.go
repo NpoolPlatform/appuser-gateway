@@ -27,6 +27,9 @@ import (
 	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
 	rolemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role"
 
+	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
 
@@ -121,11 +124,11 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 	return infos, nil
 }
 
-func GetGenesisRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
+func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error) {
 	var err error
 	genesisRoles := []*approlemgrpb.AppRoleReq{}
 
-	_, span := otel.Tracer(constant2.ServiceName).Start(ctx, "GetGenesisRoleUsers")
+	_, span := otel.Tracer(constant2.ServiceName).Start(ctx, "GetGenesisUsers")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -134,7 +137,7 @@ func GetGenesisRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
 		}
 	}()
 
-	span = commontracer.TraceInvoker(span, "admin", "middleware", "GetGenesisRoleUsers")
+	span = commontracer.TraceInvoker(span, "admin", "middleware", "GetGenesisUsers")
 
 	genesisRoleStr := config.GetStringValueWithNameSpace(constant3.ServiceName, constant1.KeyGenesisRole)
 
@@ -155,7 +158,7 @@ func GetGenesisRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
 		},
 	}, 0, int32(len(roles)))
 	if err != nil {
-		logger.Sugar().Errorw("GetGenesisRoleUsers", "error", err)
+		logger.Sugar().Errorw("GetGenesisUsers", "error", err)
 		return nil, err
 	}
 
@@ -177,11 +180,11 @@ func GetGenesisRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
 		},
 	}, 0, 0)
 	if err != nil {
-		logger.Sugar().Errorw("GetGenesisRoleUsers", "error", err)
+		logger.Sugar().Errorw("GetGenesisUsers", "error", err)
 		return nil, err
 	}
 	if len(roleUsers) == 0 {
-		logger.Sugar().Errorw("GetGenesisRoleUsers", "error", "not found")
+		logger.Sugar().Errorw("GetGenesisUsers", "error", "not found")
 		return nil, fmt.Errorf("role user not found")
 	}
 	roleUserIds := []string{}
@@ -189,9 +192,9 @@ func GetGenesisRoleUsers(ctx context.Context) ([]*rolemwpb.RoleUser, error) {
 		roleUserIds = append(roleUserIds, val.GetID())
 	}
 
-	infos, _, err := rolemwcli.GetManyRoleUsers(ctx, roleUserIds)
+	infos, _, err := usermwcli.GetManyUsers(ctx, roleUserIds)
 	if err != nil {
-		logger.Sugar().Errorw("GetGenesisRoleUsers", "error", err)
+		logger.Sugar().Errorw("GetGenesisUsers", "error", err)
 		return nil, err
 	}
 

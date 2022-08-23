@@ -68,11 +68,11 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesR
 	}, nil
 }
 
-func (s *Server) GetGenesisRoleUsers(ctx context.Context,
-	in *admin.GetGenesisRoleUsersRequest) (*admin.GetGenesisRoleUsersResponse, error) {
+func (s *Server) GetGenesisUsers(ctx context.Context,
+	in *admin.GetGenesisUsersRequest) (*admin.GetGenesisUsersResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetGenesisRoleUsers")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetGenesisUsers")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -81,15 +81,15 @@ func (s *Server) GetGenesisRoleUsers(ctx context.Context,
 		}
 	}()
 
-	span = commontracer.TraceInvoker(span, "admin", "pkg", "GetGenesisRoleUsers")
+	span = commontracer.TraceInvoker(span, "admin", "pkg", "GetGenesisUsers")
 
-	infos, err := mw.GetGenesisRoleUsers(ctx)
+	infos, err := mw.GetGenesisUsers(ctx)
 	if err != nil {
-		logger.Sugar().Errorw("GetGenesisRoleUsers", "err", err)
-		return &admin.GetGenesisRoleUsersResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw("GetGenesisUsers", "err", err)
+		return &admin.GetGenesisUsersResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &admin.GetGenesisRoleUsersResponse{
+	return &admin.GetGenesisUsersResponse{
 		Infos: infos,
 	}, nil
 }
