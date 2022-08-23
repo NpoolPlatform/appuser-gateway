@@ -5,7 +5,6 @@ import (
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
@@ -71,5 +70,5 @@ func CreateKyc(
 
 	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKyc")
 
-	return kycmwcli.GetKyc(ctx, kycInfo.ID)
+	return GetKyc(ctx, kycInfo.ID)
 }

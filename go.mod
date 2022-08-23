@@ -21,6 +21,7 @@ require (
 	github.com/NpoolPlatform/appuser-manager v0.0.0-20220822125142-5591fd50f495
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220822111934-93f63977d560
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220811120222-11c6ac6bb784
+	github.com/NpoolPlatform/kyc-management v0.0.0-20220716053838-1a0c1957144a
 	github.com/NpoolPlatform/ledger-manager v0.0.0-20220802044528-293b8a8ee2c8
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20220821121920-9559f5776d15
 	github.com/NpoolPlatform/third-gateway v0.0.0-20220821090429-d93a8f8007b7
