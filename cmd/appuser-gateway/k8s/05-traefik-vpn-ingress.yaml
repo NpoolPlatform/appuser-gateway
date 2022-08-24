@@ -24,7 +24,7 @@ spec:
           - path: /api/appuser
             backend:
               serviceName: appuser-gateway
-              servicePort: 50230
+              servicePort: 50500
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
