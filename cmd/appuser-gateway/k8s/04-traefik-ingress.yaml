@@ -24,19 +24,19 @@ spec:
           - path: /api/appuser/v1/signup
             backend:
               serviceName: appuser-gateway
-              servicePort: 50330
+              servicePort: 50500
           - path: /api/appuser/v1/get/app
             backend:
               serviceName: appuser-gateway
-              servicePort: 50330
+              servicePort: 50500
           - path: /api/appuser/v1/login
             backend:
               serviceName: appuser-gateway
-              servicePort: 50330
+              servicePort: 50500
           - path: /api/appuser/v1/logined
             backend:
               serviceName: appuser-gateway
-              servicePort: 50330
+              servicePort: 50500
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
@@ -70,11 +70,11 @@ spec:
           - path: /api/appuser/v1/update/user
             backend:
               serviceName: appuser-gateway
-              servicePort: 50330
+              servicePort: 50500
           - path: /api/appuser/v1/logout
             backend:
               serviceName: appuser-gateway
-              servicePort: 50330
+              servicePort: 50500
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
