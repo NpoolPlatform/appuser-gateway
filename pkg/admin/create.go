@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	tracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/admin"
 	appmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/app"
@@ -23,20 +24,41 @@ import (
 	appusermgrconst "github.com/NpoolPlatform/appuser-manager/pkg/message/const"
 
 	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
+	roleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
+	authmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/authing/auth"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
+	authmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/authing"
 	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
+	roleusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approleuser"
 
+	mauth "github.com/NpoolPlatform/appuser-gateway/pkg/authing"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	approlepb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
+	authingmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/authing/auth"
 	appmw "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
+	authingmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/authing"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 )
 
+func GetGenesisApps() ([]*appmrgpb.AppReq, error) {
+	genesisApps := []*appmrgpb.AppReq{}
+	genesisAppStr := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, constant.KeyGenesisApp)
+
+	err := json.Unmarshal([]byte(genesisAppStr), &genesisApps)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(genesisApps) == 0 {
+		return nil, fmt.Errorf("genesis app not available")
+	}
+	return genesisApps, nil
+}
+
 func CreateAdminApps(ctx context.Context) ([]*appmw.App, error) {
 	var err error
-	genesisApps := []*appmrgpb.AppReq{}
 
 	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "CreateAdminApps")
 	defer span.End()
@@ -50,15 +72,9 @@ func CreateAdminApps(ctx context.Context) ([]*appmw.App, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "apollo", "GetStringValueWithNameSpace")
 
-	genesisAppStr := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, constant.KeyGenesisApp)
-
-	err = json.Unmarshal([]byte(genesisAppStr), &genesisApps)
+	genesisApps, err := GetGenesisApps()
 	if err != nil {
 		return nil, err
-	}
-
-	if len(genesisApps) == 0 {
-		return nil, fmt.Errorf("genesis app not available")
 	}
 
 	span = commontracer.TraceInvoker(span, "admin", "middleware", "GetApps")
@@ -243,4 +259,160 @@ func CreateGenesisUser(ctx context.Context, appID, emailAddress, passwordHash st
 	}
 
 	return userInfo, nil
+}
+
+type genesisURL struct {
+	Path   string
+	Method string
+}
+
+func createGenesisAuths(ctx context.Context, appID string) (infos []*authingmwpb.Auth, err error) {
+	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "createGenesisAuths")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	apisJSON := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, constant.KeyGenesisAuthingAPIs)
+	apis := []genesisURL{}
+	err = json.Unmarshal([]byte(apisJSON), &apis)
+	if err != nil {
+		return nil, err
+	}
+	if len(apis) == 0 {
+		return nil, fmt.Errorf("genesis authing apis not available")
+	}
+
+	span = commontracer.TraceInvoker(span, "admin", "manager", "GetAppRoleUsers")
+
+	roleUsers, _, err := roleusermgrcli.GetAppRoleUsers(ctx, &roleusermgrpb.Conds{
+		AppID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+	}, 0, 0)
+
+	for _, val := range roleUsers {
+		for _, api := range apis {
+			span = commontracer.TraceInvoker(span, "admin", "manager", "CreateAuth")
+
+			_, err = mauth.CreateAuth(ctx, val.AppID, &val.UserID, &val.RoleID, api.Path, api.Method)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	infos, _, err = authmwcli.GetAuths(ctx, appID, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+	return infos, nil
+}
+
+func AuthorizeGenesis(ctx context.Context) (infos []*authingmwpb.Auth, err error) {
+	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "AuthorizeGenesis")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = commontracer.TraceInvoker(span, "admin", "admin", "getGenesisApps")
+
+	genesisApps, err := GetGenesisApps()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, val := range genesisApps {
+		span = commontracer.TraceInvoker(span, "admin", "admin", "createGenesisAuths")
+
+		authInfos, err := createGenesisAuths(ctx, val.GetID())
+		if err != nil {
+			return nil, err
+		}
+
+		infos = append(infos, authInfos...)
+	}
+
+	return infos, err
+}
+
+func processGenesisURLs(urls []genesisURL, appID string) {
+	timeOut := 5 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+
+	auths, _, err := authmgrcli.GetAuths(ctx, &authingmgrpb.Conds{
+		AppID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+	}, 0, 0)
+	if err != nil {
+		logger.Sugar().Errorw("processGenesisURLs", "err", err)
+		return
+	}
+
+	myURLs := []genesisURL{}
+	for _, url := range urls {
+		if url.Path == "" || url.Method == "" {
+			logger.Sugar().Errorw("processGenesisURLs", "invalid url", "url", url)
+			continue
+		}
+
+		found := false
+		for _, info := range auths {
+			if info.Resource == url.Path && info.Method == url.Method {
+				found = true
+				break
+			}
+		}
+		if !found {
+			myURLs = append(myURLs, url)
+		}
+	}
+
+	for _, url := range myURLs {
+		_, err = mauth.CreateAuth(ctx, appID, nil, nil, url.Path, url.Method)
+		if err != nil {
+			logger.Sugar().Errorw("processGenesisURLs", "err", err)
+		}
+	}
+}
+
+func watch() {
+	urlsJSON := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, constant.KeyGenesisURLs)
+	urls := []genesisURL{}
+	err := json.Unmarshal([]byte(urlsJSON), &urls)
+	if err == nil {
+		logger.Sugar().Infof("process genesis urls: %v", urls)
+		apps, err := GetGenesisApps()
+		if err != nil {
+			logger.Sugar().Errorw("watch", "err", err)
+			return
+		}
+		for _, val := range apps {
+			processGenesisURLs(urls, val.GetID())
+		}
+	} else {
+		logger.Sugar().Errorw("watch", "err", err)
+	}
+}
+
+func Watch() {
+	timeOut := 5 * time.Minute
+	ticker := time.NewTicker(timeOut)
+	for {
+		watch()
+		<-ticker.C
+	}
 }

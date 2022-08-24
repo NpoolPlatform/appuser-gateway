@@ -4,9 +4,10 @@ package admin
 import (
 	"context"
 
-	mw "github.com/NpoolPlatform/appuser-gateway/pkg/admin"
+	authmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/authing"
+
+	madmin "github.com/NpoolPlatform/appuser-gateway/pkg/admin"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-	authcli "github.com/NpoolPlatform/authing-gateway/pkg/client"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 
@@ -32,7 +33,7 @@ func (s *Server) GetAdminApps(ctx context.Context, in *admin.GetAdminAppsRequest
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetApps")
 
-	infos, err := mw.GetAdminApps(ctx)
+	infos, err := madmin.GetAdminApps(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetAdminApps", "err", err)
 		return &admin.GetAdminAppsResponse{}, status.Error(codes.Internal, err.Error())
@@ -57,7 +58,7 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesR
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetGenesisRoles")
 
-	infos, err := mw.GetGenesisRoles(ctx)
+	infos, err := madmin.GetGenesisRoles(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRole", "err", "genesis role not found")
 		return &admin.GetGenesisRolesResponse{}, status.Error(codes.Internal, err.Error())
@@ -83,7 +84,7 @@ func (s *Server) GetGenesisUsers(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "admin", "pkg", "GetGenesisUsers")
 
-	infos, err := mw.GetGenesisUsers(ctx)
+	infos, err := madmin.GetGenesisUsers(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisUsers", "err", err)
 		return &admin.GetGenesisUsersResponse{}, status.Error(codes.Internal, err.Error())
@@ -112,10 +113,9 @@ func (s *Server) GetGenesisAuths(ctx context.Context, in *admin.GetGenesisAuthsR
 		return &admin.GetGenesisAuthsResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
 	}
 
-	infos, err := authcli.GetAppAuths(ctx, in.GetTargetAppID())
+	infos, _, err := authmwcli.GetAuths(ctx, in.GetTargetAppID(), 0, 0)
 	if err != nil {
-		logger.Sugar().Errorw("GetGenesisAuths", "err", err)
-		return &admin.GetGenesisAuthsResponse{}, status.Error(codes.Internal, err.Error())
+		return nil, err
 	}
 
 	return &admin.GetGenesisAuthsResponse{

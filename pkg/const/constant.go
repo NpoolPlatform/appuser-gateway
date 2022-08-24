@@ -18,4 +18,7 @@ const (
 
 	ChurchAppName = "Church Dashboard"
 	ChurchAppID   = "ab4d1208-7da9-11ec-a6ea-fb41bda845cd"
+
+	KeyGenesisURLs        = "genesis_urls"
+	KeyGenesisAuthingAPIs = "genesis_authing_apis"
 )
