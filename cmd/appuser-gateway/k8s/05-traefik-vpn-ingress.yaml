@@ -1,11 +1,11 @@
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
-  name: appuser-gateway-traefik-vpn-ingress
+  name: appuser-gateway-traefik-vpn-free-ingress
   namespace: kube-system
   annotations:
-    k8s.kuboard.cn/displayName: appuser-gateway-traefik-vpn
-    k8s.kuboard.cn/workload: appuser-gateway-traefik-vpn
+    k8s.kuboard.cn/displayName: appuser-gateway-traefik-vpn-free
+    k8s.kuboard.cn/workload: appuser-gateway-traefik-vpn-free
     kubernetes.io/ingress.class: "traefik-internet-vpn"
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     traefik.ingress.kubernetes.io/router.middlewares:
