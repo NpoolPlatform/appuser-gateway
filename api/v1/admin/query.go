@@ -107,12 +107,12 @@ func (s *Server) GetGenesisAuths(ctx context.Context, in *admin.GetGenesisAuthsR
 		}
 	}()
 
-	if _, err := uuid.Parse(in.GetAppID()); err != nil {
-		logger.Sugar().Errorw("validate", "AppID", in.GetAppID(), "error", err)
+	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
+		logger.Sugar().Errorw("validate", "AppID", in.GetTargetAppID(), "error", err)
 		return &admin.GetGenesisAuthsResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
 	}
 
-	infos, err := authcli.GetAppAuths(ctx, in.GetAppID())
+	infos, err := authcli.GetAppAuths(ctx, in.GetTargetAppID())
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisAuths", "err", err)
 		return &admin.GetGenesisAuthsResponse{}, status.Error(codes.Internal, err.Error())
