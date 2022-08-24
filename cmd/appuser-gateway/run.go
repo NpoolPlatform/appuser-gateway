@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/NpoolPlatform/appuser-gateway/pkg/admin"
+
 	"github.com/NpoolPlatform/appuser-gateway/api"
 	"github.com/NpoolPlatform/appuser-gateway/pkg/migrator"
 	"github.com/NpoolPlatform/go-service-framework/pkg/oss"
@@ -39,6 +41,8 @@ var runCmd = &cli.Command{
 		if err := oss.Init(ossconst.SecretStoreKey, BukectKey); err != nil {
 			return fmt.Errorf("fail to init s3: %v", err)
 		}
+
+		go admin.Watch()
 
 		go func() {
 			if err := grpc2.RunGRPC(rpcRegister); err != nil {
