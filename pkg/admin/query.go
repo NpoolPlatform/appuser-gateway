@@ -108,6 +108,9 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 		logger.Sugar().Errorw("GetGenesisRole", "err", err)
 		return nil, err
 	}
+	if len(roleInfos) == 0 {
+		return []*rolemwpb.Role{}, nil
+	}
 
 	roleIDs := []string{}
 	for _, val := range roleInfos {
