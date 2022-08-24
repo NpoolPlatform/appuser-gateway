@@ -3,7 +3,6 @@ package admin
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -184,8 +183,7 @@ func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error) {
 		return nil, err
 	}
 	if len(roleUsers) == 0 {
-		logger.Sugar().Errorw("GetGenesisUsers", "error", "not found")
-		return nil, fmt.Errorf("role user not found")
+		return []*usermwpb.User{}, nil
 	}
 	roleUserIds := []string{}
 	for _, val := range roleUsers {
