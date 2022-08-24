@@ -6,12 +6,12 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
-	approleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
+	appusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
 
 	admingwpb "github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
 
 	approlemgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
-	approleusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approleuser"
+	appusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
 
@@ -44,28 +44,27 @@ func validate(ctx context.Context, info *admingwpb.CreateGenesisUserRequest) err
 		return status.Error(codes.InvalidArgument, "PasswordHash is empty")
 	}
 
-	resp, err := approlemgrcli.GetAppRoleOnly(ctx, &approlemgrpb.Conds{
+	roles, _, err := approlemgrcli.GetAppRoles(ctx, &approlemgrpb.Conds{
 		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: info.GetTargetAppID(),
 		},
-	})
+	}, 0, 100) // nolint
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
 	}
-
-	if resp == nil {
+	if len(roles) == 0 {
 		return status.Error(codes.Internal, "fail get app role")
 	}
 
-	exist, err := approleusermgrcli.ExistAppRoleUserConds(ctx, &approleusermgrpb.Conds{
+	exist, err := appusermgrcli.ExistAppUserConds(ctx, &appusermgrpb.Conds{
 		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: info.GetTargetAppID(),
 		},
-		RoleID: &commonpb.StringVal{
+		EmailAddress: &commonpb.StringVal{
 			Op:    cruder.EQ,
-			Value: resp.ID,
+			Value: info.GetEmailAddress(),
 		},
 	})
 	if err != nil {
