@@ -8,7 +8,70 @@ metadata:
     k8s.kuboard.cn/workload: appuser-gateway-traefik-vpn
     kubernetes.io/ingress.class: "traefik-internet-vpn"
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.middlewares: 
+    traefik.ingress.kubernetes.io/router.middlewares:
+      kube-system-strip-appuser-gateway-prefix@kubernetescrd,
+      kube-system-common-headers@kubernetescrd,
+      kube-system-headers-appid-to-body@kubernetescrd,
+      kube-system-headers-userid-to-body@kubernetescrd,
+      kube-system-headers-app-login-token-to-body@kubernetescrd
+
+spec:
+  rules:
+    - host: api.npool.top
+      http: &http_rules
+        paths:
+          - path: /api/appuser/v1/get/adminapps
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/adminapps
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/genesisroles
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/genesisroles
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/genesisusers
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/genesisuser
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/genesisauths
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/authorize/genesis
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+    - host: api.procyon.vip
+      http: *http_rules
+    - host: api.xpool.top
+      http: *http_rules
+    - host: api.internal-devops.development.xpool.top
+      http: *http_rules
+
+---
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: appuser-gateway-traefik-vpn-ingress
+  namespace: kube-system
+  annotations:
+    k8s.kuboard.cn/displayName: appuser-gateway-traefik-vpn
+    k8s.kuboard.cn/workload: appuser-gateway-traefik-vpn
+    kubernetes.io/ingress.class: "traefik-internet-vpn"
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.middlewares:
       kube-system-strip-appuser-gateway-prefix@kubernetescrd,
       kube-system-common-headers@kubernetescrd,
       kube-system-headers-appid-to-body@kubernetescrd,
