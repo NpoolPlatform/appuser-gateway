@@ -204,7 +204,7 @@ func LoginVerify(ctx context.Context, appID, userID, token, code string) (*userm
 func Logined(ctx context.Context, appID, userID, token string) (*usermwpb.User, error) {
 	meta, err := queryAppUser(ctx, uuid.MustParse(appID), uuid.MustParse(userID))
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
 	if meta == nil {
 		return nil, nil
@@ -214,11 +214,11 @@ func Logined(ctx context.Context, appID, userID, token string) (*usermwpb.User, 
 	}
 
 	if err := verifyToken(meta, token); err != nil {
-		return nil, err
+		return nil, nil
 	}
 
 	if err := createCache(ctx, meta); err != nil {
-		return nil, err
+		return nil, nil
 	}
 
 	return meta.User, nil
