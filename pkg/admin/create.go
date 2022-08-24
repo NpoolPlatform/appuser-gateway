@@ -229,29 +229,33 @@ func CreateGenesisUser(ctx context.Context, appID, emailAddress, passwordHash st
 
 	span = commontracer.TraceInvoker(span, "app", "db", "CreateGenesisUser")
 
-	appRole, err := approlemgrcli.GetAppRoleOnly(ctx, &approlepb.Conds{
+	roles, _, err := approlemgrcli.GetAppRoles(ctx, &approlepb.Conds{
 		AppID: &npool.StringVal{
 			Value: appID,
 			Op:    cruder.EQ,
 		},
-	})
+	}, 0, 100) // nolint
 	if err != nil {
-		logger.Sugar().Errorw("CreateGenesisUser", "error", err, "appRole", appRole)
+		logger.Sugar().Errorw("CreateGenesisUser", "error", err)
 		return nil, err
 	}
-	if appRole == nil {
-		return nil, fmt.Errorf("fail  get app role")
+	if len(roles) == 0 {
+		return nil, fmt.Errorf("fail get app role")
 	}
 
-	roleID := appRole.ID
 	userID := uuid.NewString()
+	roleIDs := []string{}
+
+	for _, role := range roles {
+		roleIDs = append(roleIDs, role.ID)
+	}
 
 	userInfo, err := usermwcli.CreateUser(ctx, &user.UserReq{
 		ID:           &userID,
 		AppID:        &appID,
 		EmailAddress: &emailAddress,
 		PasswordHash: &passwordHash,
-		RoleIDs:      []string{roleID},
+		RoleIDs:      roleIDs,
 	})
 	if err != nil {
 		logger.Sugar().Errorw("CreateGenesisUser", "error", err)
