@@ -347,7 +347,7 @@ func AuthorizeGenesis(ctx context.Context) (infos []*authingmwpb.Auth, err error
 }
 
 func processGenesisURLs(urls []genesisURL, appID string) {
-	timeOut := 5 * time.Second
+	const timeOut = 5 * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 
@@ -409,7 +409,7 @@ func watch() {
 }
 
 func Watch() {
-	timeOut := 5 * time.Minute
+	const timeOut = 5 * time.Minute
 	ticker := time.NewTicker(timeOut)
 	for {
 		watch()
