@@ -138,6 +138,11 @@ func Login(
 	user.LoginToken = token
 	user.LoginClientIP = meta.ClientIP.String()
 	user.LoginClientUserAgent = meta.UserAgent
+
+	if !app.SigninVerifyEnable {
+		user.LoginVerified = true
+	}
+
 	meta.User = user
 
 	if err := createCache(ctx, meta); err != nil {
