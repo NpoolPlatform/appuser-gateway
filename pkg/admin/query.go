@@ -185,12 +185,13 @@ func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error) {
 	if len(roleUsers) == 0 {
 		return []*usermwpb.User{}, nil
 	}
-	roleUserIds := []string{}
+
+	userIds := []string{}
 	for _, val := range roleUsers {
-		roleUserIds = append(roleUserIds, val.GetID())
+		userIds = append(userIds, val.GetUserID())
 	}
 
-	infos, _, err := usermwcli.GetManyUsers(ctx, roleUserIds)
+	infos, _, err := usermwcli.GetManyUsers(ctx, userIds)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisUsers", "error", err)
 		return nil, err
