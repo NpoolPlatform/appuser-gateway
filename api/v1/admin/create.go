@@ -6,18 +6,15 @@ import (
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	tracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/admin"
-	"github.com/NpoolPlatform/message/npool/authinggateway"
 	"google.golang.org/grpc/codes"
 
-	mw "github.com/NpoolPlatform/appuser-gateway/pkg/admin"
+	madmin "github.com/NpoolPlatform/appuser-gateway/pkg/admin"
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/status"
-
-	authcli "github.com/NpoolPlatform/authing-gateway/pkg/client"
 )
 
 func (s *Server) CreateAdminApps(ctx context.Context, in *admin.CreateAdminAppsRequest) (*admin.CreateAdminAppsResponse, error) {
@@ -35,7 +32,7 @@ func (s *Server) CreateAdminApps(ctx context.Context, in *admin.CreateAdminAppsR
 
 	span = commontracer.TraceInvoker(span, "admin", "pkg", "CreateAdminApps")
 
-	info, err := mw.CreateAdminApps(ctx)
+	info, err := madmin.CreateAdminApps(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("CreateAdminApps", "err", err)
 		return &admin.CreateAdminAppsResponse{}, status.Error(codes.Internal, err.Error())
@@ -61,7 +58,7 @@ func (s *Server) CreateGenesisRoles(ctx context.Context, in *admin.CreateGenesis
 
 	span = commontracer.TraceInvoker(span, "admin", "pkg", "CreateGenesisRoles")
 
-	infos, err := mw.CreateGenesisRoles(ctx)
+	infos, err := madmin.CreateGenesisRoles(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("CreateGenesisRoles", "err", err)
 		return &admin.CreateGenesisRolesResponse{}, status.Error(codes.Internal, err.Error())
@@ -96,7 +93,7 @@ func (s *Server) CreateGenesisUser(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "admin", "middleware", "CreateGenesisUser")
 
-	info, err := mw.CreateGenesisUser(
+	info, err := madmin.CreateGenesisUser(
 		ctx,
 		in.GetTargetAppID(),
 		in.GetEmailAddress(),
@@ -125,7 +122,7 @@ func (s *Server) AuthorizeGenesis(ctx context.Context, in *admin.AuthorizeGenesi
 		}
 	}()
 
-	infos, err := authcli.CreateGenesisAppUserAuth(ctx, &authinggateway.CreateGenesisAppUserAuthRequest{})
+	infos, err := madmin.AuthorizeGenesis(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("AuthorizeGenesis", "err", err)
 		return &admin.AuthorizeGenesisResponse{}, status.Error(codes.Internal, err.Error())
