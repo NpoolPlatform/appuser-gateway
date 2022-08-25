@@ -106,7 +106,7 @@ func (s *Server) GetKycImage(ctx context.Context, in *npool.GetKycImageRequest) 
 	)
 	if err != nil {
 		logger.Sugar().Errorw("GetKycImage", "error", err)
-		return &npool.GetKycImageResponse{}, status.Error(codes.Internal, "fail create kyc")
+		return &npool.GetKycImageResponse{}, status.Error(codes.Internal, "fail get kyc image")
 	}
 
 	return &npool.GetKycImageResponse{
