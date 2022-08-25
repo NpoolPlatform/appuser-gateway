@@ -49,12 +49,7 @@ func Authenticate(ctx context.Context, appID string, userID, token *string, reso
 
 	span = commontracer.TraceInvoker(span, "auth", "middleware", "ExistAuth")
 
-	userIDStr := ""
-	if userID != nil {
-		userIDStr = *userID
-	}
-
-	allowed, err := authingmwcli.ExistAuth(ctx, appID, userIDStr, resource, method)
+	allowed, err := authingmwcli.ExistAuth(ctx, appID, userID, resource, method)
 	if err != nil {
 		return false, err
 	}

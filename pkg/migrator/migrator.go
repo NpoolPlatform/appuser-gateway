@@ -317,7 +317,7 @@ func migrationKyc(ctx context.Context) (err error) {
 				SelfieImg:    kycInfo.UserHandingCardImg,
 				EntityType:   kycpb.KycEntityType_Individual.String(),
 				ReviewID:     newKycReviewID,
-				ReviewState:  reviewState.String(),
+				State:        reviewState.String(),
 			})
 		}
 		offset += limit
@@ -340,7 +340,7 @@ func migrationKyc(ctx context.Context) (err error) {
 				SetSelfieImg(info.SelfieImg).
 				SetEntityType(info.EntityType).
 				SetReviewID(info.ReviewID).
-				SetReviewState(info.ReviewState)
+				SetState(info.State)
 		}
 		_, err = tx.Kyc.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
