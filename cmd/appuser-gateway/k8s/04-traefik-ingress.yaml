@@ -75,7 +75,15 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/get
+          - path: /api/appuser/v1/get/app/roles
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/app/users
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/app/auths
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
