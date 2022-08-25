@@ -44,7 +44,6 @@ func main() {
 		redisconst.RedisServiceName,
 		appusermgrconst.ServiceName,
 		authconst.ServiceName,
-		authconst.ServiceName,
 		ossconst.S3NameSpace,
 		reviewconstant.ServiceName,
 		kycconstant.ServiceName,
