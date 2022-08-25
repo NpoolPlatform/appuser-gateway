@@ -66,14 +66,14 @@ func validateRoleUser(ctx context.Context, info *approleuserpb.AppRoleUserReq) e
 		return status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	role, err := approlemgrcli.GetAppRole(ctx, info.GetRoleID())
+	_role, err := approlemgrcli.GetAppRole(ctx, info.GetRoleID())
 	if err != nil {
 		logger.Sugar().Errorw("validate", "err", err)
 		return status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if role.Genesis {
-		logger.Sugar().Errorw("validate", "Role", role.GetRole())
+	if _role.Genesis {
+		logger.Sugar().Errorw("validate", "Role", _role.GetRole())
 		return status.Error(codes.PermissionDenied, "permission denied")
 	}
 
