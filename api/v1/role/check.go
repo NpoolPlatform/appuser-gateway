@@ -3,7 +3,6 @@ package role
 import (
 	"context"
 
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	apiapproleuser "github.com/NpoolPlatform/appuser-manager/api/v2/approleuser"
 	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 	approleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
@@ -34,11 +33,6 @@ func validate(ctx context.Context, info *role.CreateRoleRequest) error {
 		return status.Error(codes.PermissionDenied, "RoleName empty")
 	}
 
-	if info.GetRoleName() == constant.GenesisRole {
-		logger.Sugar().Errorw("validate", "RoleName", info.GetRoleName())
-		return status.Error(codes.PermissionDenied, "permission denied")
-	}
-
 	if _, err := uuid.Parse(info.GetAppID()); err != nil {
 		logger.Sugar().Errorw("validate", "AppID", info.GetAppID(), "err", err)
 		return status.Error(codes.InvalidArgument, "AppID is invalid")
@@ -58,28 +52,8 @@ func validate(ctx context.Context, info *role.CreateRoleRequest) error {
 		logger.Sugar().Errorw("validate", "err", err)
 		return status.Error(codes.Internal, err.Error())
 	}
-
 	if exist {
 		return status.Error(codes.AlreadyExists, "role name already exists")
-	}
-
-	exist, err = approlemgrcli.ExistAppRoleConds(ctx, &approlepb.Conds{
-		AppID: &npool.StringVal{
-			Op:    cruder.EQ,
-			Value: info.GetAppID(),
-		},
-		Default: &npool.BoolVal{
-			Op:    cruder.EQ,
-			Value: true,
-		},
-	})
-	if err != nil {
-		logger.Sugar().Errorw("validate", "err", err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	if exist {
-		return status.Error(codes.AlreadyExists, "default role already exists")
 	}
 
 	return nil
@@ -92,14 +66,14 @@ func validateRoleUser(ctx context.Context, info *approleuserpb.AppRoleUserReq) e
 		return status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	appRole, err := approlemgrcli.GetAppRole(ctx, info.GetRoleID())
+	role, err := approlemgrcli.GetAppRole(ctx, info.GetRoleID())
 	if err != nil {
 		logger.Sugar().Errorw("validate", "err", err)
 		return status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if appRole.GetRole() == constant.GenesisAppID {
-		logger.Sugar().Errorw("validate", "Role", appRole.GetRole())
+	if role.Genesis {
+		logger.Sugar().Errorw("validate", "Role", role.GetRole())
 		return status.Error(codes.PermissionDenied, "permission denied")
 	}
 
@@ -121,10 +95,9 @@ func validateRoleUser(ctx context.Context, info *approleuserpb.AppRoleUserReq) e
 		logger.Sugar().Errorw("validate", "err", err)
 		return status.Error(codes.Internal, err.Error())
 	}
-
 	if exist {
 		logger.Sugar().Errorw("validate", "exist", exist)
-		return status.Error(codes.AlreadyExists, "app role user already exists")
+		return status.Error(codes.AlreadyExists, "role user already exists")
 	}
 
 	return err
