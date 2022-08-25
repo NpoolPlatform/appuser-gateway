@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+
 	loginhispb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/login/history"
 	recaptcha "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/recaptcha"
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
@@ -204,6 +206,7 @@ func LoginVerify(ctx context.Context, appID, userID, token, code string) (*userm
 func Logined(ctx context.Context, appID, userID, token string) (*usermwpb.User, error) {
 	meta, err := queryAppUser(ctx, uuid.MustParse(appID), uuid.MustParse(userID))
 	if err != nil {
+		logger.Sugar().Infow("Logined", "error", err)
 		return nil, nil
 	}
 	if meta == nil {
@@ -214,10 +217,12 @@ func Logined(ctx context.Context, appID, userID, token string) (*usermwpb.User, 
 	}
 
 	if err := verifyToken(meta, token); err != nil {
+		logger.Sugar().Infow("Logined", "error", err)
 		return nil, nil
 	}
 
 	if err := createCache(ctx, meta); err != nil {
+		logger.Sugar().Infow("Logined", "error", err)
 		return nil, nil
 	}
 
