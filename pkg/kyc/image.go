@@ -11,6 +11,9 @@ import (
 
 func UploadKycImage(ctx context.Context, appID, userID string, imgType kycmgrpb.KycImageType, imgBase64 string) error {
 	key := fmt.Sprintf("kyc/%v/%v/%v", appID, userID, imgType)
+	fmt.Println(key)
+	fmt.Println(imgBase64)
+	fmt.Println([]byte(imgBase64))
 	return oss.PutObject(ctx, key, []byte(imgBase64), true)
 }
 

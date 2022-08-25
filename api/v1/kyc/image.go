@@ -2,6 +2,7 @@ package kyc
 
 import (
 	"context"
+	"fmt"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
@@ -14,7 +15,6 @@ import (
 	kycmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/kyc"
 
 	kyc1 "github.com/NpoolPlatform/appuser-gateway/pkg/kyc"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -31,6 +31,8 @@ func (s *Server) UploadKycImage(ctx context.Context, in *npool.UploadKycImageReq
 		}
 	}()
 
+	fmt.Println("p****************")
+	fmt.Println(in)
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		logger.Sugar().Errorw("UploadKycImage", "AppID", in.GetAppID())
 		return &npool.UploadKycImageResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
