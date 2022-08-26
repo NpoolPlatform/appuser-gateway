@@ -130,7 +130,7 @@ func verifyToken(meta *Metadata, token string) error {
 
 	claims, ok := jwtToken.Claims.(jwt.MapClaims)
 	if !ok {
-		return fmt.Errorf("type seertion fail of jwt token")
+		return fmt.Errorf("type assertion fail of jwt token")
 	}
 
 	err = meta.ValidateJWTClaims(claims)
