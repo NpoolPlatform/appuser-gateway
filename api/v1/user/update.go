@@ -61,11 +61,14 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
 			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 		}
+	}
 
-		account := in.GetEmailAddress()
-		if account == "" {
-			account = in.GetPhoneNO()
-		}
+	account := in.GetEmailAddress()
+	if account == "" {
+		account = in.GetPhoneNO()
+	}
+
+	if account != "" {
 		if err := user1.VerifyCode(
 			ctx,
 			in.GetAppID(),
