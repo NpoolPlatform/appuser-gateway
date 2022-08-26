@@ -69,7 +69,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		}
 	}
 
-	if in.NewAccount != nil || in.PasswordHash != nil {
+	if in.NewAccount != nil || in.PasswordHash != nil || in.GetNewAccountType() == signmethod.SignMethodType_Google {
 		if err := user1.VerifyCode(
 			ctx,
 			in.GetAppID(),
