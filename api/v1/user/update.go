@@ -3,9 +3,8 @@ package user
 import (
 	"context"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
@@ -18,6 +17,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -45,7 +45,11 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	// TODO: in some case we need two verification code
+	if in.GetEmailAddress() != "" && in.GetPhoneNO() != "" {
+		logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
+		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "Can't update email and phone numbers together")
+	}
+
 	if in.GetEmailAddress() != "" || in.GetPhoneNO() != "" || in.GetPasswordHash() != "" {
 		if err := user1.VerifyCode(
 			ctx,
@@ -54,6 +58,26 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 			in.GetAccount(),
 			in.GetAccountType(),
 			in.GetVerificationCode(),
+			thirdgwconst.UsedForUpdate,
+		); err != nil {
+			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
+			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		}
+	}
+
+	account := in.GetEmailAddress()
+	if account == "" {
+		account = in.GetPhoneNO()
+	}
+
+	if account != "" {
+		if err := user1.VerifyCode(
+			ctx,
+			in.GetAppID(),
+			in.GetUserID(),
+			account,
+			in.GetAccountType(),
+			in.GetNewVerificationCode(),
 			thirdgwconst.UsedForUpdate,
 		); err != nil {
 			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
