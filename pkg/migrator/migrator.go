@@ -194,7 +194,7 @@ package migrator
 //	return nil
 //}
 //
-////nolint:gocyclo
+//
 // func migrationKyc(ctx context.Context) (err error) {
 //	cli, err := db.Client()
 //	if err != nil {
