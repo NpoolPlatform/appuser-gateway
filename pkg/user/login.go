@@ -248,6 +248,14 @@ func UpdateCache(ctx context.Context, user *usermwpb.User) error {
 		return err
 	}
 
+	user.Logined = meta.User.Logined
+	user.LoginAccount = meta.User.LoginAccount
+	user.LoginAccountType = meta.User.LoginAccountType
+	user.LoginToken = meta.User.LoginToken
+	user.LoginClientIP = meta.User.LoginClientIP
+	user.LoginClientUserAgent = meta.User.LoginClientUserAgent
+	user.LoginVerified = meta.User.LoginVerified
+
 	meta.User = user
 	if err := createCache(ctx, meta); err != nil {
 		return err
