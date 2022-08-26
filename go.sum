@@ -134,8 +134,8 @@ github.com/NpoolPlatform/message v0.0.0-20220811055003-c46a227689fb/go.mod h1:8Y
 github.com/NpoolPlatform/message v0.0.0-20220819134247-1dc75c85fe43/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
 github.com/NpoolPlatform/message v0.0.0-20220826120009-3a70eda24070 h1:aCtPnyz+EfaFcLbfnj/4vwjqWBIqoxTqwJK0mJ9BvV4=
 github.com/NpoolPlatform/message v0.0.0-20220826120009-3a70eda24070/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
-github.com/NpoolPlatform/review-service v0.0.0-20220822120609-57fa251ee8ed h1:UqgtVBSYH+DRh0DukYzzqjjf8DPyuVd514dqgG1/1qU=
-github.com/NpoolPlatform/review-service v0.0.0-20220822120609-57fa251ee8ed/go.mod h1:JQH8fhr5aRRLs5R//leqc7cClJN3rlbkOTmLz9pQZzQ=
+github.com/NpoolPlatform/review-service v0.0.0-20220826135931-2f311aae9cbd h1:0qa4gaXzBKydLrLvbnb1rQnIdW2+LpXyXdK8r0hJWGs=
+github.com/NpoolPlatform/review-service v0.0.0-20220826135931-2f311aae9cbd/go.mod h1:smU9zn3y/oPgj3sQ3IqQt1luOEkzH9ImW7HQlCe4bh4=
 github.com/NpoolPlatform/third-gateway v0.0.0-20220205094704-a585d53bd025/go.mod h1:NZxtQVYHNvgKZp0NAegcDOMNDSjJGQ18gvmOP1hZrH4=
 github.com/NpoolPlatform/third-gateway v0.0.0-20220821090429-d93a8f8007b7 h1:T17wMdxC3WZyJ3YRWLQ+2ZS/mddOZ5VakciQ6XC7gmU=
 github.com/NpoolPlatform/third-gateway v0.0.0-20220821090429-d93a8f8007b7/go.mod h1:2qiiRD6IyJ1VtTzqTpclMf+CbqN98v70uu5cJNu00PI=
