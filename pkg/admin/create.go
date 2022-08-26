@@ -334,9 +334,7 @@ func AuthorizeGenesis(ctx context.Context) (infos []*authingmwpb.Auth, total uin
 
 	for _, val := range genesisApps {
 		span = commontracer.TraceInvoker(span, "admin", "admin", "createGenesisAuths")
-
-		authInfos := []*authingmwpb.Auth{}
-		authInfos, total, err = createGenesisAuths(ctx, val.GetID())
+		authInfos, _, err := createGenesisAuths(ctx, val.GetID())
 		if err != nil {
 			return nil, 0, err
 		}
@@ -344,5 +342,5 @@ func AuthorizeGenesis(ctx context.Context) (infos []*authingmwpb.Auth, total uin
 		infos = append(infos, authInfos...)
 	}
 
-	return infos, total, nil
+	return infos, uint32(len(infos)), nil
 }
