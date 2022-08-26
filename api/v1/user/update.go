@@ -48,11 +48,9 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if in.EmailAddress != nil || in.PhoneNO != nil {
-		if in.GetEmailAddress() != "" && in.GetPhoneNO() != "" {
-			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
-			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "Can't update email and phone numbers together")
-		}
+	if in.GetEmailAddress() != "" && in.GetPhoneNO() != "" {
+		logger.Sugar().Infow("UpdateUser", "EmailAddress", in.GetEmailAddress(), "PhoneNO", in.GetPhoneNO())
+		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "Can't update email and phone numbers together")
 	}
 
 	if in.GetEmailAddress() != "" || in.GetPhoneNO() != "" || in.GetPasswordHash() != "" {
