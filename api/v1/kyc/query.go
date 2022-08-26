@@ -65,7 +65,7 @@ func (s *Server) GetKyc(ctx context.Context, in *kyc.GetKycRequest) (resp *kyc.G
 
 	if len(infos) == 0 {
 		logger.Sugar().Errorw("GetKyc", "error", "not found")
-		return &kyc.GetKycResponse{}, status.Error(codes.NotFound, "not found")
+		return &kyc.GetKycResponse{}, status.Error(codes.Internal, "not found")
 	}
 
 	return &kyc.GetKycResponse{
