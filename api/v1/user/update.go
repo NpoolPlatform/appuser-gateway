@@ -17,6 +17,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
