@@ -95,8 +95,8 @@ github.com/NpoolPlatform/appuser-manager v0.0.0-20220129103404-3f7941df7148/go.m
 github.com/NpoolPlatform/appuser-manager v0.0.0-20220809085144-ce64d9b6da51/go.mod h1:LQIbkZ4MRdT01DZ1zBi77SKgcCf5u+9Bgo2b1/lHlcY=
 github.com/NpoolPlatform/appuser-manager v0.0.0-20220825130318-aa84606aef16 h1:O4WsfdPMz1enyaFPcwrLvNnqcTvtkhqjVm0bOJwWXVw=
 github.com/NpoolPlatform/appuser-manager v0.0.0-20220825130318-aa84606aef16/go.mod h1:JiprKKKhrUSI/5+iV0F3MZnCgNo9W2pv1KkuzyNmLJU=
-github.com/NpoolPlatform/appuser-middleware v0.0.0-20220825131350-69f52f2e9d20 h1:kfN9Qd18PN5A/LvUBheql5oVBWqi5dCIGTLQvFV3KzA=
-github.com/NpoolPlatform/appuser-middleware v0.0.0-20220825131350-69f52f2e9d20/go.mod h1:rkV91dpdNf78+edyxi4etnwAEvLqG5dR6+C2qK8HP9c=
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20220826115243-eb7e1a673cab h1:RfDcaCU8ec/g7sjDTjWk6GOgr1V9kGiKBYZsGhLBPxw=
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20220826115243-eb7e1a673cab/go.mod h1:k/VNfIp+BSNK3ULBSJdaewY4y7GYDhiGyOVH3O79P1I=
 github.com/NpoolPlatform/authing-gateway v0.0.0-20220817093533-0f63320a452b h1:OtbVgm31jKia/NaM048WKZVaFVsqELKiD/7O50BZYjs=
 github.com/NpoolPlatform/authing-gateway v0.0.0-20220817093533-0f63320a452b/go.mod h1:MiLlsYTY+pArHaikOxGdXiu/8fGPV601cvwk/ujUnuQ=
 github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20211224023221-a715aef93510/go.mod h1:YcH4tmsnOFfsFeBG6tqT6W5Z6yKvQA2W+b9RBhSAzMo=
@@ -132,8 +132,8 @@ github.com/NpoolPlatform/message v0.0.0-20220727114611-5f9d88a0c326/go.mod h1:8Y
 github.com/NpoolPlatform/message v0.0.0-20220805093355-212c8a7f966b/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
 github.com/NpoolPlatform/message v0.0.0-20220811055003-c46a227689fb/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
 github.com/NpoolPlatform/message v0.0.0-20220819134247-1dc75c85fe43/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
-github.com/NpoolPlatform/message v0.0.0-20220826072148-d9f23d7baf73 h1:IGlanxJZnJehLVUe46P2qXnzy9iXhqOyeTqT3ZQxrNM=
-github.com/NpoolPlatform/message v0.0.0-20220826072148-d9f23d7baf73/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
+github.com/NpoolPlatform/message v0.0.0-20220826120009-3a70eda24070 h1:aCtPnyz+EfaFcLbfnj/4vwjqWBIqoxTqwJK0mJ9BvV4=
+github.com/NpoolPlatform/message v0.0.0-20220826120009-3a70eda24070/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
 github.com/NpoolPlatform/review-service v0.0.0-20220822120609-57fa251ee8ed h1:UqgtVBSYH+DRh0DukYzzqjjf8DPyuVd514dqgG1/1qU=
 github.com/NpoolPlatform/review-service v0.0.0-20220822120609-57fa251ee8ed/go.mod h1:JQH8fhr5aRRLs5R//leqc7cClJN3rlbkOTmLz9pQZzQ=
 github.com/NpoolPlatform/third-gateway v0.0.0-20220205094704-a585d53bd025/go.mod h1:NZxtQVYHNvgKZp0NAegcDOMNDSjJGQ18gvmOP1hZrH4=
