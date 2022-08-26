@@ -270,7 +270,7 @@ type genesisURL struct {
 	Method string
 }
 
-func createGenesisAuths(ctx context.Context, appID string) (infos []*authingmwpb.Auth, err error) {
+func createGenesisAuths(ctx context.Context, appID string) (infos []*authingmwpb.Auth, total uint32, err error) {
 	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "createGenesisAuths")
 	defer span.End()
 
@@ -285,10 +285,10 @@ func createGenesisAuths(ctx context.Context, appID string) (infos []*authingmwpb
 	apis := []genesisURL{}
 	err = json.Unmarshal([]byte(apisJSON), &apis)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if len(apis) == 0 {
-		return nil, fmt.Errorf("genesis authing apis not available")
+		return nil, 0, fmt.Errorf("genesis authing apis not available")
 	}
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetAppRoleUsers")
@@ -306,19 +306,15 @@ func createGenesisAuths(ctx context.Context, appID string) (infos []*authingmwpb
 
 			_, err = mauth.CreateAuth(ctx, val.AppID, &val.UserID, &val.RoleID, api.Path, api.Method)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 		}
 	}
 
-	infos, _, err = authmwcli.GetAuths(ctx, appID, 0, 0)
-	if err != nil {
-		return nil, err
-	}
-	return infos, nil
+	return authmwcli.GetAuths(ctx, appID, 0, 0)
 }
 
-func AuthorizeGenesis(ctx context.Context) (infos []*authingmwpb.Auth, err error) {
+func AuthorizeGenesis(ctx context.Context) (infos []*authingmwpb.Auth, total uint32, err error) {
 	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "AuthorizeGenesis")
 	defer span.End()
 
@@ -333,19 +329,20 @@ func AuthorizeGenesis(ctx context.Context) (infos []*authingmwpb.Auth, err error
 
 	genesisApps, err := GetGenesisApps()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	for _, val := range genesisApps {
 		span = commontracer.TraceInvoker(span, "admin", "admin", "createGenesisAuths")
 
-		authInfos, err := createGenesisAuths(ctx, val.GetID())
+		authInfos := []*authingmwpb.Auth{}
+		authInfos, total, err = createGenesisAuths(ctx, val.GetID())
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		infos = append(infos, authInfos...)
 	}
 
-	return infos, err
+	return infos, total, nil
 }
