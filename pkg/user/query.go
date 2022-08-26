@@ -44,7 +44,7 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 			return nil, err
 		}
 		if code == nil {
-			return resp, nil
+			continue
 		}
 		if code.GetInvitationCode() != "" {
 			resp[key].InvitationCode = &code.InvitationCode
