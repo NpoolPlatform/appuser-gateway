@@ -12,6 +12,7 @@ import (
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
+	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
@@ -47,13 +48,28 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		logger.Sugar().Infow("UpdateUser", "UserID", in.GetUserID())
 		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
-
-	if in.GetEmailAddress() != "" && in.GetPhoneNO() != "" {
-		logger.Sugar().Infow("UpdateUser", "EmailAddress", in.GetEmailAddress(), "PhoneNO", in.GetPhoneNO())
-		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "Can't update email and phone numbers together")
+	if in.NewAccount != nil && in.GetNewAccount() == "" {
+		logger.Sugar().Infow("UpdateUser", "NewAccount", in.GetNewAccount())
+		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "NewAccount is invalid")
+	}
+	if in.PasswordHash != nil && in.GetPasswordHash() == "" {
+		logger.Sugar().Infow("UpdateUser", "PasswordHash", in.GetPasswordHash())
+		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "PasswordHash is invalid")
 	}
 
-	if in.GetEmailAddress() != "" || in.GetPhoneNO() != "" || in.GetPasswordHash() != "" {
+	switch in.GetNewAccountType() {
+	case signmethod.SignMethodType_Google:
+		fallthrough //nolint
+	case signmethod.SignMethodType_Email:
+		fallthrough //nolint
+	case signmethod.SignMethodType_Mobile:
+		if in.GetNewVerificationCode() == "" {
+			logger.Sugar().Infow("UpdateUser", "NewVerificationCode", in.GetNewVerificationCode())
+			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "NewVerificationCode is invalid")
+		}
+	}
+
+	if in.NewAccount != nil || in.PasswordHash != nil {
 		if err := user1.VerifyCode(
 			ctx,
 			in.GetAppID(),
@@ -66,35 +82,26 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
 			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 		}
-	}
 
-	account := in.GetEmailAddress()
-	if account == "" {
-		account = in.GetPhoneNO()
-	}
-
-	if account != "" {
 		if err := user1.VerifyCode(
 			ctx,
 			in.GetAppID(),
 			in.GetUserID(),
-			account,
-			in.GetAccountType(),
+			in.GetNewAccount(),
+			in.GetNewAccountType(),
 			in.GetNewVerificationCode(),
 			thirdgwconst.UsedForUpdate,
 		); err != nil {
-			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
+			logger.Sugar().Infow("UpdateUser", "NewVerificationCode", in.GetNewVerificationCode())
 			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 		}
 	}
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "UpdateUser")
 
-	info, err := usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
+	req := &usermwpb.UserReq{
 		ID:               &in.UserID,
 		AppID:            &in.AppID,
-		EmailAddress:     in.EmailAddress,
-		PhoneNO:          in.PhoneNO,
 		Username:         in.Username,
 		AddressFields:    in.AddressFields,
 		Gender:           in.Gender,
@@ -108,24 +115,34 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		IDNumber:         in.IDNumber,
 		SigninVerifyType: in.SigninVerifyType,
 		PasswordHash:     in.PasswordHash,
-	})
+	}
+	switch in.GetNewAccountType() {
+	case signmethod.SignMethodType_Google:
+		verified := true
+		req.GoogleAuthVerified = &verified
+	case signmethod.SignMethodType_Email:
+		req.EmailAddress = in.NewAccount
+	case signmethod.SignMethodType_Mobile:
+		req.PhoneNO = in.NewAccount
+	}
+
+	info, err := usermwcli.UpdateUser(ctx, req)
 	if err != nil {
 		logger.Sugar().Errorw("UpdateUser", "err", err)
 		return &npool.UpdateUserResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	if in.InvitationCodeID != nil {
-		if in.InvitationCodeConfirmed == nil {
-			logger.Sugar().Errorw("UpdateUser", "err", err)
-			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "InvitationCodeConfirmed empty")
-		}
-
+	if in.InvitationCodeID != nil && in.InvitationCodeConfirmed != nil {
 		if _, err = uuid.Parse(in.GetInvitationCodeID()); err != nil {
 			logger.Sugar().Errorw("UpdateUser", "err", err)
 			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 		}
 
-		invite, err := invitationcli.UpdateUserInvitationCode(ctx, in.GetInvitationCodeID(), in.GetInvitationCodeConfirmed())
+		invite, err := invitationcli.UpdateUserInvitationCode(
+			ctx,
+			in.GetInvitationCodeID(),
+			in.GetInvitationCodeConfirmed(),
+		)
 		if err != nil {
 			logger.Sugar().Errorw("UpdateUser", "err", err)
 			return &npool.UpdateUserResponse{}, status.Error(codes.Internal, err.Error())
