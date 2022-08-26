@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+
 	invitationcli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
@@ -25,6 +26,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//nolint:gocyclo
 func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*npool.UpdateUserResponse, error) {
 	var err error
 
