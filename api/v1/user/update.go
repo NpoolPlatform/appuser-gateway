@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	invitationcli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -45,9 +46,11 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if in.GetEmailAddress() != "" && in.GetPhoneNO() != "" {
-		logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
-		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "Can't update email and phone numbers together")
+	if in.EmailAddress != nil || in.PhoneNO != nil {
+		if in.GetEmailAddress() != "" && in.GetPhoneNO() != "" {
+			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
+			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "Can't update email and phone numbers together")
+		}
 	}
 
 	if in.GetEmailAddress() != "" || in.GetPhoneNO() != "" || in.GetPasswordHash() != "" {
@@ -109,6 +112,26 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 	if err != nil {
 		logger.Sugar().Errorw("UpdateUser", "err", err)
 		return &npool.UpdateUserResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	if in.InvitationCodeID != nil {
+		if in.InvitationCodeConfirmed == nil {
+			logger.Sugar().Errorw("UpdateUser", "err", err)
+			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "InvitationCodeConfirmed empty")
+		}
+
+		if _, err = uuid.Parse(in.GetInvitationCodeID()); err != nil {
+			logger.Sugar().Errorw("UpdateUser", "err", err)
+			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		}
+
+		invite, err := invitationcli.UpdateUserInvitationCode(ctx, in.GetInvitationCodeID(), in.GetInvitationCodeConfirmed())
+		if err != nil {
+			logger.Sugar().Errorw("UpdateUser", "err", err)
+			return &npool.UpdateUserResponse{}, status.Error(codes.Internal, err.Error())
+		}
+
+		info.InvitationCodeConfirmed = invite.Confirmed
 	}
 
 	_ = user1.UpdateCache(ctx, info)
