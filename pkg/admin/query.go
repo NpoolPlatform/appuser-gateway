@@ -71,7 +71,7 @@ func GetAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
 	return apps, nil
 }
 
-func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
+func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, uint32, error) {
 	var err error
 	appRoles := []*approlemgrpb.AppRoleReq{}
 
@@ -90,7 +90,7 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 
 	err = json.Unmarshal([]byte(genesisRoleStr), &appRoles)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	roles := []string{}
@@ -106,10 +106,10 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 	}, 0, int32(len(roles)))
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRole", "err", err)
-		return nil, err
+		return nil, 0, err
 	}
 	if len(roleInfos) == 0 {
-		return []*rolemwpb.Role{}, nil
+		return []*rolemwpb.Role{}, 0, nil
 	}
 
 	roleIDs := []string{}
@@ -117,16 +117,16 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 		roleIDs = append(roleIDs, val.GetID())
 	}
 
-	infos, _, err := rolemwcli.GetManyRoles(ctx, roleIDs)
+	infos, total, err := rolemwcli.GetManyRoles(ctx, roleIDs)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRoles", "error", err)
-		return nil, err
+		return nil, 0, err
 	}
 
-	return infos, nil
+	return infos, total, nil
 }
 
-func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error) {
+func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, uint32, error) {
 	var err error
 	genesisRoles := []*approlemgrpb.AppRoleReq{}
 
@@ -145,7 +145,7 @@ func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error) {
 
 	err = json.Unmarshal([]byte(genesisRoleStr), &genesisRoles)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	roles := []string{}
@@ -161,7 +161,7 @@ func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error) {
 	}, 0, int32(len(roles)))
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisUsers", "error", err)
-		return nil, err
+		return nil, 0, err
 	}
 
 	roleIDs := []string{}
@@ -183,10 +183,10 @@ func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error) {
 	}, 0, 0)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisUsers", "error", err)
-		return nil, err
+		return nil, 0, err
 	}
 	if len(roleUsers) == 0 {
-		return []*usermwpb.User{}, nil
+		return []*usermwpb.User{}, 0, nil
 	}
 
 	userIds := []string{}
@@ -194,11 +194,11 @@ func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error) {
 		userIds = append(userIds, val.GetUserID())
 	}
 
-	infos, _, err := usermwcli.GetManyUsers(ctx, userIds)
+	infos, total, err := usermwcli.GetManyUsers(ctx, userIds)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisUsers", "error", err)
-		return nil, err
+		return nil, 0, err
 	}
 
-	return infos, nil
+	return infos, total, nil
 }

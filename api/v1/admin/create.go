@@ -122,7 +122,7 @@ func (s *Server) AuthorizeGenesis(ctx context.Context, in *admin.AuthorizeGenesi
 		}
 	}()
 
-	infos, err := madmin.AuthorizeGenesis(ctx)
+	infos, total, err := madmin.AuthorizeGenesis(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("AuthorizeGenesis", "err", err)
 		return &admin.AuthorizeGenesisResponse{}, status.Error(codes.Internal, err.Error())
@@ -130,5 +130,6 @@ func (s *Server) AuthorizeGenesis(ctx context.Context, in *admin.AuthorizeGenesi
 
 	return &admin.AuthorizeGenesisResponse{
 		Infos: infos,
+		Total: total,
 	}, nil
 }

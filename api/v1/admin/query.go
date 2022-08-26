@@ -58,7 +58,7 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesR
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetGenesisRoles")
 
-	infos, err := madmin.GetGenesisRoles(ctx)
+	infos, total, err := madmin.GetGenesisRoles(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisRole", "err", "genesis role not found")
 		return &admin.GetGenesisRolesResponse{}, status.Error(codes.Internal, err.Error())
@@ -66,6 +66,7 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *admin.GetGenesisRolesR
 
 	return &admin.GetGenesisRolesResponse{
 		Infos: infos,
+		Total: total,
 	}, nil
 }
 
@@ -84,7 +85,7 @@ func (s *Server) GetGenesisUsers(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "admin", "pkg", "GetGenesisUsers")
 
-	infos, err := madmin.GetGenesisUsers(ctx)
+	infos, total, err := madmin.GetGenesisUsers(ctx)
 	if err != nil {
 		logger.Sugar().Errorw("GetGenesisUsers", "err", err)
 		return &admin.GetGenesisUsersResponse{}, status.Error(codes.Internal, err.Error())
@@ -92,6 +93,7 @@ func (s *Server) GetGenesisUsers(ctx context.Context,
 
 	return &admin.GetGenesisUsersResponse{
 		Infos: infos,
+		Total: total,
 	}, nil
 }
 
@@ -113,12 +115,13 @@ func (s *Server) GetGenesisAuths(ctx context.Context, in *admin.GetGenesisAuthsR
 		return &admin.GetGenesisAuthsResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
 	}
 
-	infos, _, err := authmwcli.GetAuths(ctx, in.GetTargetAppID(), 0, 0)
+	infos, total, err := authmwcli.GetAuths(ctx, in.GetTargetAppID(), 0, 0)
 	if err != nil {
 		return nil, err
 	}
 
 	return &admin.GetGenesisAuthsResponse{
 		Infos: infos,
+		Total: total,
 	}, nil
 }
