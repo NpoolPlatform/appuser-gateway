@@ -6,7 +6,7 @@ require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220820093920-25cb3a5d5e3a
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20220818105452-9457611ae070
 	github.com/NpoolPlatform/message v0.0.0-20220826120009-3a70eda24070
-	github.com/NpoolPlatform/review-service v0.0.0-20220822120609-57fa251ee8ed
+	github.com/NpoolPlatform/review-service v0.0.0-20220826135931-2f311aae9cbd
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
@@ -51,7 +51,7 @@ require (
 
 require (
 	ariga.io/atlas v0.5.1-0.20220717122844-8593d7eb1a8e // indirect
-	entgo.io/ent v0.11.2 // indirect
+	entgo.io/ent v0.11.2
 	github.com/NpoolPlatform/authing-gateway v0.0.0-20220817093533-0f63320a452b
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
