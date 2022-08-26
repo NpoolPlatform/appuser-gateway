@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/NpoolPlatform/appuser-gateway/api"
-	"github.com/NpoolPlatform/appuser-gateway/pkg/migrator"
 	"github.com/NpoolPlatform/go-service-framework/pkg/oss"
 	ossconst "github.com/NpoolPlatform/go-service-framework/pkg/oss/const"
 
@@ -32,9 +31,9 @@ var runCmd = &cli.Command{
 			return err
 		}
 
-		if err := migrator.Migrate(c.Context); err != nil {
-			return err
-		}
+		// if err := migrator.Migrate(c.Context); err != nil {
+		//	return err
+		// }
 
 		if err := oss.Init(ossconst.SecretStoreKey, BukectKey); err != nil {
 			return fmt.Errorf("fail to init s3: %v", err)
