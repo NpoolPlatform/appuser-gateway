@@ -103,27 +103,27 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /v1/create/kyc
+          - path: /api/appuser/v1/create/kyc
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /v1/update/kyc
+          - path: /api/appuser/v1/update/kyc
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /v1/get/kyc
+          - path: /api/appuser/v1/get/kyc
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /v1/get/app/kycs
+          - path: /api/appuser/v1/get/app/kycs
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /v1/upload/kycimage
+          - path: /api/appuser/v1/upload/kycimage
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /v1/get/kycimage
+          - path: /api/appuser/v1/get/kycimage
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
