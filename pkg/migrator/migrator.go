@@ -21,7 +21,6 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	kycpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/kyc"
-	reviewpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
 	reviewent "github.com/NpoolPlatform/review-service/pkg/db/ent"
 	reviewtb "github.com/NpoolPlatform/review-service/pkg/db/ent/review"
 	reviewconstant "github.com/NpoolPlatform/review-service/pkg/message/const"
@@ -274,7 +273,7 @@ func migrationKyc(ctx context.Context) (err error) {
 
 		for _, kycInfo := range infos {
 			reviewID := uuid.UUID{}.String()
-			reviewState := reviewpb.ReviewState_DefaultReviewState
+			state := kycpb.KycState_DefaultState
 			kycID := uuid.UUID{}.String()
 			for _, info := range reviewInfos {
 				if kycInfo.ID.String() == info.ObjectID {
@@ -283,11 +282,11 @@ func migrationKyc(ctx context.Context) (err error) {
 
 					switch info.ReviewState {
 					case "wait":
-						reviewState = reviewpb.ReviewState_Wait
+						state = kycpb.KycState_Reviewing
 					case "approved":
-						reviewState = reviewpb.ReviewState_Approved
+						state = kycpb.KycState_Approved
 					case "rejected":
-						reviewState = reviewpb.ReviewState_Rejected
+						state = kycpb.KycState_Rejected
 					}
 					break
 				}
@@ -317,7 +316,7 @@ func migrationKyc(ctx context.Context) (err error) {
 				SelfieImg:    kycInfo.UserHandingCardImg,
 				EntityType:   kycpb.KycEntityType_Individual.String(),
 				ReviewID:     newKycReviewID,
-				State:        reviewState.String(),
+				State:        state.String(),
 			})
 		}
 		offset += limit
