@@ -47,7 +47,7 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 			resp[key].InvitationCode = &code.InvitationCode
 		}
 		if code.GetID() != "" {
-			resp[key].InvitationCode = &code.ID
+			resp[key].InvitationCodeID = &code.ID
 		}
 		resp[key].InvitationCodeConfirmed = code.Confirmed
 	}
