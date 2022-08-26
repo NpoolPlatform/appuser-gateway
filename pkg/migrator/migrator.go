@@ -250,12 +250,13 @@ func migrationKyc(ctx context.Context) (err error) {
 			kycIDs = append(kycIDs, val.ID)
 		}
 
-		type ReviewID struct {
-			ID       string `json:"id"`
-			ObjectID string `json:"object_id"`
+		type Review struct {
+			ID          string `json:"id"`
+			ObjectID    string `json:"object_id"`
+			ReviewState string `json:"state"`
 		}
 
-		reviewIDs := []*ReviewID{}
+		reviewInfos := []*Review{}
 
 		err = reviewCli.Review.
 			Query().
@@ -263,20 +264,30 @@ func migrationKyc(ctx context.Context) (err error) {
 			Order(reviewent.Desc(reviewtb.FieldUpdateAt)).
 			GroupBy(reviewtb.FieldObjectID).
 			Aggregate(func(selector *entsql.Selector) string {
-				return selector.Select(reviewtb.FieldID, reviewtb.FieldObjectID).String()
+				return selector.Select(reviewtb.FieldID, reviewtb.FieldObjectID, reviewtb.FieldState).String()
 			}).
-			Scan(ctx, &reviewIDs)
+			Scan(ctx, &reviewInfos)
 		if err != nil {
 			return err
 		}
 
 		for _, kycInfo := range infos {
 			reviewID := uuid.UUID{}.String()
+			state := kycpb.KycState_DefaultState
 			kycID := uuid.UUID{}.String()
-			for _, id := range reviewIDs {
-				if kycInfo.ID.String() == id.ObjectID {
-					reviewID = id.ID
-					kycID = id.ObjectID
+			for _, info := range reviewInfos {
+				if kycInfo.ID.String() == info.ObjectID {
+					reviewID = info.ID
+					kycID = info.ObjectID
+
+					switch info.ReviewState {
+					case "wait":
+						state = kycpb.KycState_Reviewing
+					case "approved":
+						state = kycpb.KycState_Approved
+					case "rejected":
+						state = kycpb.KycState_Rejected
+					}
 					break
 				}
 			}
@@ -305,6 +316,7 @@ func migrationKyc(ctx context.Context) (err error) {
 				SelfieImg:    kycInfo.UserHandingCardImg,
 				EntityType:   kycpb.KycEntityType_Individual.String(),
 				ReviewID:     newKycReviewID,
+				State:        state.String(),
 			})
 		}
 		offset += limit
@@ -326,7 +338,8 @@ func migrationKyc(ctx context.Context) (err error) {
 				SetBackImg(info.BackImg).
 				SetSelfieImg(info.SelfieImg).
 				SetEntityType(info.EntityType).
-				SetReviewID(info.ReviewID)
+				SetReviewID(info.ReviewID).
+				SetState(info.State)
 		}
 		_, err = tx.Kyc.CreateBulk(bulk...).Save(ctx)
 		if err != nil {
