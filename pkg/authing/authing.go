@@ -22,9 +22,19 @@ import (
 )
 
 func Authenticate(ctx context.Context, appID string, userID, token *string, resource, method string) (resp bool, err error) {
+	allowed := false
+
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Authenticate")
 	defer span.End()
 	defer func() {
+		logger.Sugar().Warnw(
+			"Authenticate",
+			"AppID", appID,
+			"UserID", userID,
+			"Resource", resource,
+			"Allowed", allowed,
+			"error", err,
+		)
 		if err != nil {
 			span.SetStatus(scodes.Error, err.Error())
 			span.RecordError(err)
@@ -49,7 +59,7 @@ func Authenticate(ctx context.Context, appID string, userID, token *string, reso
 
 	span = commontracer.TraceInvoker(span, "auth", "middleware", "ExistAuth")
 
-	allowed, err := authingmwcli.ExistAuth(ctx, appID, userID, resource, method)
+	allowed, err = authingmwcli.ExistAuth(ctx, appID, userID, resource, method)
 	if err != nil {
 		return false, err
 	}
