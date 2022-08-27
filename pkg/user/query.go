@@ -7,8 +7,10 @@ import (
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
+
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	scodes "go.opentelemetry.io/otel/codes"
@@ -31,13 +33,13 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
 
-	resp, _, err := usermwcli.GetUsers(ctx, appID, offset, limit)
+	infos, _, err := usermwcli.GetUsers(ctx, appID, offset, limit)
 	if err != nil {
 		logger.Sugar().Errorw("GetUsers", "err", err)
 		return nil, err
 	}
 
-	for key, val := range resp {
+	for key, val := range infos {
 		code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, appID, val.ID)
 		if err != nil {
 			logger.Sugar().Errorw("GetUsers", "err", err)
@@ -46,13 +48,10 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 		if code == nil {
 			continue
 		}
-		if code.GetInvitationCode() != "" {
-			resp[key].InvitationCode = &code.InvitationCode
-		}
-		if code.GetID() != "" {
-			resp[key].InvitationCodeID = &code.ID
-		}
-		resp[key].InvitationCodeConfirmed = code.Confirmed
+		infos[key].InvitationCode = &code.InvitationCode
+		infos[key].InvitationCodeID = &code.ID
+		infos[key].InvitationCodeConfirmed = code.Confirmed
 	}
-	return resp, nil
+
+	return infos, nil
 }

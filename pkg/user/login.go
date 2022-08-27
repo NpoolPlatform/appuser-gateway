@@ -15,6 +15,7 @@ import (
 	loginhiscli "github.com/NpoolPlatform/appuser-manager/pkg/client/login/history"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
 	thirdgwcli "github.com/NpoolPlatform/third-gateway/pkg/client"
 
 	thirdgwconst "github.com/NpoolPlatform/third-gateway/pkg/const"
@@ -140,6 +141,17 @@ func Login(
 	user.LoginToken = token
 	user.LoginClientIP = meta.ClientIP.String()
 	user.LoginClientUserAgent = meta.UserAgent
+
+	code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, appID, user.ID)
+	if err != nil {
+		logger.Sugar().Errorw("GetUsers", "err", err)
+		return nil, err
+	}
+	if code != nil {
+		user.InvitationCode = &code.InvitationCode
+		user.InvitationCodeID = &code.ID
+		user.InvitationCodeConfirmed = code.Confirmed
+	}
 
 	if !app.SigninVerifyEnable {
 		user.LoginVerified = true
