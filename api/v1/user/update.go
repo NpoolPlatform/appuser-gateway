@@ -82,7 +82,9 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
 			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 		}
+	}
 
+	if in.NewAccount != nil || in.GetNewAccountType() == signmethod.SignMethodType_Google {
 		if err := user1.VerifyCode(
 			ctx,
 			in.GetAppID(),
