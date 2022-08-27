@@ -24,10 +24,7 @@ func UploadKycImage(
 func GetKycImage(ctx context.Context, appID, userID string, imgType kycmgrpb.KycImageType) (string, error) {
 	key := fmt.Sprintf("kyc/%v/%v/%v", appID, userID, imgType)
 	imgBase64, err := oss.GetObject(ctx, key, true)
-	if err != nil {
-		return "", err
-	}
-	if imgBase64 != nil {
+	if err == nil && imgBase64 != nil {
 		return string(imgBase64), nil
 	}
 

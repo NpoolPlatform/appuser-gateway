@@ -130,7 +130,7 @@ func checkInvitationCode(ctx context.Context, appID string, code *string, must b
 		return "", err
 	}
 
-	if ivc == nil && must {
+	if ivc == nil {
 		return "", fmt.Errorf("invalid code")
 	}
 
