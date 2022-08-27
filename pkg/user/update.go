@@ -191,7 +191,7 @@ func ResetUser(ctx context.Context, in *npool.ResetUserRequest) error {
 	}
 
 	_, err = usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
-		ID:           &in.UserID,
+		ID:           &auser.ID,
 		AppID:        &in.AppID,
 		PasswordHash: in.PasswordHash,
 	})
