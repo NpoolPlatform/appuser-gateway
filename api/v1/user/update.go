@@ -3,20 +3,14 @@ package user
 import (
 	"context"
 
-	invitationcli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
-
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
-	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
-	thirdgwconst "github.com/NpoolPlatform/third-gateway/pkg/const"
 
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
@@ -27,8 +21,7 @@ import (
 	"github.com/google/uuid"
 )
 
-//nolint:gocyclo
-func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*npool.UpdateUserResponse, error) {
+func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*npool.UpdateUserResponse, error) { //nolint
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateUser")
@@ -75,102 +68,12 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		}
 	}
 
-	if in.GetOldPasswordHash() != "" {
-		if _, err := usermwcli.VerifyUser(
-			ctx,
-			in.GetAppID(),
-			in.GetUserID(),
-			in.GetOldPasswordHash(),
-		); err != nil {
-			logger.Sugar().Infow("UpdateUser", "error", err)
-			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "permission denied")
-		}
-	}
-
-	if in.NewAccount != nil || in.PasswordHash != nil || in.GetNewAccountType() == signmethod.SignMethodType_Google {
-		if err := user1.VerifyCode(
-			ctx,
-			in.GetAppID(),
-			in.GetUserID(),
-			in.GetAccount(),
-			in.GetAccountType(),
-			in.GetVerificationCode(),
-			thirdgwconst.UsedForUpdate,
-			true,
-		); err != nil {
-			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
-			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
-		}
-	}
-
-	if in.NewAccount != nil || in.GetNewAccountType() == signmethod.SignMethodType_Google {
-		if err := user1.VerifyCode(
-			ctx,
-			in.GetAppID(),
-			in.GetUserID(),
-			in.GetNewAccount(),
-			in.GetNewAccountType(),
-			in.GetNewVerificationCode(),
-			thirdgwconst.UsedForUpdate,
-			false,
-		); err != nil {
-			logger.Sugar().Infow("UpdateUser", "NewVerificationCode", in.GetNewVerificationCode())
-			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
-		}
-	}
-
 	span = commontracer.TraceInvoker(span, "role", "middleware", "UpdateUser")
 
-	req := &usermwpb.UserReq{
-		ID:               &in.UserID,
-		AppID:            &in.AppID,
-		Username:         in.Username,
-		AddressFields:    in.AddressFields,
-		Gender:           in.Gender,
-		PostalCode:       in.PostalCode,
-		Age:              in.Age,
-		Birthday:         in.Birthday,
-		Avatar:           in.Avatar,
-		Organization:     in.Organization,
-		FirstName:        in.FirstName,
-		LastName:         in.LastName,
-		IDNumber:         in.IDNumber,
-		SigninVerifyType: in.SigninVerifyType,
-		PasswordHash:     in.PasswordHash,
-	}
-	switch in.GetNewAccountType() {
-	case signmethod.SignMethodType_Google:
-		verified := true
-		req.GoogleAuthVerified = &verified
-	case signmethod.SignMethodType_Email:
-		req.EmailAddress = in.NewAccount
-	case signmethod.SignMethodType_Mobile:
-		req.PhoneNO = in.NewAccount
-	}
-
-	info, err := usermwcli.UpdateUser(ctx, req)
+	info, err := user1.UpdateUser(ctx, in)
 	if err != nil {
-		logger.Sugar().Errorw("UpdateUser", "err", err)
-		return &npool.UpdateUserResponse{}, status.Error(codes.Internal, err.Error())
-	}
-
-	if in.InvitationCodeID != nil && in.InvitationCodeConfirmed != nil {
-		if _, err = uuid.Parse(in.GetInvitationCodeID()); err != nil {
-			logger.Sugar().Errorw("UpdateUser", "err", err)
-			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
-		}
-
-		invite, err := invitationcli.UpdateUserInvitationCode(
-			ctx,
-			in.GetInvitationCodeID(),
-			in.GetInvitationCodeConfirmed(),
-		)
-		if err != nil {
-			logger.Sugar().Errorw("UpdateUser", "err", err)
-			return &npool.UpdateUserResponse{}, status.Error(codes.Internal, err.Error())
-		}
-
-		info.InvitationCodeConfirmed = invite.Confirmed
+		logger.Sugar().Infow("UpdateUser", "error", err)
+		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	_ = user1.UpdateCache(ctx, info)
@@ -178,4 +81,59 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 	return &npool.UpdateUserResponse{
 		Info: info,
 	}, nil
+}
+
+func (s *Server) ResetUser(ctx context.Context, in *npool.ResetUserRequest) (*npool.ResetUserResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "ResetUser")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		logger.Sugar().Infow("ResetUser", "AppID", in.GetAppID())
+		return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if _, err := uuid.Parse(in.GetUserID()); err != nil {
+		logger.Sugar().Infow("ResetUser", "UserID", in.GetUserID())
+		return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if in.GetAccount() == "" {
+		logger.Sugar().Infow("ResetUser", "Account", in.GetAccount())
+		return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, "Account is invalid")
+	}
+
+	switch in.GetAccountType() {
+	case signmethod.SignMethodType_Google:
+	case signmethod.SignMethodType_Email:
+	case signmethod.SignMethodType_Mobile:
+	default:
+		logger.Sugar().Infow("ResetUser", "AccountType", in.GetAccountType())
+		return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, "AccountType is invalid")
+	}
+
+	if in.GetVerificationCode() == "" {
+		logger.Sugar().Infow("ResetUser", "VerificationCode", in.GetVerificationCode())
+		return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, "VerificationCode is invalid")
+	}
+
+	if in.GetPasswordHash() == "" {
+		logger.Sugar().Infow("ResetUser", "PasswordHash", in.GetPasswordHash())
+		return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, "PasswordHash is invalid")
+	}
+
+	span = commontracer.TraceInvoker(span, "role", "middleware", "ResetUser")
+
+	err = user1.ResetUser(ctx, in)
+	if err != nil {
+		logger.Sugar().Infow("ResetUser", "error", err)
+		return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return &npool.ResetUserResponse{}, nil
 }
