@@ -111,7 +111,6 @@ func (s *Server) ResetUser(ctx context.Context, in *npool.ResetUserRequest) (*np
 	}
 
 	switch in.GetAccountType() {
-	case signmethod.SignMethodType_Google:
 	case signmethod.SignMethodType_Email:
 	case signmethod.SignMethodType_Mobile:
 	default:
