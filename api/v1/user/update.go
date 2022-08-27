@@ -56,10 +56,6 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		logger.Sugar().Infow("UpdateUser", "PasswordHash", in.GetPasswordHash())
 		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "PasswordHash is invalid")
 	}
-	if in.PasswordHash != nil && in.GetOldPasswordHash() == "" {
-		logger.Sugar().Infow("UpdateUser", "OldPasswordHash", in.GetOldPasswordHash())
-		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "OldPasswordHash is invalid")
-	}
 
 	switch in.GetNewAccountType() {
 	case signmethod.SignMethodType_Google:
@@ -73,7 +69,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		}
 	}
 
-	if in.PasswordHash != nil {
+	if in.PasswordHash != nil && in.GetOldPasswordHash() != "" {
 		if _, err := usermwcli.VerifyUser(
 			ctx,
 			in.GetAppID(),
