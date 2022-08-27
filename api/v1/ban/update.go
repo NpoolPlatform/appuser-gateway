@@ -39,12 +39,6 @@ func (s *Server) UpdateBanApp(ctx context.Context, in *ban.UpdateBanAppRequest) 
 
 	span = tracer.Trace(span, in.GetInfo())
 
-	err = validate(ctx, in.GetInfo())
-	if err != nil {
-		logger.Sugar().Errorw("UpdateBanApp", "err", err)
-		return nil, err
-	}
-
 	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
 		logger.Sugar().Errorw("UpdateBanApp", "ID", in.GetInfo().GetID(), "err", err)
 		return &ban.UpdateBanAppResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
