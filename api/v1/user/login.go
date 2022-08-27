@@ -3,6 +3,9 @@ package user
 import (
 	"context"
 
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	"github.com/NpoolPlatform/message/npool"
+
 	"github.com/google/uuid"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
@@ -13,6 +16,9 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
+
+	historycli "github.com/NpoolPlatform/appuser-manager/pkg/client/login/history"
+	historypb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/login/history"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -228,5 +234,47 @@ func (s *Server) Logout(ctx context.Context, in *user.LogoutRequest) (*user.Logo
 	}
 	return &user.LogoutResponse{
 		Info: info,
+	}, nil
+}
+
+func (s *Server) GetLoginHistories(ctx context.Context, in *user.GetLoginHistoriesRequest) (*user.GetLoginHistoriesResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Logout")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		logger.Sugar().Errorw("validate", "AppID", in.GetAppID(), "error", err)
+		return &user.GetLoginHistoriesResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
+	}
+
+	if _, err := uuid.Parse(in.GetUserID()); err != nil {
+		logger.Sugar().Errorw("validate", "UserID", in.GetUserID(), "error", err)
+		return &user.GetLoginHistoriesResponse{}, status.Error(codes.InvalidArgument, "UserID is invalid")
+	}
+
+	infos, total, err := historycli.GetHistories(ctx, &historypb.Conds{
+		AppID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetAppID(),
+		},
+		UserID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetUserID(),
+		},
+	}, in.GetOffset(), in.GetLimit())
+	if err != nil {
+		return nil, err
+	}
+
+	return &user.GetLoginHistoriesResponse{
+		Infos: infos,
+		Total: total,
 	}, nil
 }
