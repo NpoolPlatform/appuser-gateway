@@ -87,6 +87,10 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/get/loginhistories
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/get/app/users
             backend:
               serviceName: appuser-gateway
