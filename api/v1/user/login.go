@@ -15,9 +15,10 @@ import (
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 
 	historycli "github.com/NpoolPlatform/appuser-manager/pkg/client/login/history"
+	historypb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/login/history"
+	
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
-	historypb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/login/history"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
