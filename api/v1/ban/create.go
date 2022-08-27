@@ -10,6 +10,8 @@ import (
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+	appcli "github.com/NpoolPlatform/appuser-manager/pkg/client/app"
+	usercli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
 	banappmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/banapp"
 	banappusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/banappuser"
 	tracer "github.com/NpoolPlatform/appuser-manager/pkg/tracer/banapp"
@@ -17,6 +19,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
+	userpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
 	"google.golang.org/grpc/codes"
 
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/ban"
@@ -50,6 +53,17 @@ func (s *Server) CreateBanApp(ctx context.Context, in *ban.CreateBanAppRequest) 
 
 	span = tracer.Trace(span, banApp)
 	span = commontracer.TraceInvoker(span, "banapp", "middleware", "ExistBanAppConds")
+
+	appExist, err := appcli.ExistApp(ctx, in.GetTargetAppID())
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.CreateBanAppResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	if !appExist {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.CreateBanAppResponse{}, status.Error(codes.InvalidArgument, "app not exist")
+	}
 
 	exist, err := banappmgrcli.ExistBanAppConds(ctx, &banapppb.Conds{
 		AppID: &npool.StringVal{
@@ -112,6 +126,26 @@ func (s *Server) CreateBanUser(ctx context.Context,
 
 	span = commontracer.TraceInvoker(span, "banappuser", "middleware", "CreateBanAppUser")
 
+	userExist, err := usercli.ExistAppUserConds(ctx, &userpb.Conds{
+		ID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetTargetUserID(),
+		},
+		AppID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetAppID(),
+		},
+	})
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.CreateBanUserResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	if !userExist {
+		logger.Sugar().Errorw("CreateBanUser", "user no exist")
+		return &ban.CreateBanUserResponse{}, status.Error(codes.InvalidArgument, "user no exist")
+	}
+
 	_, err = banappusermgrcli.CreateBanAppUser(ctx, banUser)
 	if err != nil {
 		logger.Sugar().Errorw("CreateBanUser", "err", err)
@@ -157,6 +191,26 @@ func (s *Server) CreateAppBanUser(ctx context.Context,
 	}
 
 	span = commontracer.TraceInvoker(span, "banappuser", "middleware", "CreateBanAppUser")
+
+	userExist, err := usercli.ExistAppUserConds(ctx, &userpb.Conds{
+		ID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetTargetUserID(),
+		},
+		AppID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetTargetAppID(),
+		},
+	})
+	if err != nil {
+		logger.Sugar().Errorw("CreateBanApp", "err", err)
+		return &ban.CreateAppBanUserResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	if !userExist {
+		logger.Sugar().Errorw("CreateBanUser", "user no exist")
+		return &ban.CreateAppBanUserResponse{}, status.Error(codes.InvalidArgument, "user no exist")
+	}
 
 	_, err = banappusermgrcli.CreateBanAppUser(ctx, banUser)
 	if err != nil {
