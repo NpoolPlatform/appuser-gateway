@@ -105,7 +105,7 @@ func Login(
 		}
 	}
 
-	user, err := usermwcli.VerifyUser(
+	user, err := usermwcli.VerifyAccount(
 		ctx,
 		appID,
 		account,

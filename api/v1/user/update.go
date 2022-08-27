@@ -56,6 +56,10 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		logger.Sugar().Infow("UpdateUser", "PasswordHash", in.GetPasswordHash())
 		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "PasswordHash is invalid")
 	}
+	if in.PasswordHash != nil && in.GetOldPasswordHash() == "" {
+		logger.Sugar().Infow("UpdateUser", "OldPasswordHash", in.GetOldPasswordHash())
+		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "OldPasswordHash is invalid")
+	}
 
 	switch in.GetNewAccountType() {
 	case signmethod.SignMethodType_Google:
@@ -69,6 +73,18 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		}
 	}
 
+	if in.PasswordHash != nil {
+		if _, err := usermwcli.VerifyUser(
+			ctx,
+			in.GetAppID(),
+			in.GetUserID(),
+			in.GetOldPasswordHash(),
+		); err != nil {
+			logger.Sugar().Infow("UpdateUser", "error", err)
+			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "permission denied")
+		}
+	}
+
 	if in.NewAccount != nil || in.PasswordHash != nil || in.GetNewAccountType() == signmethod.SignMethodType_Google {
 		if err := user1.VerifyCode(
 			ctx,
@@ -78,6 +94,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 			in.GetAccountType(),
 			in.GetVerificationCode(),
 			thirdgwconst.UsedForUpdate,
+			true,
 		); err != nil {
 			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
 			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
@@ -93,6 +110,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 			in.GetNewAccountType(),
 			in.GetNewVerificationCode(),
 			thirdgwconst.UsedForUpdate,
+			false,
 		); err != nil {
 			logger.Sugar().Infow("UpdateUser", "NewVerificationCode", in.GetNewVerificationCode())
 			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
