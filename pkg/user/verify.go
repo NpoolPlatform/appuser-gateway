@@ -46,8 +46,9 @@ func VerifyCode(
 	appID, userID, account string,
 	accountType signmethod.SignMethodType,
 	code, usedFor string,
+	accountMatch bool,
 ) error {
-	return verifyCode(ctx, appID, userID, account, accountType, code, usedFor, true)
+	return verifyCode(ctx, appID, userID, account, accountType, code, usedFor, accountMatch)
 }
 
 func verifyCode(
