@@ -7,6 +7,7 @@ import (
 	"github.com/NpoolPlatform/appuser-gateway/api/v1/app"
 	"github.com/NpoolPlatform/appuser-gateway/api/v1/authing"
 	"github.com/NpoolPlatform/appuser-gateway/api/v1/ban"
+	"github.com/NpoolPlatform/appuser-gateway/api/v1/ga"
 	"github.com/NpoolPlatform/appuser-gateway/api/v1/kyc"
 	"github.com/NpoolPlatform/appuser-gateway/api/v1/role"
 	"github.com/NpoolPlatform/appuser-gateway/api/v1/user"
@@ -28,6 +29,7 @@ func Register(server grpc.ServiceRegistrar) {
 	ban.Register(server)
 	role.Register(server)
 	user.Register(server)
+	ga.Register(server)
 	authing.Register(server)
 	kyc.Register(server)
 }
@@ -49,6 +51,9 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := user.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := ga.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := authing.RegisterGateway(mux, endpoint, opts); err != nil {

@@ -276,6 +276,10 @@ func UpdateCache(ctx context.Context, user *usermwpb.User) error {
 	user.LoginClientUserAgent = meta.User.LoginClientUserAgent
 	user.LoginVerified = meta.User.LoginVerified
 
+	if user.GoogleOTPAuth == "" {
+		user.GoogleOTPAuth = meta.User.GoogleOTPAuth
+	}
+
 	meta.User = user
 	if err := createCache(ctx, meta); err != nil {
 		return err
