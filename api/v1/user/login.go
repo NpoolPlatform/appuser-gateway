@@ -137,6 +137,8 @@ func (s *Server) LoginVerify(ctx context.Context, in *user.LoginVerifyRequest) (
 		in.GetAppID(),
 		in.GetUserID(),
 		in.GetToken(),
+		in.GetAccount(),
+		in.GetAccountType(),
 		in.GetVerificationCode(),
 	)
 	if err != nil {

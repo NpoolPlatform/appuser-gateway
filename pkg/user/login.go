@@ -156,7 +156,13 @@ func Login(
 	return user, nil
 }
 
-func LoginVerify(ctx context.Context, appID, userID, token, code string) (*usermwpb.User, error) {
+func LoginVerify(
+	ctx context.Context,
+	appID, userID, token string,
+	account string,
+	accountType signmethod.SignMethodType,
+	code string,
+) (*usermwpb.User, error) {
 	meta, err := queryAppUser(ctx, uuid.MustParse(appID), uuid.MustParse(userID))
 	if err != nil {
 		return nil, err
@@ -173,13 +179,15 @@ func LoginVerify(ctx context.Context, appID, userID, token, code string) (*userm
 		return nil, err
 	}
 
-	account := meta.User.EmailAddress
-	accountType := meta.User.SigninVerifyType
-
-	switch meta.User.SigninVerifyType {
+	switch accountType {
 	case signmethod.SignMethodType_Email:
+		if account != meta.User.EmailAddress {
+			return nil, fmt.Errorf("invalid account")
+		}
 	case signmethod.SignMethodType_Mobile:
-		account = meta.User.PhoneNO
+		if account != meta.User.PhoneNO {
+			return nil, fmt.Errorf("invalid account")
+		}
 	case signmethod.SignMethodType_Google:
 	default:
 		return nil, fmt.Errorf("not supported")
