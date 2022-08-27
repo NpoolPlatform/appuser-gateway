@@ -32,17 +32,6 @@ func verifyByEmail(ctx context.Context, appID, emailAddr, code, usedFor string) 
 	})
 }
 
-func verifyByGoogle(secret, code string) error {
-	valid, err := ga.VerifyCode(secret, code)
-	if err != nil {
-		return err
-	}
-	if !valid {
-		return fmt.Errorf("invalid code")
-	}
-	return nil
-}
-
 func VerifyCode(
 	ctx context.Context,
 	appID, userID, account string,
@@ -61,7 +50,6 @@ func verifyCode(
 	accountMatch bool,
 ) error {
 	var err error
-	var secret string
 
 	if accountMatch {
 		user, err := usermwcli.GetUser(ctx, appID, userID)
@@ -72,8 +60,6 @@ func verifyCode(
 		if user == nil {
 			return fmt.Errorf("fail get user ")
 		}
-
-		secret = user.GoogleSecret
 
 		switch accountType {
 		case signmethod.SignMethodType_Mobile:
@@ -93,7 +79,7 @@ func verifyCode(
 	case signmethod.SignMethodType_Email:
 		err = verifyByEmail(ctx, appID, account, code, usedFor)
 	default:
-		err = verifyByGoogle(secret, code)
+		_, err = ga.VerifyGoogleAuth(ctx, appID, userID, code)
 	}
 
 	if err != nil {
