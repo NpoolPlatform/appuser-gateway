@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
+	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 
-	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	"github.com/NpoolPlatform/message/npool"
+	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 
-	"github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
-	appusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
+	ga "github.com/NpoolPlatform/appuser-gateway/pkg/ga"
+
 	thirdgwpb "github.com/NpoolPlatform/message/npool/thirdgateway"
 	thirdgwcli "github.com/NpoolPlatform/third-gateway/pkg/client"
 )
@@ -33,12 +32,15 @@ func verifyByEmail(ctx context.Context, appID, emailAddr, code, usedFor string) 
 	})
 }
 
-func verifyByGoogle(ctx context.Context, appID, userID, code string) error {
-	return thirdgwcli.VerifyGoogleAuthentication(ctx, &thirdgwpb.VerifyGoogleAuthenticationRequest{
-		AppID:  appID,
-		UserID: userID,
-		Code:   code,
-	})
+func verifyByGoogle(secret, code string) error {
+	valid, err := ga.VerifyCode(secret, code)
+	if err != nil {
+		return err
+	}
+	if !valid {
+		return fmt.Errorf("invalid code")
+	}
+	return nil
 }
 
 func VerifyCode(
@@ -59,25 +61,19 @@ func verifyCode(
 	accountMatch bool,
 ) error {
 	var err error
+	var secret string
 
 	if accountMatch {
-		user, err := appuser.GetAppUserOnly(ctx, &appusermgrpb.Conds{
-			ID: &npool.StringVal{
-				Op:    cruder.EQ,
-				Value: userID,
-			},
-			AppID: &npool.StringVal{
-				Op:    cruder.EQ,
-				Value: appID,
-			},
-		})
+		user, err := usermwcli.GetUser(ctx, appID, userID)
 		if err != nil {
-			return fmt.Errorf("fail get app user: %v", err)
+			return err
 		}
 
 		if user == nil {
-			return fmt.Errorf("fail get app user ")
+			return fmt.Errorf("fail get user ")
 		}
+
+		secret = user.GoogleSecret
 
 		switch accountType {
 		case signmethod.SignMethodType_Mobile:
@@ -97,7 +93,7 @@ func verifyCode(
 	case signmethod.SignMethodType_Email:
 		err = verifyByEmail(ctx, appID, account, code, usedFor)
 	default:
-		err = verifyByGoogle(ctx, appID, userID, code)
+		err = verifyByGoogle(secret, code)
 	}
 
 	if err != nil {

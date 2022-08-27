@@ -6,8 +6,6 @@ import (
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-
-	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
 )
 
 func SetupGoogleAuth(ctx context.Context, appID, userID string) (*usermwpb.User, error) {
@@ -46,7 +44,6 @@ func SetupGoogleAuth(ctx context.Context, appID, userID string) (*usermwpb.User,
 	}
 
 	user.GoogleOTPAuth = fmt.Sprintf("otpauth://totp/%s?secret=%s", account, user.GoogleSecret)
-	_ = user1.UpdateCache(ctx, user)
 
 	return user, nil
 }
@@ -77,6 +74,5 @@ func VerifyGoogleAuth(ctx context.Context, appID, userID, code string) (*usermwp
 		return nil, err
 	}
 
-	_ = user1.UpdateCache(ctx, user)
 	return user, nil
 }

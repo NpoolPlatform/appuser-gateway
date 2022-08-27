@@ -10,6 +10,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	ga1 "github.com/NpoolPlatform/appuser-gateway/pkg/ga"
+	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/ga"
 
 	"google.golang.org/grpc/codes"
@@ -57,6 +58,8 @@ func (s *Server) SetupGoogleAuth(
 		return &npool.SetupGoogleAuthResponse{}, status.Error(codes.Internal, "fail create ga")
 	}
 
+	_ = user1.UpdateCache(ctx, info)
+
 	return &npool.SetupGoogleAuthResponse{
 		Info: info,
 	}, nil
@@ -102,6 +105,8 @@ func (s *Server) VerifyGoogleAuth(
 		logger.Sugar().Errorw("VerifyGoogleAuth", "error", err)
 		return &npool.VerifyGoogleAuthResponse{}, status.Error(codes.Internal, "fail create ga")
 	}
+
+	_ = user1.UpdateCache(ctx, info)
 
 	return &npool.VerifyGoogleAuthResponse{
 		Info: info,
