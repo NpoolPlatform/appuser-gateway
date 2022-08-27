@@ -126,7 +126,7 @@ func Login(
 
 	meta.AppID = uuid.MustParse(appID)
 	meta.Account = account
-	meta.AccountType = accountType
+	meta.AccountType = accountType.String()
 	meta.UserID = uuid.MustParse(user.ID)
 
 	token, err := createToken(meta)

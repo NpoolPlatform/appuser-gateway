@@ -24,7 +24,7 @@ func appAccountKey(appID uuid.UUID, account string, accountType signmethod.SignM
 }
 
 func metaToAccountKey(meta *Metadata) string {
-	return appAccountKey(meta.AppID, meta.Account, meta.AccountType)
+	return appAccountKey(meta.AppID, meta.Account, signmethod.SignMethodType(signmethod.SignMethodType_value[meta.AccountType]))
 }
 
 func appUserKey(appID, userID uuid.UUID) string {
@@ -37,7 +37,7 @@ func metaToUserKey(meta *Metadata) string {
 
 type valAppUser struct {
 	Account     string
-	AccountType signmethod.SignMethodType
+	AccountType string
 }
 
 func createCache(ctx context.Context, meta *Metadata) error {
@@ -130,7 +130,12 @@ func queryAppUser(ctx context.Context, appID, userID uuid.UUID) (*Metadata, erro
 		return nil, err
 	}
 
-	val, err = cli.Get(ctx, appAccountKey(appID, appUser.Account, appUser.AccountType)).Result()
+	val, err = cli.Get(ctx,
+		appAccountKey(
+			appID, appUser.Account,
+			signmethod.SignMethodType(signmethod.SignMethodType_value[appUser.AccountType]),
+		),
+	).Result()
 	if err == redis.Nil {
 		return nil, nil
 	} else if err != nil {

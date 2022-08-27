@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
 	"github.com/dgrijalva/jwt-go"
@@ -19,7 +18,7 @@ import (
 type Metadata struct {
 	AppID       uuid.UUID
 	Account     string
-	AccountType signmethod.SignMethodType
+	AccountType string
 	UserID      uuid.UUID
 	ClientIP    net.IP
 	UserAgent   string
@@ -58,7 +57,7 @@ func (meta *Metadata) ToJWTClaims() jwt.MapClaims {
 	claims["app_id"] = meta.AppID
 	claims["user_id"] = meta.UserID
 	claims["account"] = meta.Account
-	claims["account_type"] = meta.AccountType.String()
+	claims["account_type"] = meta.AccountType
 	claims["client_ip"] = meta.ClientIP
 	claims["user_agent"] = meta.UserAgent
 
@@ -79,7 +78,7 @@ func (meta *Metadata) ValidateJWTClaims(claims jwt.MapClaims) error {
 		return fmt.Errorf("invalid account")
 	}
 	loginType, ok := claims["account_type"]
-	if !ok || loginType.(string) != meta.AccountType.String() {
+	if !ok || loginType.(string) != meta.AccountType {
 		return fmt.Errorf("invalid account type")
 	}
 	clientIP, ok := claims["client_ip"]
