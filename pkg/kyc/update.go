@@ -2,22 +2,25 @@ package kyc
 
 import (
 	"context"
-	"strings"
+	"fmt"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/kyc"
-	"github.com/google/uuid"
-	"go.opentelemetry.io/otel"
-	scodes "go.opentelemetry.io/otel/codes"
 
 	kycmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/kyc"
 	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
 	kycmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/kyc"
 	mwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
+
 	reviewpb "github.com/NpoolPlatform/message/npool/review-service"
 	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
 	reviewmgrcli "github.com/NpoolPlatform/review-service/pkg/client"
+	reviewconst "github.com/NpoolPlatform/review-service/pkg/const"
+
+	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	scodes "go.opentelemetry.io/otel/codes"
 )
 
 func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc, err error) {
@@ -44,28 +47,26 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 		return nil, err
 	}
 
-	// TODO: review state wait for review migration remove ToUpper
-	if strings.ToUpper(reviewInfo.State[:1])+reviewInfo.State[1:] == reviewmgrpb.ReviewState_Wait.String() {
-		span = commontracer.TraceInvoker(span, "kyc", "manager", "UpdateKyc")
+	newReview := true
+	var reviewID *string
 
-		kyc, err := kycmgrcli.UpdateKyc(ctx, &kycmgrpb.KycReq{
-			ID:        &in.KycID,
-			AppID:     &in.AppID,
-			UserID:    &in.UserID,
-			IDNumber:  in.IDNumber,
-			FrontImg:  in.FrontImg,
-			BackImg:   in.BackImg,
-			SelfieImg: in.SelfieImg,
-		})
-		if err != nil {
-			return nil, err
+	if reviewInfo != nil {
+		switch reviewInfo.State {
+		case reviewconst.StateWait:
+			reviewID = &reviewInfo.ID
+			newReview = false
+		case reviewconst.StateApproved:
+			return nil, fmt.Errorf("not allowed")
+		default:
 		}
-		return kycmwcli.GetKyc(ctx, kyc.ID)
+	}
+
+	if newReview {
+		_reviewID := uuid.NewString()
+		reviewID = &_reviewID
 	}
 
 	// TODO: distributed transaction
-	reviewID := uuid.NewString()
-
 	span = commontracer.TraceInvoker(span, "kyc", "manager", "UpdateKyc")
 
 	kyc, err := kycmgrcli.UpdateKyc(ctx, &kycmgrpb.KycReq{
@@ -76,23 +77,25 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 		FrontImg:  in.FrontImg,
 		BackImg:   in.BackImg,
 		SelfieImg: in.SelfieImg,
-		ReviewID:  &reviewID,
+		ReviewID:  reviewID,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	span = commontracer.TraceInvoker(span, "kyc", "manager", "CreateReview")
+	if newReview {
+		span = commontracer.TraceInvoker(span, "kyc", "manager", "CreateReview")
 
-	_, err = reviewmgrcli.CreateReview(ctx, &reviewpb.Review{
-		ID:         reviewID,
-		ObjectType: reviewmgrpb.ReviewObjectType_ObjectKyc.String(),
-		AppID:      in.AppID,
-		ObjectID:   kyc.ID,
-		Domain:     constant.ServiceName,
-	})
-	if err != nil {
-		return nil, err
+		_, err = reviewmgrcli.CreateReview(ctx, &reviewpb.Review{
+			ID:         *reviewID,
+			ObjectType: reviewmgrpb.ReviewObjectType_ObjectKyc.String(),
+			AppID:      in.AppID,
+			ObjectID:   kyc.ID,
+			Domain:     constant.ServiceName,
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKyc")
