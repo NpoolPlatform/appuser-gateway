@@ -209,7 +209,7 @@ func Logined(ctx context.Context, appID, userID, token string) (*usermwpb.User, 
 		logger.Sugar().Infow("Logined", "error", err)
 		return nil, nil
 	}
-	if meta == nil {
+	if meta == nil || meta.User == nil {
 		return nil, nil
 	}
 	if !meta.User.LoginVerified {
