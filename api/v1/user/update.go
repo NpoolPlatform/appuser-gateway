@@ -99,9 +99,11 @@ func (s *Server) ResetUser(ctx context.Context, in *npool.ResetUserRequest) (*np
 		logger.Sugar().Infow("ResetUser", "AppID", in.GetAppID())
 		return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
-	if _, err := uuid.Parse(in.GetUserID()); err != nil {
-		logger.Sugar().Infow("ResetUser", "UserID", in.GetUserID())
-		return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	if in.UserID != nil {
+		if _, err := uuid.Parse(in.GetUserID()); err != nil {
+			logger.Sugar().Infow("ResetUser", "UserID", in.GetUserID())
+			return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		}
 	}
 	if in.GetAccount() == "" {
 		logger.Sugar().Infow("ResetUser", "Account", in.GetAccount())
