@@ -9,9 +9,16 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/oss"
 )
 
-func UploadKycImage(ctx context.Context, appID, userID string, imgType kycmgrpb.KycImageType, imgBase64 string) error {
+func UploadKycImage(
+	ctx context.Context,
+	appID, userID string,
+	imgType kycmgrpb.KycImageType,
+	imgBase64 string,
+) (
+	string, error,
+) {
 	key := fmt.Sprintf("kyc/%v/%v/%v", appID, userID, imgType)
-	return oss.PutObject(ctx, key, []byte(imgBase64), true)
+	return key, oss.PutObject(ctx, key, []byte(imgBase64), true)
 }
 
 func GetKycImage(ctx context.Context, appID, userID string, imgType kycmgrpb.KycImageType) (string, error) {

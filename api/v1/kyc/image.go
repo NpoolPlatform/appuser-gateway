@@ -2,7 +2,6 @@ package kyc
 
 import (
 	"context"
-	"fmt"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
@@ -31,8 +30,6 @@ func (s *Server) UploadKycImage(ctx context.Context, in *npool.UploadKycImageReq
 		}
 	}()
 
-	fmt.Println("p****************")
-	fmt.Println(in)
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		logger.Sugar().Errorw("UploadKycImage", "AppID", in.GetAppID())
 		return &npool.UploadKycImageResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
@@ -57,7 +54,7 @@ func (s *Server) UploadKycImage(ctx context.Context, in *npool.UploadKycImageReq
 
 	commontracer.TraceInvoker(span, "kyc", "kyc", "UploadKycImage")
 
-	err = kyc1.UploadKycImage(ctx,
+	key, err := kyc1.UploadKycImage(ctx,
 		in.GetAppID(),
 		in.GetUserID(),
 		in.GetImageType(),
@@ -68,7 +65,9 @@ func (s *Server) UploadKycImage(ctx context.Context, in *npool.UploadKycImageReq
 		return &npool.UploadKycImageResponse{}, status.Error(codes.Internal, "fail create kyc")
 	}
 
-	return &npool.UploadKycImageResponse{}, nil
+	return &npool.UploadKycImageResponse{
+		Info: key,
+	}, nil
 }
 
 func (s *Server) GetKycImage(ctx context.Context, in *npool.GetKycImageRequest) (resp *npool.GetKycImageResponse, err error) {
