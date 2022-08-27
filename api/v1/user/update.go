@@ -56,6 +56,12 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		logger.Sugar().Infow("UpdateUser", "PasswordHash", in.GetPasswordHash())
 		return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "PasswordHash is invalid")
 	}
+	if in.PasswordHash != nil {
+		if in.GetOldPasswordHash() == "" && in.GetVerificationCode() == "" {
+			logger.Sugar().Infow("UpdateUser", "PasswordHash", in.GetPasswordHash())
+			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "permission denied")
+		}
+	}
 
 	switch in.GetNewAccountType() {
 	case signmethod.SignMethodType_Google:
@@ -63,13 +69,13 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 	case signmethod.SignMethodType_Email:
 		fallthrough //nolint
 	case signmethod.SignMethodType_Mobile:
-		if in.GetNewVerificationCode() == "" {
+		if in.GetNewVerificationCode() == "" || in.GetVerificationCode() == "" {
 			logger.Sugar().Infow("UpdateUser", "NewVerificationCode", in.GetNewVerificationCode())
 			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "NewVerificationCode is invalid")
 		}
 	}
 
-	if in.PasswordHash != nil && in.GetOldPasswordHash() != "" {
+	if in.GetOldPasswordHash() != "" {
 		if _, err := usermwcli.VerifyUser(
 			ctx,
 			in.GetAppID(),
