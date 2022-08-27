@@ -20,7 +20,7 @@ func validate(ctx context.Context, info *appmwpb.AppReq) error {
 		return status.Error(codes.InvalidArgument, "params is empty")
 	}
 
-	err := app.Validate(info)
+	err := app.Validate(ctx, info)
 	if err != nil {
 		logger.Sugar().Errorw("validate", "err", err)
 		return status.Error(codes.InvalidArgument, err.Error())
