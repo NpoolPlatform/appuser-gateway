@@ -26,7 +26,7 @@ func (s *Server) Authenticate(ctx context.Context, in *npool.AuthenticateRequest
 		logger.Sugar().Errorw("Authenticate", "AppID", in.GetAppID())
 		return &npool.AuthenticateResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
 	}
-	if in.UserID != nil {
+	if in.UserID != nil && in.GetUserID() != "" {
 		if _, err := uuid.Parse(in.GetUserID()); err != nil {
 			logger.Sugar().Errorw("Authenticate", "UserID", in.GetUserID())
 			return &npool.AuthenticateResponse{}, status.Error(codes.InvalidArgument, "UserID is invalid")
