@@ -118,6 +118,11 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 		req.PhoneNO = in.NewAccount
 	}
 
+	cacheUser, err := QueryAppUser(ctx, uuid.MustParse(in.GetAppID()), uuid.MustParse(in.GetUserID()))
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
 	info, err := usermwcli.UpdateUser(ctx, req)
 	if err != nil {
 		logger.Sugar().Errorw("UpdateUser", "err", err)
@@ -143,7 +148,7 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 		info.InvitationCodeConfirmed = invite.Confirmed
 	}
 
-	if in.GetNewAccountType() == info.LoginAccountType {
+	if in.GetNewAccountType() == cacheUser.LoginAccountType {
 		info.LoginAccount = in.GetNewAccount()
 		info.GoogleOTPAuth = fmt.Sprintf("otpauth://totp/%s?secret=%s", in.GetNewAccount(), info.GoogleSecret)
 	}
