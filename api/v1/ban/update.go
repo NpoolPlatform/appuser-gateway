@@ -44,6 +44,11 @@ func (s *Server) UpdateBanApp(ctx context.Context, in *ban.UpdateBanAppRequest) 
 		return &ban.UpdateBanAppResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
 	}
 
+	if _, err := uuid.Parse(in.GetInfo().GetAppID()); err != nil {
+		logger.Sugar().Errorw("UpdateBanApp", "AppID", in.GetInfo().GetAppID(), "err", err)
+		return &ban.UpdateBanAppResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
+	}
+
 	if in.GetInfo().GetMessage() == "" {
 		logger.Sugar().Errorw("UpdateBanApp", "Message", in.GetInfo().GetMessage(), "err", "Message is empty")
 		return &ban.UpdateBanAppResponse{}, status.Error(codes.InvalidArgument, "Message is empty")
@@ -52,6 +57,7 @@ func (s *Server) UpdateBanApp(ctx context.Context, in *ban.UpdateBanAppRequest) 
 	span = commontracer.TraceInvoker(span, "banapp", "manager", "UpdateBanApp")
 
 	_, err = banappmgrcli.UpdateBanApp(ctx, &banappcrud.BanAppReq{
+		ID:      in.GetInfo().ID,
 		Message: in.GetInfo().Message,
 	})
 	if err != nil {
