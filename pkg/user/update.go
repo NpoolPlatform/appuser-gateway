@@ -143,6 +143,10 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 		info.InvitationCodeConfirmed = invite.Confirmed
 	}
 
+	if in.GetNewAccountType() == info.LoginAccountType {
+		info.LoginAccount = in.GetNewAccount()
+	}
+
 	_ = UpdateCache(ctx, info)
 
 	return info, nil
