@@ -291,12 +291,9 @@ func migrationKyc(ctx context.Context) (err error) {
 		for _, kycInfo := range infos {
 			reviewID := uuid.UUID{}.String()
 			state := kycpb.KycState_DefaultState
-			kycID := uuid.UUID{}.String()
 			for _, info := range reviewInfos {
 				if kycInfo.ID.String() == info.ObjectID {
 					reviewID = info.ID
-					kycID = info.ObjectID
-
 					switch info.ReviewState {
 					case "wait":
 						state = kycpb.KycState_Reviewing
@@ -309,18 +306,13 @@ func migrationKyc(ctx context.Context) (err error) {
 				}
 			}
 
-			newKycID, err := uuid.Parse(kycID)
-			if err != nil {
-				return err
-			}
-
 			newKycReviewID, err := uuid.Parse(reviewID)
 			if err != nil {
 				return err
 			}
 
 			newKyc = append(newKyc, &ent.Kyc{
-				ID:           newKycID,
+				ID:           kycInfo.ID,
 				CreatedAt:    kycInfo.CreateAt,
 				UpdatedAt:    kycInfo.UpdateAt,
 				DeletedAt:    0,
