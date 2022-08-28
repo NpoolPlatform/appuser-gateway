@@ -145,6 +145,7 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 
 	if in.GetNewAccountType() == info.LoginAccountType {
 		info.LoginAccount = in.GetNewAccount()
+		info.GoogleOTPAuth = fmt.Sprintf("otpauth://totp/%s?secret=%s", in.GetNewAccount(), info.GoogleSecret)
 	}
 
 	_ = UpdateCache(ctx, info)
