@@ -157,6 +157,7 @@ func Login(
 		user.LoginVerified = true
 	}
 
+	user.GoogleOTPAuth = fmt.Sprintf("otpauth://totp/%s?secret=%s", account, user.GoogleSecret)
 	meta.User = user
 
 	if err := createCache(ctx, meta); err != nil {
