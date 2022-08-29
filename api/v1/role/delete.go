@@ -1,3 +1,4 @@
+//nolint:dupl
 package role
 
 import (
@@ -30,11 +31,11 @@ func (s *Server) DeleteRoleUser(ctx context.Context, in *role.DeleteRoleUserRequ
 
 	commontracer.TraceID(span, in.GetRoleUserID())
 
-	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
-		logger.Sugar().Errorw("DeleteRoleUser", "ID", in.GetTargetAppID(), "err", err)
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		logger.Sugar().Errorw("DeleteRoleUser", "ID", in.GetAppID(), "err", err)
 		return &role.DeleteRoleUserResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
 	}
-	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
+	if _, err := uuid.Parse(in.GetRoleUserID()); err != nil {
 		logger.Sugar().Errorw("DeleteRoleUser", "ID", in.GetRoleUserID(), "err", err)
 		return &role.DeleteRoleUserResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
 	}
@@ -48,6 +49,42 @@ func (s *Server) DeleteRoleUser(ctx context.Context, in *role.DeleteRoleUserRequ
 	}
 
 	return &role.DeleteRoleUserResponse{
+		Info: info,
+	}, nil
+}
+
+func (s *Server) DeleteAppRoleUser(ctx context.Context, in *role.DeleteAppRoleUserRequest) (*role.DeleteAppRoleUserResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteAppRoleUser")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	commontracer.TraceID(span, in.GetRoleUserID())
+
+	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
+		logger.Sugar().Errorw("DeleteAppRoleUser", "ID", in.GetTargetAppID(), "err", err)
+		return &role.DeleteAppRoleUserResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
+	}
+	if _, err := uuid.Parse(in.GetRoleUserID()); err != nil {
+		logger.Sugar().Errorw("DeleteAppRoleUser", "ID", in.GetRoleUserID(), "err", err)
+		return &role.DeleteAppRoleUserResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
+	}
+
+	span = commontracer.TraceInvoker(span, "role", "manager", "DeleteAppRoleUser")
+
+	info, err := approleusermgrcli.DeleteAppRoleUser(ctx, in.GetRoleUserID())
+	if err != nil {
+		logger.Sugar().Errorw("DeleteAppRoleUser", "err", err)
+		return &role.DeleteAppRoleUserResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &role.DeleteAppRoleUserResponse{
 		Info: info,
 	}, nil
 }
