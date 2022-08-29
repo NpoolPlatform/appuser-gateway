@@ -123,7 +123,31 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/get/app
+          - path: /api/appuser/v1/get/app/users
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/app/roles
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/app/roleusers
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/app/kycs
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/app/user/kycimage
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/app/auths
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/app/authhistories
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -143,7 +167,6 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-
           - path: /api/appuser/v1/create/app/auth
             backend:
               serviceName: appuser-gateway
@@ -173,7 +196,6 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-
           - path: /api/appuser/v1/create/kyc
             backend:
               serviceName: appuser-gateway
@@ -198,7 +220,6 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-
           - path: /api/appuser/v1/create/role
             backend:
               serviceName: appuser-gateway
@@ -239,7 +260,6 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-
           - path: /api/appuser/v1/create/user
             backend:
               serviceName: appuser-gateway
