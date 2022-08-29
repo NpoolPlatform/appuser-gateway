@@ -313,7 +313,7 @@ func migrationKyc(ctx context.Context) (err error) {
 
 			cardType := kycpb.KycDocumentType_DefaultKycDocumentType
 			switch kycInfo.CardType {
-			case "password":
+			case "passport":
 				cardType = kycpb.KycDocumentType_Passport
 			case "id-card":
 				cardType = kycpb.KycDocumentType_IDCard
