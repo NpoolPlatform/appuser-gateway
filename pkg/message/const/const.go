@@ -1,5 +1,5 @@
 package constant
 
 const (
-	ServiceName = "appUserGateway"
+	ServiceName = "appuser-gateway.npool.top"
 )
