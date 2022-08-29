@@ -5,18 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/config"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+
 	tracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/admin"
 	appmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	"github.com/NpoolPlatform/go-service-framework/pkg/config"
-	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
 	appmrgpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/app"
 	rolemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role"
+
+	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
 	"github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	"github.com/NpoolPlatform/message/npool"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	serconst "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
@@ -24,16 +25,20 @@ import (
 
 	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 	roleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
+	authmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/authing/auth"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	authmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/authing"
 	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
 	roleusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approleuser"
 
-	mauth "github.com/NpoolPlatform/appuser-gateway/pkg/authing"
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	approlepb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
+	authmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/authing/auth"
 	appmw "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
 	authingmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/authing"
+
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	"github.com/NpoolPlatform/message/npool"
+
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
@@ -300,15 +305,26 @@ func createGenesisAuths(ctx context.Context, appID string) (infos []*authingmwpb
 		},
 	}, 0, 0)
 
-	for _, val := range roleUsers {
-		for _, api := range apis {
-			span = commontracer.TraceInvoker(span, "admin", "manager", "CreateAuth")
+	auths := []*authmgrpb.AuthReq{}
 
-			_, err = mauth.CreateAuth(ctx, val.AppID, &val.UserID, &val.RoleID, api.Path, api.Method)
-			if err != nil {
-				return nil, 0, err
-			}
+	for _, val := range roleUsers {
+		for _, _api := range apis {
+			api := _api
+			auths = append(auths, &authmgrpb.AuthReq{
+				AppID:    &val.AppID,
+				Resource: &api.Path,
+				Method:   &api.Method,
+				UserID:   &val.UserID,
+				RoleID:   &val.RoleID,
+			})
 		}
+	}
+
+	span = commontracer.TraceInvoker(span, "admin", "manager", "CreateAuths")
+
+	_, err = authmgrcli.CreateAuths(ctx, auths)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return authmwcli.GetAuths(ctx, appID, 0, 0)

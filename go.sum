@@ -93,8 +93,8 @@ github.com/NpoolPlatform/api-manager v0.0.0-20220826022307-d72866fe3ec0 h1:yIEwS
 github.com/NpoolPlatform/api-manager v0.0.0-20220826022307-d72866fe3ec0/go.mod h1:+Xj8fVgWZWGakBtqZbFn/zY0qd47AywCjLPOGdTqJDU=
 github.com/NpoolPlatform/appuser-manager v0.0.0-20220129103404-3f7941df7148/go.mod h1:nxXkzxeBSfyzJ3GGAT4iLhjFVlsCLDmLx6SaKLa0yy4=
 github.com/NpoolPlatform/appuser-manager v0.0.0-20220809085144-ce64d9b6da51/go.mod h1:LQIbkZ4MRdT01DZ1zBi77SKgcCf5u+9Bgo2b1/lHlcY=
-github.com/NpoolPlatform/appuser-manager v0.0.0-20220829023336-2041fdaab4cd h1:ACwuhQSW7POhVDYwHyQFq8d7qNfPEZNuXYu9ogyfYi0=
-github.com/NpoolPlatform/appuser-manager v0.0.0-20220829023336-2041fdaab4cd/go.mod h1:skBIsgrkDPxX6+mP31nWh0psf1ytnTLJSl73wJRXC5Y=
+github.com/NpoolPlatform/appuser-manager v0.0.0-20220829150019-d3c73b4571c8 h1:6hmUTRPfeKP0deKmh22Drc0cgtgYNgXVNU7vEGFE4pI=
+github.com/NpoolPlatform/appuser-manager v0.0.0-20220829150019-d3c73b4571c8/go.mod h1:skBIsgrkDPxX6+mP31nWh0psf1ytnTLJSl73wJRXC5Y=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20220829071341-b6736e2c1c01 h1:YYAlfdmv/JjkUotR97/wGXpE0X65iNrb0msOyoOoMt8=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20220829071341-b6736e2c1c01/go.mod h1:WYSbWpY84NyLkRIXYVBUl/9iFobhmVrs7NDdR52J6Ec=
 github.com/NpoolPlatform/authing-gateway v0.0.0-20220817093533-0f63320a452b h1:OtbVgm31jKia/NaM048WKZVaFVsqELKiD/7O50BZYjs=
