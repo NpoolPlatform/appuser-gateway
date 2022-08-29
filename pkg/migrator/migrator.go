@@ -292,23 +292,31 @@ func migrationKyc(ctx context.Context) (err error) {
 			reviewID := uuid.UUID{}.String()
 			state := kycpb.KycState_DefaultState
 			for _, info := range reviewInfos {
-				if kycInfo.ID.String() == info.ObjectID {
-					reviewID = info.ID
-					switch info.ReviewState {
-					case "wait":
-						state = kycpb.KycState_Reviewing
-					case "approved":
-						state = kycpb.KycState_Approved
-					case "rejected":
-						state = kycpb.KycState_Rejected
-					}
-					break
+				if kycInfo.ID.String() != info.ObjectID {
+					continue
+				}
+				reviewID = info.ID
+				switch info.ReviewState {
+				case "wait":
+					state = kycpb.KycState_Reviewing
+				case "approved":
+					state = kycpb.KycState_Approved
+				case "rejected":
+					state = kycpb.KycState_Rejected
 				}
 			}
 
 			newKycReviewID, err := uuid.Parse(reviewID)
 			if err != nil {
 				return err
+			}
+
+			cardType := kycpb.KycDocumentType_DefaultKycDocumentType
+			switch kycInfo.CardType {
+			case "password":
+				cardType = kycpb.KycDocumentType_Passport
+			case "id-card":
+				cardType = kycpb.KycDocumentType_IDCard
 			}
 
 			newKyc = append(newKyc, &ent.Kyc{
@@ -318,7 +326,7 @@ func migrationKyc(ctx context.Context) (err error) {
 				DeletedAt:    0,
 				AppID:        kycInfo.AppID,
 				UserID:       kycInfo.UserID,
-				DocumentType: kycInfo.CardType,
+				DocumentType: cardType.String(),
 				IDNumber:     kycInfo.CardID,
 				FrontImg:     kycInfo.FrontCardImg,
 				BackImg:      kycInfo.BackCardImg,
