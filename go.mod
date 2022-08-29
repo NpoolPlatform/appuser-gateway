@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220826022307-d72866fe3ec0
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20220818105452-9457611ae070
-	github.com/NpoolPlatform/message v0.0.0-20220829131031-e59398ed705e
+	github.com/NpoolPlatform/message v0.0.0-20220829153402-b57228248008
 	github.com/NpoolPlatform/review-service v0.0.0-20220826135931-2f311aae9cbd
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
@@ -18,8 +18,8 @@ require (
 )
 
 require (
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20220829150019-d3c73b4571c8
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220829071341-b6736e2c1c01
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20220829153511-c579ddb3686d
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220829153642-da84c07abb79
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220826143628-2e00dfa1a95f
 	github.com/NpoolPlatform/kyc-management v0.0.0-20220716053838-1a0c1957144a
 	github.com/NpoolPlatform/ledger-manager v0.0.0-20220802044528-293b8a8ee2c8
