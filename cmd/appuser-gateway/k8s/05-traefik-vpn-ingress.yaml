@@ -66,6 +66,8 @@ spec:
       http: *http_rules
     - host: api.development.npool.top
       http: *http_rules
+    - host: api.jh-testing.npool.top
+      http: *http_rules
 
 ---
 
@@ -101,4 +103,6 @@ spec:
     - host: api.xpool.top
       http: *http_rules
     - host: api.development.npool.top
+      http: *http_rules
+    - host: api.jh-testing.npool.top
       http: *http_rules
