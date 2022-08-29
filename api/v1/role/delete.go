@@ -28,16 +28,20 @@ func (s *Server) DeleteRoleUser(ctx context.Context, in *role.DeleteRoleUserRequ
 		}
 	}()
 
-	commontracer.TraceID(span, in.GetID())
+	commontracer.TraceID(span, in.GetRoleUserID())
 
-	if _, err := uuid.Parse(in.GetID()); err != nil {
-		logger.Sugar().Errorw("DeleteRoleUser", "ID", in.GetID(), "err", err)
+	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
+		logger.Sugar().Errorw("DeleteRoleUser", "ID", in.GetTargetAppID(), "err", err)
+		return &role.DeleteRoleUserResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
+	}
+	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
+		logger.Sugar().Errorw("DeleteRoleUser", "ID", in.GetRoleUserID(), "err", err)
 		return &role.DeleteRoleUserResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
 	}
 
 	span = commontracer.TraceInvoker(span, "role", "manager", "DeleteAppRoleUser")
 
-	info, err := approleusermgrcli.DeleteAppRoleUser(ctx, in.GetID())
+	info, err := approleusermgrcli.DeleteAppRoleUser(ctx, in.GetRoleUserID())
 	if err != nil {
 		logger.Sugar().Errorw("DeleteRoleUser", "err", err)
 		return &role.DeleteRoleUserResponse{}, status.Error(codes.Internal, err.Error())
