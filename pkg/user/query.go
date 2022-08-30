@@ -38,6 +38,9 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 		logger.Sugar().Errorw("GetUsers", "err", err)
 		return nil, 0, err
 	}
+	if len(infos) == 0 {
+		return []*user.User{}, 0, nil
+	}
 
 	for key, val := range infos {
 		code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, appID, val.ID)
