@@ -189,6 +189,9 @@ func (s *Server) Logined(ctx context.Context, in *user.LoginedRequest) (*user.Lo
 		logger.Sugar().Errorw("Logined", "err", err)
 		return &user.LoginedResponse{}, status.Error(codes.Internal, err.Error())
 	}
+
+	_ = user1.UpdateCache(ctx, info)
+
 	return &user.LoginedResponse{
 		Info: info,
 	}, nil

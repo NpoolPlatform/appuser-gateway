@@ -266,7 +266,19 @@ func Logout(ctx context.Context, appID, userID string) (*usermwpb.User, error) {
 func UpdateCache(ctx context.Context, user *usermwpb.User) error {
 	meta, err := queryAppUser(ctx, uuid.MustParse(user.AppID), uuid.MustParse(user.ID))
 	if err != nil {
+		logger.Sugar().Errorw("UpdateCache", "err", err)
 		return err
+	}
+
+	code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, user.AppID, user.ID)
+	if err != nil {
+		logger.Sugar().Errorw("UpdateCache", "err", err)
+		return err
+	}
+	if code != nil {
+		user.InvitationCodeID = &code.ID
+		user.InvitationCode = &code.InvitationCode
+		user.InvitationCodeConfirmed = code.Confirmed
 	}
 
 	user.Logined = meta.User.Logined
@@ -283,6 +295,7 @@ func UpdateCache(ctx context.Context, user *usermwpb.User) error {
 
 	meta.User = user
 	if err := createCache(ctx, meta); err != nil {
+		logger.Sugar().Errorw("UpdateCache", "err", err)
 		return err
 	}
 
