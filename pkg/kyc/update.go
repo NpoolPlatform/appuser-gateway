@@ -69,6 +69,7 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 	// TODO: distributed transaction
 	span = commontracer.TraceInvoker(span, "kyc", "manager", "UpdateKyc")
 
+	state := kycmgrpb.KycState_Reviewing
 	kyc, err := kycmgrcli.UpdateKyc(ctx, &kycmgrpb.KycReq{
 		ID:        &in.KycID,
 		AppID:     &in.AppID,
@@ -78,6 +79,7 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 		BackImg:   in.BackImg,
 		SelfieImg: in.SelfieImg,
 		ReviewID:  reviewID,
+		State:     &state,
 	})
 	if err != nil {
 		return nil, err
