@@ -39,6 +39,7 @@ func CreateKyc(
 
 	span = commontracer.TraceInvoker(span, "kyc", "manager", "CreateKyc")
 
+	state := kycmgrpb.KycState_Reviewing
 	kycInfo, err := kycmgrcli.CreateKyc(ctx, &kycmgrpb.KycReq{
 		AppID:        &appID,
 		UserID:       &userID,
@@ -49,6 +50,7 @@ func CreateKyc(
 		SelfieImg:    &selfieImg,
 		EntityType:   &entityType,
 		ReviewID:     &reviewID,
+		State:        &state,
 	})
 	if err != nil {
 		return nil, err
