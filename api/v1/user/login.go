@@ -2,30 +2,33 @@ package user
 
 import (
 	"context"
-	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	"github.com/NpoolPlatform/message/npool"
-
-	"github.com/google/uuid"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
+
+	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
 
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
 
 	historycli "github.com/NpoolPlatform/appuser-manager/pkg/client/login/history"
 	historypb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/login/history"
+
+	"github.com/NpoolPlatform/message/npool"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
+
+	"github.com/google/uuid"
 )
 
 func (s *Server) Login(ctx context.Context, in *user.LoginRequest) (*user.LoginResponse, error) { //nolint
