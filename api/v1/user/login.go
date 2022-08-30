@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
@@ -189,6 +190,20 @@ func (s *Server) Logined(ctx context.Context, in *user.LoginedRequest) (*user.Lo
 		logger.Sugar().Errorw("Logined", "err", err)
 		return &user.LoginedResponse{}, status.Error(codes.Internal, err.Error())
 	}
+
+	code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, in.GetAppID(), in.GetUserID())
+	if err != nil {
+		logger.Sugar().Errorw("UpdateCache", "err", err)
+		return &user.LoginedResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	if code != nil {
+		info.InvitationCode = &code.InvitationCode
+		info.InvitationCodeID = &code.ID
+		info.InvitationCodeConfirmed = code.Confirmed
+	}
+
+	_ = user1.UpdateCache(ctx, info)
+
 	return &user.LoginedResponse{
 		Info: info,
 	}, nil
