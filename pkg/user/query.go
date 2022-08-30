@@ -16,7 +16,7 @@ import (
 	scodes "go.opentelemetry.io/otel/codes"
 )
 
-func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.User, error) {
+func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.User, uint32, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUsers")
@@ -33,17 +33,17 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
 
-	infos, _, err := usermwcli.GetUsers(ctx, appID, offset, limit)
+	infos, total, err := usermwcli.GetUsers(ctx, appID, offset, limit)
 	if err != nil {
 		logger.Sugar().Errorw("GetUsers", "err", err)
-		return nil, err
+		return nil, 0, err
 	}
 
 	for key, val := range infos {
 		code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, appID, val.ID)
 		if err != nil {
 			logger.Sugar().Errorw("GetUsers", "err", err)
-			return nil, err
+			return nil, 0, err
 		}
 		if code == nil {
 			continue
@@ -53,5 +53,5 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 		infos[key].InvitationCodeConfirmed = code.Confirmed
 	}
 
-	return infos, nil
+	return infos, total, nil
 }
