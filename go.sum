@@ -101,8 +101,8 @@ github.com/NpoolPlatform/authing-gateway v0.0.0-20220817093533-0f63320a452b h1:O
 github.com/NpoolPlatform/authing-gateway v0.0.0-20220817093533-0f63320a452b/go.mod h1:MiLlsYTY+pArHaikOxGdXiu/8fGPV601cvwk/ujUnuQ=
 github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20211224023221-a715aef93510/go.mod h1:YcH4tmsnOFfsFeBG6tqT6W5Z6yKvQA2W+b9RBhSAzMo=
 github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20211224023242-bd6da3111653/go.mod h1:VBiNGga8uFzy0Pt3Epzx4Dg7RxzM0Y4lzsr+9a7icU8=
-github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220826143628-2e00dfa1a95f h1:DnVoK6iMT4piTGz6PXYvgr1Ee/dCiRXdqfxwJ945mv8=
-github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220826143628-2e00dfa1a95f/go.mod h1:yZOdpYEgeKwC/Cr51/sLUV7ohkvPU/HVDPs0mjP5GQo=
+github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220830131300-3971cca6e3eb h1:Q+dYqHHP1imPHEKtBQUbdsRNlFYLrgRS2gdskYF8y9E=
+github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220830131300-3971cca6e3eb/go.mod h1:ZEq1nEPhxGA/FuOG+dDmchWmPIh3Q7z1nIV+fo8g9PI=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20211222114515-4928e6cf3f1f/go.mod h1:kR7v9OYmi38GLucJoVUOxLYiA3xtLp5TY/fWqrR6WRw=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220120091626-4e8035637592/go.mod h1:JqrktA7gNQe/Uprnr6DCs5UCFpheCZ30lDd0OkyRtC4=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220127101433-3def4e496433/go.mod h1:G5SKpcIWWkyxeNtgI8c0iY8py6DY2xHZFGKPJpTEon0=
