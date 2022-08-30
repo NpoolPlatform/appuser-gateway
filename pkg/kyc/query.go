@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	kycmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/kyc"
-
 	mwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
 	mwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
+
+	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
 	reviewmgrcli "github.com/NpoolPlatform/review-service/pkg/client"
 )
 
@@ -25,14 +25,8 @@ func GetKyc(ctx context.Context, id string) (*mwpb.Kyc, error) {
 		return nil, fmt.Errorf("invalid review")
 	}
 
-	switch rinfo.State {
-	case "wait":
-		info.State = kycmgrpb.KycState_Reviewing
-	case "rejected":
-		info.State = kycmgrpb.KycState_Rejected
+	if rinfo.State == "rejected" || rinfo.State == reviewmgrpb.ReviewState_Rejected.String() {
 		info.ReviewMessage = rinfo.GetMessage()
-	case "approved":
-		info.State = kycmgrpb.KycState_Approved
 	}
 
 	return info, nil
@@ -52,14 +46,9 @@ func GetKycs(ctx context.Context, conds *mwpb.Conds, offset, limit int32) ([]*mw
 		if info == nil {
 			continue
 		}
-		switch info.State {
-		case "wait":
-			infos[key].State = kycmgrpb.KycState_Reviewing
-		case "rejected":
-			infos[key].State = kycmgrpb.KycState_Rejected
+
+		if info.State == "rejected" || info.State == reviewmgrpb.ReviewState_Rejected.String() {
 			infos[key].ReviewMessage = info.GetMessage()
-		case "approved":
-			infos[key].State = kycmgrpb.KycState_Approved
 		}
 	}
 	return infos, total, nil
