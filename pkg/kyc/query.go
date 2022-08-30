@@ -6,6 +6,8 @@ import (
 
 	mwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
 	mwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
+
+	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
 	reviewmgrcli "github.com/NpoolPlatform/review-service/pkg/client"
 )
 
@@ -23,7 +25,7 @@ func GetKyc(ctx context.Context, id string) (*mwpb.Kyc, error) {
 		return nil, fmt.Errorf("invalid review")
 	}
 
-	if rinfo.State == "rejected" {
+	if rinfo.State == "rejected" || rinfo.State == reviewmgrpb.ReviewState_Rejected.String() {
 		info.ReviewMessage = rinfo.GetMessage()
 	}
 
@@ -45,7 +47,7 @@ func GetKycs(ctx context.Context, conds *mwpb.Conds, offset, limit int32) ([]*mw
 			continue
 		}
 
-		if info.State == "rejected" {
+		if info.State == "rejected" || info.State == reviewmgrpb.ReviewState_Rejected.String() {
 			infos[key].ReviewMessage = info.GetMessage()
 		}
 	}
