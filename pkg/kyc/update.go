@@ -71,15 +71,17 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 
 	state := kycmgrpb.KycState_Reviewing
 	kyc, err := kycmgrcli.UpdateKyc(ctx, &kycmgrpb.KycReq{
-		ID:        &in.KycID,
-		AppID:     &in.AppID,
-		UserID:    &in.UserID,
-		IDNumber:  in.IDNumber,
-		FrontImg:  in.FrontImg,
-		BackImg:   in.BackImg,
-		SelfieImg: in.SelfieImg,
-		ReviewID:  reviewID,
-		State:     &state,
+		ID:           &in.KycID,
+		AppID:        &in.AppID,
+		UserID:       &in.UserID,
+		IDNumber:     in.IDNumber,
+		FrontImg:     in.FrontImg,
+		BackImg:      in.BackImg,
+		SelfieImg:    in.SelfieImg,
+		DocumentType: in.DocumentType,
+		EntityType:   in.EntityType,
+		ReviewID:     reviewID,
+		State:        &state,
 	})
 	if err != nil {
 		return nil, err
