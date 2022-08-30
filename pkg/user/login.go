@@ -270,17 +270,6 @@ func UpdateCache(ctx context.Context, user *usermwpb.User) error {
 		return err
 	}
 
-	code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, user.AppID, user.ID)
-	if err != nil {
-		logger.Sugar().Errorw("UpdateCache", "err", err)
-		return err
-	}
-	if code != nil {
-		user.InvitationCodeID = &code.ID
-		user.InvitationCode = &code.InvitationCode
-		user.InvitationCodeConfirmed = code.Confirmed
-	}
-
 	user.Logined = meta.User.Logined
 	user.LoginAccount = meta.User.LoginAccount
 	user.LoginAccountType = meta.User.LoginAccountType
