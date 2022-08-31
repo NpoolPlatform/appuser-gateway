@@ -51,7 +51,7 @@ require (
 
 require (
 	ariga.io/atlas v0.5.1-0.20220717122844-8593d7eb1a8e // indirect
-	entgo.io/ent v0.11.2
+	entgo.io/ent v0.11.2 // indirect
 	github.com/NpoolPlatform/authing-gateway v0.0.0-20220817093533-0f63320a452b
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
