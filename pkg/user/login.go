@@ -270,6 +270,10 @@ func UpdateCache(ctx context.Context, user *usermwpb.User) error {
 		return err
 	}
 
+	user.InvitationCodeID = meta.User.InvitationCodeID
+	user.InvitationCode = meta.User.InvitationCode
+	user.InvitationCodeConfirmed = meta.User.InvitationCodeConfirmed
+
 	user.Logined = meta.User.Logined
 	user.LoginAccount = meta.User.LoginAccount
 	user.LoginAccountType = meta.User.LoginAccountType
