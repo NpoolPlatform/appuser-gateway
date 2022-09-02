@@ -190,13 +190,16 @@ func (s *Server) Logined(ctx context.Context, in *user.LoginedRequest) (*user.Lo
 		in.GetToken(),
 	)
 	if err != nil {
-		logger.Sugar().Errorw("Logined", "err", err)
+		logger.Sugar().Errorw("Logined", "error", err)
 		return &user.LoginedResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	if info == nil {
+		return &user.LoginedResponse{}, nil
 	}
 
 	code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, in.GetAppID(), in.GetUserID())
 	if err != nil {
-		logger.Sugar().Errorw("UpdateCache", "err", err)
+		logger.Sugar().Errorw("UpdateCache", "error", err)
 		return &user.LoginedResponse{}, status.Error(codes.Internal, err.Error())
 	}
 	if code != nil {
