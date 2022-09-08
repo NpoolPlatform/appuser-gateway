@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 
+	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
+
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	tracer "github.com/NpoolPlatform/appuser-middleware/pkg/tracer/app"
 	appcrud "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/app"
@@ -32,16 +34,29 @@ func (s *Server) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*app.
 			span.RecordError(err)
 		}
 	}()
-	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
+	if _, err := uuid.Parse(in.GetID()); err != nil {
 		return &app.UpdateAppResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
 	}
 
-	span = tracer.Trace(span, in.GetInfo())
+	appInfo := &appmwpb.AppReq{
+		ID:                 &in.ID,
+		Name:               in.Name,
+		Logo:               in.Logo,
+		Description:        in.Description,
+		SignupMethods:      in.SignupMethods,
+		ExtSigninMethods:   in.ExtSigninMethods,
+		RecaptchaMethod:    in.RecaptchaMethod,
+		KycEnable:          in.KycEnable,
+		SigninVerifyEnable: in.SigninVerifyEnable,
+		InvitationCodeMust: in.InvitationCodeMust,
+	}
+
+	span = tracer.Trace(span, appInfo)
 	span = commontracer.TraceInvoker(span, "admin", "middleware", "ExistAppConds")
 
 	exist, err := appmgrcli.ExistAppConds(ctx, &appcrud.Conds{
 		Name: &npool.StringVal{
-			Value: in.GetInfo().GetName(),
+			Value: in.GetName(),
 			Op:    cruder.EQ,
 		}})
 	if err != nil {
@@ -56,7 +71,7 @@ func (s *Server) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*app.
 
 	span = commontracer.TraceInvoker(span, "admin", "middleware", "UpdateApp")
 
-	info, err := appmwcli.UpdateApp(ctx, in.GetInfo())
+	info, err := appmwcli.UpdateApp(ctx, appInfo)
 	if err != nil {
 		logger.Sugar().Errorw("UpdateApp", "err", err)
 		return &app.UpdateAppResponse{}, status.Error(codes.Internal, err.Error())
