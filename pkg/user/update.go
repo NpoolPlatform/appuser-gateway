@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
+	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
+
 	invitationcli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
@@ -17,8 +20,6 @@ import (
 	appusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-
-	thirdgwconst "github.com/NpoolPlatform/third-gateway/pkg/const"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
 
@@ -57,35 +58,42 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 		}
 	}
 
+	user, err := usermwcli.GetUser(ctx, in.GetAppID(), in.GetUserID())
+	if err != nil {
+		return nil, err
+	}
+
 	if in.NewAccount != nil || in.PasswordHash != nil || in.GetNewAccountType() == signmethod.SignMethodType_Google {
-		if err := VerifyCode(
-			ctx,
-			in.GetAppID(),
-			in.GetUserID(),
-			in.GetAccount(),
-			in.GetAccountType(),
+		account := in.GetAccount()
+		if in.GetAccountType() == signmethod.SignMethodType_Google {
+			account = user.GoogleSecret
+		}
+
+		if err := thirdmwcli.VerifyCode(
+			ctx, in.GetAppID(),
+			account,
 			in.GetVerificationCode(),
-			thirdgwconst.UsedForUpdate,
-			true,
+			in.GetAccountType(),
+			usedfor.UsedFor_Update,
 		); err != nil {
-			logger.Sugar().Infow("UpdateUser", "VerificationCode", in.GetVerificationCode())
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, err
 		}
 	}
 
 	if in.NewAccount != nil || in.GetNewAccountType() == signmethod.SignMethodType_Google {
-		if err := VerifyCode(
-			ctx,
-			in.GetAppID(),
-			in.GetUserID(),
-			in.GetNewAccount(),
+		account := in.GetNewAccount()
+		if in.GetNewAccountType() == signmethod.SignMethodType_Google {
+			account = user.GoogleSecret
+		}
+
+		if err := thirdmwcli.VerifyCode(
+			ctx, in.GetAppID(),
+			account,
+			in.GetVerificationCode(),
 			in.GetNewAccountType(),
-			in.GetNewVerificationCode(),
-			thirdgwconst.UsedForUpdate,
-			false,
+			usedfor.UsedFor_Update,
 		); err != nil {
-			logger.Sugar().Infow("UpdateUser", "NewVerificationCode", in.GetNewVerificationCode())
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, err
 		}
 	}
 
@@ -121,13 +129,13 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 	info, err := usermwcli.UpdateUser(ctx, req)
 	if err != nil {
 		logger.Sugar().Errorw("UpdateUser", "err", err)
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, err
 	}
 
 	if in.InvitationCodeID != nil && in.InvitationCodeConfirmed != nil {
 		if _, err = uuid.Parse(in.GetInvitationCodeID()); err != nil {
 			logger.Sugar().Errorw("UpdateUser", "err", err)
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, err
 		}
 
 		invite, err := invitationcli.UpdateUserInvitationCode(
@@ -137,7 +145,7 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 		)
 		if err != nil {
 			logger.Sugar().Errorw("UpdateUser", "err", err)
-			return nil, status.Error(codes.Internal, err.Error())
+			return nil, err
 		}
 
 		info.InvitationCodeConfirmed = invite.Confirmed
@@ -176,17 +184,13 @@ func ResetUser(ctx context.Context, in *npool.ResetUserRequest) error {
 		return fmt.Errorf("invalid user")
 	}
 
-	if err := VerifyCode(
-		ctx,
-		in.GetAppID(),
-		auser.ID,
+	if err := thirdmwcli.VerifyCode(
+		ctx, in.GetAppID(),
 		in.GetAccount(),
-		in.GetAccountType(),
 		in.GetVerificationCode(),
-		thirdgwconst.UsedForUpdate,
-		true,
+		in.GetAccountType(),
+		usedfor.UsedFor_Update,
 	); err != nil {
-		logger.Sugar().Infow("ResetUser", "VerificationCode", in.GetVerificationCode())
 		return err
 	}
 

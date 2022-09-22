@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
+	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
+
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	rolemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
@@ -16,8 +19,6 @@ import (
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	inspirepb "github.com/NpoolPlatform/message/npool/cloud-hashing-inspire"
-
-	thirdgwconst "github.com/NpoolPlatform/third-gateway/pkg/const"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
@@ -47,14 +48,7 @@ func Signup(
 		return nil, err
 	}
 
-	err = verifyCode(
-		ctx, appID, "",
-		account, accountType,
-		verificationCode,
-		thirdgwconst.UsedForSignup,
-		false,
-	)
-	if err != nil {
+	if err := thirdmwcli.VerifyCode(ctx, appID, account, verificationCode, accountType, usedfor.UsedFor_Signup); err != nil {
 		return nil, err
 	}
 
