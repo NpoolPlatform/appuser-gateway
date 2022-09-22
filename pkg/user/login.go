@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
+
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	loginhispb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/login/history"
@@ -16,9 +18,7 @@ import (
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
-	thirdgwcli "github.com/NpoolPlatform/third-gateway/pkg/client"
-
-	thirdgwconst "github.com/NpoolPlatform/third-gateway/pkg/const"
+	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
 
@@ -100,7 +100,7 @@ func Login(
 	}
 
 	if app.RecaptchaMethod == recaptcha.RecaptchaType_GoogleRecaptchaV3 {
-		err = thirdgwcli.VerifyGoogleRecaptchaV3(ctx, manMachineSpec)
+		err = thirdmwcli.VerifyGoogleRecaptchaV3(ctx, manMachineSpec)
 		if err != nil {
 			return nil, err
 		}
@@ -169,6 +169,7 @@ func Login(
 	return user, nil
 }
 
+//nolint:gocyclo
 func LoginVerify(
 	ctx context.Context,
 	appID, userID, token string,
@@ -205,14 +206,32 @@ func LoginVerify(
 	default:
 		return nil, fmt.Errorf("not supported")
 	}
-	if err := verifyCode(
-		ctx,
-		appID, userID,
-		account, accountType,
-		code,
-		thirdgwconst.UsedForSignin,
-		true,
-	); err != nil {
+
+	user, err := usermwcli.GetUser(ctx, appID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, fmt.Errorf("fail get user ")
+	}
+
+	switch accountType {
+	case signmethod.SignMethodType_Mobile:
+		if user.GetPhoneNO() != account {
+			return nil, fmt.Errorf("invalid mobile")
+		}
+	case signmethod.SignMethodType_Email:
+		if user.EmailAddress != account {
+			return nil, fmt.Errorf("invalid email")
+		}
+	}
+
+	if accountType == signmethod.SignMethodType_Google {
+		account = user.GetGoogleSecret()
+	}
+
+	if err := thirdmwcli.VerifyCode(ctx, appID, account, code, accountType, usedfor.UsedFor_Signin); err != nil {
 		return nil, err
 	}
 
