@@ -89,7 +89,7 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 		if err := thirdmwcli.VerifyCode(
 			ctx, in.GetAppID(),
 			account,
-			in.GetVerificationCode(),
+			in.GetNewVerificationCode(),
 			in.GetNewAccountType(),
 			usedfor.UsedFor_Update,
 		); err != nil {
