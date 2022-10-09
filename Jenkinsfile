@@ -223,6 +223,7 @@ pipeline {
     stage('Generate docker image for testing or production') {
       when {
         expression { BUILD_TARGET == 'true' }
+        expression { TAG_MAJOR == 'true' }
       }
       steps {
         sh(returnStdout: true, script: '''
