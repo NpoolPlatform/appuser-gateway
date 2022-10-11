@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220826022307-d72866fe3ec0
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20220908115503-7dd1d00f71fa
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20221011151307-78ed0fb1a91a
 	github.com/NpoolPlatform/message v0.0.0-20220922072549-e30711ea955c
 	github.com/NpoolPlatform/review-service v0.0.0-20220826135931-2f311aae9cbd
 	github.com/go-resty/resty/v2 v2.7.0
