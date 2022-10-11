@@ -109,8 +109,8 @@ github.com/NpoolPlatform/go-service-framework v0.0.0-20220127101433-3def4e496433
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220722111225-08c2156ac8bf/go.mod h1:o9I+ipazkngO2E5yC7LOdLTA6nlvf4uTUMOOZ2sRiRU=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220812032117-44ecffa2bb95/go.mod h1:QPI3Fu/AU5iUOUnf9EictZP1lqPQdPcVLqveIB2HovI=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220818105452-9457611ae070/go.mod h1:QPI3Fu/AU5iUOUnf9EictZP1lqPQdPcVLqveIB2HovI=
-github.com/NpoolPlatform/go-service-framework v0.0.0-20221011151307-78ed0fb1a91a h1:9Qs6M6Qp5GdnxRWcEQ1F6VnMKxUwy2fk0vjVi/CFUxc=
-github.com/NpoolPlatform/go-service-framework v0.0.0-20221011151307-78ed0fb1a91a/go.mod h1:/sor3E0i0XR8BaKInJwWC85aXLmbMFRNLdIuw+ed+ig=
+github.com/NpoolPlatform/go-service-framework v0.0.0-20221011161301-4500ec2e0615 h1:NWAEK4dMe0sa1nzcxhGt0t7Kyu2es5fhYjcFDVx2PdY=
+github.com/NpoolPlatform/go-service-framework v0.0.0-20221011161301-4500ec2e0615/go.mod h1:/sor3E0i0XR8BaKInJwWC85aXLmbMFRNLdIuw+ed+ig=
 github.com/NpoolPlatform/kyc-management v0.0.0-20220716053838-1a0c1957144a h1:k8ejWQEadGmUcQkbZN/X7YF0iKWY0ZsTQh2PlROoq/M=
 github.com/NpoolPlatform/kyc-management v0.0.0-20220716053838-1a0c1957144a/go.mod h1:Zdf1mQcER/oePPIFUvEUyqAXv02Wv8ONhv7iqEkVmhQ=
 github.com/NpoolPlatform/ledger-manager v0.0.0-20220727114744-a028b0ff1bbf/go.mod h1:FklCFJs98SXIg5CY5WAD+jYOls4tdzUxoTwEm7l9Hlw=
