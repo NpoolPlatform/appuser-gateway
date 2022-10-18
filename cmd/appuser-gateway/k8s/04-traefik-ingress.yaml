@@ -240,6 +240,10 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/delete/app/roleuser
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/create/app/roleuser
             backend:
               serviceName: appuser-gateway
