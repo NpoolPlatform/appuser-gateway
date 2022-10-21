@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -12,6 +13,11 @@ import (
 
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+
+	appuserextracli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuserextra"
+	appuserextrapb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuserextra"
+
+	npoolpb "github.com/NpoolPlatform/message/npool"
 
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
@@ -50,6 +56,27 @@ func (s *Server) CreateUser(ctx context.Context, in *npool.CreateUserRequest) (*
 		if _, err := uuid.Parse(in.GetImportedFromAppID()); err != nil {
 			logger.Sugar().Infow("CreateUser", "ImportedFromAppID", in.GetImportedFromAppID())
 			return &npool.CreateUserResponse{}, status.Error(codes.InvalidArgument, "invalid password")
+		}
+	}
+
+	if in.IDNumber != nil {
+		if in.GetIDNumber() == "" {
+			logger.Sugar().Infow("UpdateUser", "IDNumber", in.GetIDNumber())
+			return &npool.CreateUserResponse{}, status.Error(codes.InvalidArgument, "IDNumber is invalid")
+		}
+		exist, err := appuserextracli.ExistAppUserExtraConds(ctx, &appuserextrapb.Conds{
+			IDNumber: &npoolpb.StringVal{
+				Op:    cruder.EQ,
+				Value: in.GetIDNumber(),
+			},
+		})
+		if err != nil {
+			logger.Sugar().Infow("CreateUser", "exist", exist, "err", err)
+			return &npool.CreateUserResponse{}, status.Error(codes.Internal, err.Error())
+		}
+		if exist {
+			logger.Sugar().Infow("CreateUser", "IDNumber", in.GetIDNumber())
+			return &npool.CreateUserResponse{}, status.Error(codes.InvalidArgument, "IDNumber is already exists")
 		}
 	}
 
