@@ -5,7 +5,10 @@ import (
 	"fmt"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
+	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 )
 
 func SetupGoogleAuth(ctx context.Context, appID, userID string) (*usermwpb.User, error) {
@@ -21,7 +24,7 @@ func SetupGoogleAuth(ctx context.Context, appID, userID string) (*usermwpb.User,
 		return user, nil
 	}
 
-	secret, err := GenerateSecret()
+	secret, err := generateSecret()
 	if err != nil {
 		return nil, err
 	}
@@ -57,13 +60,18 @@ func VerifyGoogleAuth(ctx context.Context, appID, userID, code string) (*usermwp
 		return nil, fmt.Errorf("invalid user")
 	}
 
-	verified, err := VerifyCode(user.GoogleSecret, code)
-	if err != nil {
+	if err := thirdmwcli.VerifyCode(
+		ctx,
+		appID,
+		user.GoogleSecret,
+		code,
+		signmethod.SignMethodType_Google,
+		usedfor.UsedFor_Update,
+	); err != nil {
 		return nil, err
 	}
-	if !verified {
-		return nil, fmt.Errorf("invalid code")
-	}
+
+	verified := true
 
 	user, err = usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
 		ID:                 &userID,

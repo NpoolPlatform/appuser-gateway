@@ -45,6 +45,8 @@ spec:
       http: *http_rules
     - host: api.japan-procyon-production.npool.top
       http: *http_rules
+    - host: api.lpsecretbase.com
+      http: *http_rules
 
 ---
 
@@ -92,6 +94,8 @@ spec:
     - host: api.jh-testing.npool.top
       http: *http_rules
     - host: api.japan-procyon-production.npool.top
+      http: *http_rules
+    - host: api.lpsecretbase.com
       http: *http_rules
 
 ---
@@ -179,20 +183,8 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/get/app/auths
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/get/app/authhistories
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
 
           - path: /api/appuser/v1/setup/googleauth
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/verify/googleauth
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -209,10 +201,6 @@ spec:
               serviceName: appuser-gateway
               servicePort: 50500
           - path: /api/appuser/v1/get/kyc
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/get/app/kycs
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -240,10 +228,6 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/get/app/roles
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
           - path: /api/appuser/v1/create/roleuser
             backend:
               serviceName: appuser-gateway
@@ -264,10 +248,6 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/get/app/roleusers
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
           - path: /api/appuser/v1/create/user
             backend:
               serviceName: appuser-gateway
@@ -277,10 +257,6 @@ spec:
               serviceName: appuser-gateway
               servicePort: 50500
           - path: /api/appuser/v1/get/users
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/get/app/users
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -300,10 +276,6 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/get/app/user/kycimage
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
@@ -317,4 +289,6 @@ spec:
     - host: api.jh-testing.npool.top
       http: *http_rules
     - host: api.japan-procyon-production.npool.top
+      http: *http_rules
+    - host: api.lpsecretbase.com
       http: *http_rules
