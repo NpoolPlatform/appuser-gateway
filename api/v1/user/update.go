@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+
 	appuserextracli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuserextra"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npoolpb "github.com/NpoolPlatform/message/npool"
@@ -25,6 +26,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//nolint:dupl
 func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*npool.UpdateUserResponse, error) { //nolint
 	var err error
 

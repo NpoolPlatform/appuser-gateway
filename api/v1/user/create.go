@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -28,6 +29,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//nolint:dupl
 func (s *Server) CreateUser(ctx context.Context, in *npool.CreateUserRequest) (*npool.CreateUserResponse, error) {
 	var err error
 
