@@ -5,7 +5,6 @@ import (
 	"os"
 
 	ossconst "github.com/NpoolPlatform/go-service-framework/pkg/oss/const"
-	kycconstant "github.com/NpoolPlatform/kyc-management/pkg/message/const"
 	reviewconstant "github.com/NpoolPlatform/review-service/pkg/message/const"
 
 	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
@@ -41,7 +40,6 @@ func main() {
 		redisconst.RedisServiceName,
 		ossconst.S3NameSpace,
 		reviewconstant.ServiceName,
-		kycconstant.ServiceName,
 	)
 	if err != nil {
 		logger.Sugar().Errorf("fail to create %v: %v", servicename.ServiceName, err)
