@@ -5,8 +5,6 @@ import (
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	tracer "github.com/NpoolPlatform/appuser-middleware/pkg/tracer/app"
-	"github.com/google/uuid"
-	"google.golang.org/grpc/codes"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 
@@ -19,7 +17,11 @@ import (
 
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
+
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/google/uuid"
 )
 
 func (s *Server) CreateApp(ctx context.Context, in *app.CreateAppRequest) (*app.CreateAppResponse, error) {
