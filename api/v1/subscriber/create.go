@@ -8,6 +8,9 @@ import (
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 
+	mwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/subscriber"
+	mgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/subscriber"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -30,5 +33,15 @@ func (s *Server) CreateSubscriber(ctx context.Context, in *npool.CreateSubscribe
 		return &npool.CreateSubscriberResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
 	}
 
-	return nil, nil
+	info, err := mwcli.CreateSubscriber(ctx, &mgrpb.SubscriberReq{
+		AppID:        &in.AppID,
+		EmailAddress: &in.EmailAddress,
+	})
+	if err != nil {
+		return &npool.CreateSubscriberResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.CreateSubscriberResponse{
+		Info: info,
+	}, nil
 }
