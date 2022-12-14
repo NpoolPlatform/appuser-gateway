@@ -31,6 +31,14 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/create/subscriber
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/delete/subscriber
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
@@ -277,6 +285,10 @@ spec:
               serviceName: appuser-gateway
               servicePort: 50500
           - path: /api/appuser/v1/get/user/kycimage
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/subscriberes
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
