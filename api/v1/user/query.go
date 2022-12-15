@@ -9,7 +9,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"google.golang.org/grpc/codes"
 
+	constant1 "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+
 	mw "github.com/NpoolPlatform/appuser-gateway/pkg/user"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
@@ -40,7 +42,12 @@ func (s *Server) GetUsers(ctx context.Context, in *user.GetUsersRequest) (*user.
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
 
-	infos, total, err := mw.GetUsers(ctx, in.GetAppID(), in.GetOffset(), in.GetLimit())
+	limit := constant1.DefaultRowLimit
+	if in.GetLimit() > 0 {
+		limit = in.GetLimit()
+	}
+
+	infos, total, err := mw.GetUsers(ctx, in.GetAppID(), in.GetOffset(), limit)
 	if err != nil {
 		logger.Sugar().Errorw("GetUsers", "err", err)
 		return &user.GetUsersResponse{}, status.Error(codes.Internal, err.Error())
@@ -74,7 +81,12 @@ func (s *Server) GetAppUsers(ctx context.Context, in *user.GetAppUsersRequest) (
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
 
-	infos, total, err := mw.GetUsers(ctx, in.GetTargetAppID(), in.GetOffset(), in.GetLimit())
+	limit := constant1.DefaultRowLimit
+	if in.GetLimit() > 0 {
+		limit = in.GetLimit()
+	}
+
+	infos, total, err := mw.GetUsers(ctx, in.GetTargetAppID(), in.GetOffset(), limit)
 	if err != nil {
 		logger.Sugar().Errorw("GetAppUsers", "err", err)
 		return &user.GetAppUsersResponse{}, status.Error(codes.Internal, err.Error())
