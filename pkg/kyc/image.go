@@ -40,6 +40,20 @@ func GetKycImage(ctx context.Context, appID, userID string, imgType kycmgrpb.Kyc
 	}
 
 	imgBase64, err = oss.GetObject(ctx, key, true)
+	if err == nil && imgBase64 != nil {
+		return string(imgBase64), nil
+	}
+
+	switch imgType {
+	case kycmgrpb.KycImageType_FrontImg:
+		key = fmt.Sprintf("kyc/%v/%v/Front", appID, userID)
+	case kycmgrpb.KycImageType_BackImg:
+		key = fmt.Sprintf("kyc/%v/%v/Back", appID, userID)
+	case kycmgrpb.KycImageType_SelfieImg:
+		key = fmt.Sprintf("kyc/%v/%v/Handing", appID, userID)
+	default:
+		return "", fmt.Errorf("invalid image type")
+	}
 	if err != nil {
 		return "", err
 	}
