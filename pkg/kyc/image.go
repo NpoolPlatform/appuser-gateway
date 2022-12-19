@@ -38,7 +38,6 @@ func GetKycImage(ctx context.Context, appID, userID string, imgType kycmgrpb.Kyc
 	default:
 		return "", fmt.Errorf("invalid image type")
 	}
-
 	imgBase64, err = oss.GetObject(ctx, key, true)
 	if err == nil && imgBase64 != nil {
 		return string(imgBase64), nil
@@ -54,6 +53,8 @@ func GetKycImage(ctx context.Context, appID, userID string, imgType kycmgrpb.Kyc
 	default:
 		return "", fmt.Errorf("invalid image type")
 	}
+
+	imgBase64, err = oss.GetObject(ctx, key, true)
 	if err != nil {
 		return "", err
 	}
