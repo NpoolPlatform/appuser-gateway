@@ -38,7 +38,7 @@ func CreateKyc(
 
 	reviewID := uuid.NewString()
 
-	span = commontracer.TraceInvoker(span, "kyc", "manager", "CreateKyc")
+	span = commontracer.TraceInvoker(span, "kyc", "middleware", "CreateKyc")
 
 	state := kycmgrpb.KycState_Reviewing
 	kycInfo, err := kycmgrcli.CreateKyc(ctx, &kycmgrpb.KycReq{
@@ -58,7 +58,7 @@ func CreateKyc(
 	}
 	// TODO: distributed transaction
 
-	span = commontracer.TraceInvoker(span, "kyc", "review-service", "CreateReview")
+	span = commontracer.TraceInvoker(span, "kyc", "middleware", "CreateReview")
 
 	serviceName := constant.ServiceName
 	objectType := reviewpb.ReviewObjectType_ObjectKyc

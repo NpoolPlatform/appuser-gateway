@@ -38,7 +38,7 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 		return nil, err
 	}
 
-	span = commontracer.TraceInvoker(span, "kyc", "review-service", "GetReview")
+	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetReview")
 
 	reviewInfo, err := reviewmwcli.GetObjectReview(
 		ctx,
