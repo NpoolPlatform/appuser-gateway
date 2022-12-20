@@ -5,16 +5,17 @@ import (
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-	"github.com/google/uuid"
-	"go.opentelemetry.io/otel"
-	scodes "go.opentelemetry.io/otel/codes"
 
 	kycmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/kyc"
 	kycmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/kyc"
 	mwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
-	reviewpb "github.com/NpoolPlatform/message/npool/review-service"
-	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
-	reviewmgrcli "github.com/NpoolPlatform/review-service/pkg/client"
+	reviewpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
+	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
+
+	"go.opentelemetry.io/otel"
+	scodes "go.opentelemetry.io/otel/codes"
+
+	"github.com/google/uuid"
 )
 
 func CreateKyc(
@@ -59,12 +60,15 @@ func CreateKyc(
 
 	span = commontracer.TraceInvoker(span, "kyc", "review-service", "CreateReview")
 
-	_, err = reviewmgrcli.CreateReview(ctx, &reviewpb.Review{
-		ID:         reviewID,
-		ObjectType: reviewmgrpb.ReviewObjectType_ObjectKyc.String(),
-		AppID:      appID,
-		ObjectID:   kycInfo.ID,
-		Domain:     constant.ServiceName,
+	serviceName := constant.ServiceName
+	objectType := reviewpb.ReviewObjectType_ObjectKyc
+
+	_, err = reviewmwcli.CreateReview(ctx, &reviewpb.ReviewReq{
+		ID:         &reviewID,
+		AppID:      &appID,
+		ObjectID:   &kycInfo.ID,
+		Domain:     &serviceName,
+		ObjectType: &objectType,
 	})
 	if err != nil {
 		return nil, err

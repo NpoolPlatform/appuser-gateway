@@ -5,8 +5,7 @@ go 1.17
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220826022307-d72866fe3ec0
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20221011161301-4500ec2e0615
-	github.com/NpoolPlatform/message v0.0.0-20221217040036-4e60f2e03f24
-	github.com/NpoolPlatform/review-service v0.0.0-20220826135931-2f311aae9cbd
+	github.com/NpoolPlatform/message v0.0.0-20221220115839-a93bb55eacca
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
@@ -22,6 +21,7 @@ require (
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20221219085056-024c0a1f87de
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220830131300-3971cca6e3eb
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20220821121920-9559f5776d15
+	github.com/NpoolPlatform/review-middleware v0.0.0-20221220122427-467680e5dde2
 	github.com/NpoolPlatform/third-middleware v0.0.0-20221009023028-a03f61587619
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.4
@@ -133,8 +133,15 @@ require (
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace google.golang.org/grpc => github.com/grpc/grpc-go v1.41.0
+
+replace entgo.io/ent => entgo.io/ent v0.11.2
+
+replace ariga.io/atlas => ariga.io/atlas v0.5.1-0.20220717122844-8593d7eb1a8e
