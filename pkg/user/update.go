@@ -202,3 +202,32 @@ func ResetUser(ctx context.Context, in *npool.ResetUserRequest) error {
 
 	return err
 }
+
+func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermwpb.User, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateUserKol")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = commontracer.TraceInvoker(span, "role", "middleware", "UpdateUserKol")
+
+	req := &usermwpb.UserReq{
+		ID:    &in.TargetUserID,
+		AppID: &in.AppID,
+		Kol:   &in.Kol,
+	}
+
+	info, err := usermwcli.UpdateUser(ctx, req)
+	if err != nil {
+		logger.Sugar().Errorw("UpdateUserKol", "err", err)
+		return nil, err
+	}
+
+	return info, nil
+}

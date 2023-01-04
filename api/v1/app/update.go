@@ -39,16 +39,18 @@ func (s *Server) UpdateApp(ctx context.Context, in *app.UpdateAppRequest) (*app.
 	}
 
 	appInfo := &appmwpb.AppReq{
-		ID:                 &in.ID,
-		Name:               in.Name,
-		Logo:               in.Logo,
-		Description:        in.Description,
-		SignupMethods:      in.SignupMethods,
-		ExtSigninMethods:   in.ExtSigninMethods,
-		RecaptchaMethod:    in.RecaptchaMethod,
-		KycEnable:          in.KycEnable,
-		SigninVerifyEnable: in.SigninVerifyEnable,
-		InvitationCodeMust: in.InvitationCodeMust,
+		ID:                       &in.ID,
+		Name:                     in.Name,
+		Logo:                     in.Logo,
+		Description:              in.Description,
+		SignupMethods:            in.SignupMethods,
+		ExtSigninMethods:         in.ExtSigninMethods,
+		RecaptchaMethod:          in.RecaptchaMethod,
+		KycEnable:                in.KycEnable,
+		SigninVerifyEnable:       in.SigninVerifyEnable,
+		InvitationCodeMust:       in.InvitationCodeMust,
+		CreateInvitationCodeWhen: in.CreateInvitationCodeWhen,
+		MaxTypedCouponsPerOrder:  in.MaxTypedCouponsPerOrder,
 	}
 
 	span = tracer.Trace(span, appInfo)
