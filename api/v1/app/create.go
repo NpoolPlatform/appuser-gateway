@@ -38,17 +38,19 @@ func (s *Server) CreateApp(ctx context.Context, in *app.CreateAppRequest) (*app.
 	appID := uuid.NewString()
 
 	appInfo := &appmwpb.AppReq{
-		ID:                 &appID,
-		CreatedBy:          &in.CreatedBy,
-		Name:               &in.Name,
-		Logo:               &in.Logo,
-		Description:        &in.Description,
-		SignupMethods:      in.SignupMethods,
-		ExtSigninMethods:   in.ExtSigninMethods,
-		RecaptchaMethod:    &in.RecaptchaMethod,
-		KycEnable:          &in.KycEnable,
-		SigninVerifyEnable: &in.SigninVerifyEnable,
-		InvitationCodeMust: &in.InvitationCodeMust,
+		ID:                       &appID,
+		CreatedBy:                &in.CreatedBy,
+		Name:                     &in.Name,
+		Logo:                     &in.Logo,
+		Description:              &in.Description,
+		SignupMethods:            in.SignupMethods,
+		ExtSigninMethods:         in.ExtSigninMethods,
+		RecaptchaMethod:          &in.RecaptchaMethod,
+		KycEnable:                &in.KycEnable,
+		SigninVerifyEnable:       &in.SigninVerifyEnable,
+		InvitationCodeMust:       &in.InvitationCodeMust,
+		CreateInvitationCodeWhen: &in.CreateInvitationCodeWhen,
+		MaxTypedCouponsPerOrder:  &in.MaxTypedCouponsPerOrder,
 	}
 	span = tracer.Trace(span, appInfo)
 
