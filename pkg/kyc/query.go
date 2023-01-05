@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+
 	mwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
 	mwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 
 	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
-	reviewmgrcli "github.com/NpoolPlatform/review-service/pkg/client"
+	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
 )
 
 func GetKyc(ctx context.Context, id string) (*mwpb.Kyc, error) {
@@ -17,7 +19,13 @@ func GetKyc(ctx context.Context, id string) (*mwpb.Kyc, error) {
 		return nil, err
 	}
 
-	rinfo, err := reviewmgrcli.GetReview(ctx, info.GetReviewID())
+	rinfo, err := reviewmwcli.GetObjectReview(
+		ctx,
+		info.AppID,
+		constant.ServiceName,
+		info.ID,
+		reviewmgrpb.ReviewObjectType_ObjectKyc,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +33,7 @@ func GetKyc(ctx context.Context, id string) (*mwpb.Kyc, error) {
 		return nil, fmt.Errorf("invalid review")
 	}
 
-	if rinfo.State == "rejected" || rinfo.State == reviewmgrpb.ReviewState_Rejected.String() {
+	if rinfo.State == reviewmgrpb.ReviewState_Rejected {
 		info.ReviewMessage = rinfo.GetMessage()
 	}
 
@@ -37,18 +45,32 @@ func GetKycs(ctx context.Context, conds *mwpb.Conds, offset, limit int32) ([]*mw
 	if err != nil {
 		return nil, 0, err
 	}
+	if len(infos) == 0 {
+		return nil, total, nil
+	}
 
-	for key, val := range infos {
-		info, err := reviewmgrcli.GetReview(ctx, val.GetReviewID())
-		if err != nil {
-			return nil, 0, err
-		}
-		if info == nil {
-			continue
-		}
+	ids := []string{}
+	for _, info := range infos {
+		ids = append(ids, info.ID)
+	}
 
-		if info.State == "rejected" || info.State == reviewmgrpb.ReviewState_Rejected.String() {
-			infos[key].ReviewMessage = info.GetMessage()
+	rinfos, err := reviewmwcli.GetObjectReviews(
+		ctx,
+		infos[0].AppID,
+		constant.ServiceName,
+		ids,
+		reviewmgrpb.ReviewObjectType_ObjectKyc,
+	)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for _, rinfo := range rinfos {
+		for _, info := range infos {
+			if info.ID == rinfo.ObjectID && rinfo.State == reviewmgrpb.ReviewState_Rejected {
+				info.ReviewMessage = rinfo.Message
+				break
+			}
 		}
 	}
 	return infos, total, nil

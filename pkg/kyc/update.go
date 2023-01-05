@@ -13,10 +13,8 @@ import (
 	kycmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/kyc"
 	mwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 
-	reviewpb "github.com/NpoolPlatform/message/npool/review-service"
-	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
-	reviewmgrcli "github.com/NpoolPlatform/review-service/pkg/client"
-	reviewconst "github.com/NpoolPlatform/review-service/pkg/const"
+	reviewpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
+	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
@@ -40,9 +38,15 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 		return nil, err
 	}
 
-	span = commontracer.TraceInvoker(span, "kyc", "review-service", "GetReview")
+	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetReview")
 
-	reviewInfo, err := reviewmgrcli.GetReview(ctx, kycInfo.ReviewID)
+	reviewInfo, err := reviewmwcli.GetObjectReview(
+		ctx,
+		kycInfo.AppID,
+		constant.ServiceName,
+		kycInfo.ID,
+		reviewpb.ReviewObjectType_ObjectKyc,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -52,12 +56,11 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 
 	if reviewInfo != nil {
 		switch reviewInfo.State {
-		case reviewconst.StateWait:
+		case reviewpb.ReviewState_Wait:
 			reviewID = &reviewInfo.ID
 			newReview = false
-		case reviewconst.StateApproved:
+		case reviewpb.ReviewState_Approved:
 			return nil, fmt.Errorf("not allowed")
-		default:
 		}
 	}
 
@@ -70,6 +73,7 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 	span = commontracer.TraceInvoker(span, "kyc", "manager", "UpdateKyc")
 
 	state := kycmgrpb.KycState_Reviewing
+
 	kyc, err := kycmgrcli.UpdateKyc(ctx, &kycmgrpb.KycReq{
 		ID:           &in.KycID,
 		AppID:        &in.AppID,
@@ -90,12 +94,15 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 	if newReview {
 		span = commontracer.TraceInvoker(span, "kyc", "manager", "CreateReview")
 
-		_, err = reviewmgrcli.CreateReview(ctx, &reviewpb.Review{
-			ID:         *reviewID,
-			ObjectType: reviewmgrpb.ReviewObjectType_ObjectKyc.String(),
-			AppID:      in.AppID,
-			ObjectID:   kyc.ID,
-			Domain:     constant.ServiceName,
+		serviceName := constant.ServiceName
+		objectType := reviewpb.ReviewObjectType_ObjectKyc
+
+		_, err = reviewmwcli.CreateReview(ctx, &reviewpb.ReviewReq{
+			ID:         reviewID,
+			AppID:      &in.AppID,
+			ObjectID:   &kyc.ID,
+			Domain:     &serviceName,
+			ObjectType: &objectType,
 		})
 		if err != nil {
 			return nil, err
