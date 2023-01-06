@@ -10,8 +10,8 @@ import (
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
-
-	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
+	inspiremwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
+	invitationcodepb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 
@@ -197,7 +197,16 @@ func (s *Server) Logined(ctx context.Context, in *user.LoginedRequest) (*user.Lo
 		return &user.LoginedResponse{}, nil
 	}
 
-	code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, in.GetAppID(), in.GetUserID())
+	code, err := inspiremwcli.GetInvitationCodeOnly(ctx, &invitationcodepb.Conds{
+		AppID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetAppID(),
+		},
+		UserID: &npool.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetUserID(),
+		},
+	})
 	if err != nil {
 		logger.Sugar().Errorw("UpdateCache", "error", err)
 		return &user.LoginedResponse{}, status.Error(codes.Internal, err.Error())
