@@ -17,7 +17,9 @@ import (
 	loginhiscli "github.com/NpoolPlatform/appuser-manager/pkg/client/login/history"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
+	inspiremwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
+	invitationcodepb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
+
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
@@ -142,7 +144,16 @@ func Login(
 	user.LoginClientIP = meta.ClientIP.String()
 	user.LoginClientUserAgent = meta.UserAgent
 
-	code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, appID, user.ID)
+	code, err := inspiremwcli.GetInvitationCodeOnly(ctx, &invitationcodepb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		UserID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: user.ID,
+		},
+	})
 	if err != nil {
 		logger.Sugar().Errorw("GetUsers", "err", err)
 		return nil, err
