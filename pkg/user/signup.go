@@ -27,7 +27,7 @@ import (
 
 	"github.com/google/uuid"
 )
-
+// nolint
 func Signup(
 	ctx context.Context,
 	appID, account, passwordHash string,
