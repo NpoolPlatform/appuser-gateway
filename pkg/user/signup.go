@@ -8,17 +8,20 @@ import (
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	invitationcodepb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
+	"github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
 
 	rolemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
+	inspiremwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
+	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
+	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appcontrol"
 	rolemgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-	inspirepb "github.com/NpoolPlatform/message/npool/cloud-hashing-inspire"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
@@ -80,6 +83,19 @@ func Signup(
 
 	userID := uuid.NewString()
 
+	var code *invitationcodepb.InvitationCode
+	if app.CreateInvitationCodeWhen == appcontrol.CreateInvitationCodeWhen_Registration {
+		_code, err := inspiremwcli.CreateInvitationCode(ctx, &invitationcodepb.InvitationCodeReq{
+			AppID:  &appID,
+			UserID: &userID,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+		code = _code
+	}
+
 	userInfo, err := usermwcli.CreateUser(ctx, &usermwpb.UserReq{
 		ID:           &userID,
 		AppID:        &appID,
@@ -92,12 +108,21 @@ func Signup(
 		return nil, err
 	}
 
+	if app.CreateInvitationCodeWhen == appcontrol.CreateInvitationCodeWhen_Registration {
+		userInfo.InvitationCodeID = &code.ID
+		userInfo.InvitationCode = &code.InvitationCode
+	}
+
 	if invitationCode == nil || *invitationCode == "" || inviterID == "" {
 		return userInfo, nil
 	}
 
 	// TODO: revert user info
-	_, err = inspirecli.CreateInvitation(ctx, appID, inviterID, userID)
+	_, err = registrationmwcli.CreateRegistration(ctx, &registration.RegistrationReq{
+		AppID:     &appID,
+		InviterID: &inviterID,
+		InviteeID: &userID,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +139,7 @@ func checkInvitationCode(ctx context.Context, appID string, code *string, must b
 		return "", nil
 	}
 
-	ivc, err := inspirecli.GetUserInvitationCodeOnly(ctx, &inspirepb.Conds{
+	ivc, err := inspiremwcli.GetInvitationCodeOnly(ctx, &invitationcodepb.Conds{
 		InvitationCode: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: *code,
