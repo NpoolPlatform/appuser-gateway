@@ -4,13 +4,17 @@ import (
 	"context"
 	"fmt"
 
+	inspiremwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
 	invitationcli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
+	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appcontrol"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	invitationcodepb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	appusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
@@ -217,6 +221,27 @@ func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermw
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "UpdateUserKol")
 
+	app, err := appmwcli.GetApp(ctx, in.GetAppID())
+	if err != nil {
+		return nil, err
+	}
+	if app == nil {
+		return nil, fmt.Errorf("invalid app")
+	}
+
+	var code *invitationcodepb.InvitationCode
+	if app.CreateInvitationCodeWhen == appcontrol.CreateInvitationCodeWhen_SetToKol {
+		_code, err := inspiremwcli.CreateInvitationCode(ctx, &invitationcodepb.InvitationCodeReq{
+			AppID:  &app.ID,
+			UserID: &in.TargetUserID,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+		code = _code
+	}
+
 	req := &usermwpb.UserReq{
 		ID:    &in.TargetUserID,
 		AppID: &in.AppID,
@@ -227,6 +252,11 @@ func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermw
 	if err != nil {
 		logger.Sugar().Errorw("UpdateUserKol", "err", err)
 		return nil, err
+	}
+
+	if app.CreateInvitationCodeWhen == appcontrol.CreateInvitationCodeWhen_SetToKol {
+		info.InvitationCodeID = &code.ID
+		info.InvitationCode = &code.InvitationCode
 	}
 
 	return info, nil
