@@ -110,6 +110,10 @@ func Signup(
 		return nil, err
 	}
 
+	if code != nil {
+		userInfo.InvitationCode = &code.InvitationCode
+	}
+
 	if invitationCode == nil || *invitationCode == "" || inviterID == "" {
 		return userInfo, nil
 	}
@@ -123,8 +127,6 @@ func Signup(
 	if err != nil {
 		return nil, err
 	}
-
-	userInfo.InvitationCode = &code.InvitationCode
 
 	return userInfo, nil
 }
