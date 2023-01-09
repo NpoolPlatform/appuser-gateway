@@ -5,12 +5,16 @@ import (
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
-	inspirepb "github.com/NpoolPlatform/message/npool/cloud-hashing-inspire"
+	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
+	ivcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	commonpb "github.com/NpoolPlatform/message/npool"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -48,13 +52,22 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 		userIDs = append(userIDs, val.ID)
 	}
 
-	codes, err := inspirecli.GetManyUserInvitationCodes(ctx, userIDs)
+	codes, _, err := ivcodemwcli.GetInvitationCodes(ctx, &ivcodemgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		UserIDs: &commonpb.StringSliceVal{
+			Op:    cruder.IN,
+			Value: userIDs,
+		},
+	}, int32(0), int32(len(userIDs)))
 	if err != nil {
 		logger.Sugar().Errorw("GetUsers", "err", err)
 		return nil, 0, err
 	}
 
-	userCode := map[string]*inspirepb.UserInvitationCode{}
+	userCode := map[string]*ivcodemgrpb.InvitationCode{}
 
 	for _, val := range codes {
 		userCode[val.UserID] = val
@@ -64,8 +77,6 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 		code, ok := userCode[val.ID]
 		if ok {
 			infos[key].InvitationCode = &code.InvitationCode
-			infos[key].InvitationCodeID = &code.ID
-			infos[key].InvitationCodeConfirmed = code.Confirmed
 		}
 	}
 

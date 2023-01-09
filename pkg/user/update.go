@@ -7,8 +7,6 @@ import (
 	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
-	invitationcli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
-
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -30,8 +28,6 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/google/uuid"
 )
 
 func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.User, error) { //nolint
@@ -115,6 +111,7 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 		IDNumber:         in.IDNumber,
 		SigninVerifyType: in.SigninVerifyType,
 		PasswordHash:     in.PasswordHash,
+		KolConfirmed:     in.KolConfirmed,
 	}
 	switch in.GetNewAccountType() {
 	case signmethod.SignMethodType_Google:
@@ -130,25 +127,6 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 	if err != nil {
 		logger.Sugar().Errorw("UpdateUser", "err", err)
 		return nil, err
-	}
-
-	if in.InvitationCodeID != nil && in.InvitationCodeConfirmed != nil {
-		if _, err = uuid.Parse(in.GetInvitationCodeID()); err != nil {
-			logger.Sugar().Errorw("UpdateUser", "err", err)
-			return nil, err
-		}
-
-		invite, err := invitationcli.UpdateUserInvitationCode(
-			ctx,
-			in.GetInvitationCodeID(),
-			in.GetInvitationCodeConfirmed(),
-		)
-		if err != nil {
-			logger.Sugar().Errorw("UpdateUser", "err", err)
-			return nil, err
-		}
-
-		info.InvitationCodeConfirmed = invite.Confirmed
 	}
 
 	_ = UpdateCache(ctx, info)
