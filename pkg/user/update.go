@@ -18,7 +18,6 @@ import (
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
-	appctrlmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appcontrol"
 	appusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
@@ -197,6 +196,14 @@ func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermw
 		}
 	}()
 
+	app, err := appmwcli.GetApp(ctx, in.GetAppID())
+	if err != nil {
+		return nil, err
+	}
+	if app == nil {
+		return nil, fmt.Errorf("invalid app")
+	}
+
 	span = commontracer.TraceInvoker(span, "role", "middleware", "UpdateUserKol")
 
 	req := &usermwpb.UserReq{
@@ -211,16 +218,22 @@ func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermw
 		return nil, err
 	}
 
-	app, err := appmwcli.GetApp(ctx, info.AppID)
+	code, err := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetAppID(),
+		},
+		UserID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetTargetUserID(),
+		},
+	})
 	if err != nil {
+		logger.Sugar().Errorw("UpdateUserKol", "err", err)
 		return nil, err
 	}
-	if app == nil {
-		return nil, fmt.Errorf("invalid app")
-	}
-
-	if app.CreateInvitationCodeWhen == appctrlmgrpb.CreateInvitationCodeWhen_SetToKol {
-		code, err := ivcodemwcli.CreateInvitationCode(ctx, &ivcodemwpb.InvitationCodeReq{
+	if code == nil {
+		code, err = ivcodemwcli.CreateInvitationCode(ctx, &ivcodemwpb.InvitationCodeReq{
 			AppID:  &info.AppID,
 			UserID: &info.ID,
 		})

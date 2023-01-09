@@ -295,6 +295,9 @@ func UpdateCache(ctx context.Context, user *usermwpb.User) error {
 		logger.Sugar().Errorw("UpdateCache", "err", err)
 		return err
 	}
+	if meta == nil || meta.User == nil {
+		return fmt.Errorf("invalid user")
+	}
 
 	user.InvitationCode = meta.User.InvitationCode
 	user.Logined = meta.User.Logined
