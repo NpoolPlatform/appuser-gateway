@@ -264,6 +264,10 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/update/userkol
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/update/user
             backend:
               serviceName: appuser-gateway
