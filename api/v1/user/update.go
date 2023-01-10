@@ -230,3 +230,41 @@ func (s *Server) UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolReque
 		Info: info,
 	}, nil
 }
+
+func (s *Server) UpdateAppUserKol(ctx context.Context, in *npool.UpdateAppUserKolRequest) (*npool.UpdateAppUserKolResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateAppUserKol")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		logger.Sugar().Infow("UpdateAppUserKol", "AppID", in.GetAppID())
+		return &npool.UpdateAppUserKolResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if _, err := uuid.Parse(in.GetTargetUserID()); err != nil {
+		logger.Sugar().Infow("UpdateAppUserKol", "TargetUserID", in.GetTargetUserID())
+		return &npool.UpdateAppUserKolResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	span = commontracer.TraceInvoker(span, "role", "middleware", "UpdateAppUser")
+
+	info, err := user1.UpdateUserKol(ctx, &npool.UpdateUserKolRequest{
+		AppID:        in.GetAppID(),
+		TargetUserID: in.GetTargetUserID(),
+		Kol:          in.GetKol(),
+	})
+	if err != nil {
+		logger.Sugar().Infow("UpdateAppUser", "error", err)
+		return &npool.UpdateAppUserKolResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return &npool.UpdateAppUserKolResponse{
+		Info: info,
+	}, nil
+}
