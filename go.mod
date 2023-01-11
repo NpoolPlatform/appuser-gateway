@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220826022307-d72866fe3ec0
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20221011161301-4500ec2e0615
-	github.com/NpoolPlatform/message v0.0.0-20221220115839-a93bb55eacca
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
+	github.com/NpoolPlatform/message v0.0.0-20230110162534-83df43757858
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
@@ -17,12 +17,11 @@ require (
 )
 
 require (
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20221219084156-c0f859cb1f0b
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20221219085056-024c0a1f87de
-	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220830131300-3971cca6e3eb
-	github.com/NpoolPlatform/libent-cruder v0.0.0-20220821121920-9559f5776d15
-	github.com/NpoolPlatform/review-middleware v0.0.0-20221220122427-467680e5dde2
-	github.com/NpoolPlatform/third-middleware v0.0.0-20221009023028-a03f61587619
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20230111060622-e3a10cc791c1
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230111062013-f804f8850e22
+	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
+	github.com/NpoolPlatform/review-middleware v0.0.0-20230105072527-025b5576faf7
+	github.com/NpoolPlatform/third-middleware v0.0.0-20221215071345-8f987b4b97db
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.4
 	go.opentelemetry.io/otel v1.10.0
@@ -64,8 +63,9 @@ require (
 )
 
 require (
-	ariga.io/atlas v0.5.1-0.20220717122844-8593d7eb1a8e // indirect
-	entgo.io/ent v0.11.2 // indirect
+	ariga.io/atlas v0.7.2-0.20220927111110-867ee0cca56a // indirect
+	entgo.io/ent v0.11.3 // indirect
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230109051825-dd2526447ac6
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
@@ -99,7 +99,7 @@ require (
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hashicorp/hcl/v2 v2.10.0 // indirect
+	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
 	github.com/hashicorp/serf v0.9.7 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect

@@ -5,33 +5,32 @@ import (
 	"fmt"
 
 	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
-	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
-
-	invitationcli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+
 	appusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
+	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
 	appusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-
-	commonpb "github.com/NpoolPlatform/message/npool"
+	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	commonpb "github.com/NpoolPlatform/message/npool"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/google/uuid"
 )
 
 func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.User, error) { //nolint
@@ -115,6 +114,7 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 		IDNumber:         in.IDNumber,
 		SigninVerifyType: in.SigninVerifyType,
 		PasswordHash:     in.PasswordHash,
+		KolConfirmed:     in.KolConfirmed,
 	}
 	switch in.GetNewAccountType() {
 	case signmethod.SignMethodType_Google:
@@ -130,25 +130,6 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 	if err != nil {
 		logger.Sugar().Errorw("UpdateUser", "err", err)
 		return nil, err
-	}
-
-	if in.InvitationCodeID != nil && in.InvitationCodeConfirmed != nil {
-		if _, err = uuid.Parse(in.GetInvitationCodeID()); err != nil {
-			logger.Sugar().Errorw("UpdateUser", "err", err)
-			return nil, err
-		}
-
-		invite, err := invitationcli.UpdateUserInvitationCode(
-			ctx,
-			in.GetInvitationCodeID(),
-			in.GetInvitationCodeConfirmed(),
-		)
-		if err != nil {
-			logger.Sugar().Errorw("UpdateUser", "err", err)
-			return nil, err
-		}
-
-		info.InvitationCodeConfirmed = invite.Confirmed
 	}
 
 	_ = UpdateCache(ctx, info)
@@ -201,4 +182,67 @@ func ResetUser(ctx context.Context, in *npool.ResetUserRequest) error {
 	})
 
 	return err
+}
+
+func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermwpb.User, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateUserKol")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	app, err := appmwcli.GetApp(ctx, in.GetAppID())
+	if err != nil {
+		return nil, err
+	}
+	if app == nil {
+		return nil, fmt.Errorf("invalid app")
+	}
+
+	span = commontracer.TraceInvoker(span, "role", "middleware", "UpdateUserKol")
+
+	req := &usermwpb.UserReq{
+		ID:    &in.TargetUserID,
+		AppID: &in.AppID,
+		Kol:   &in.Kol,
+	}
+
+	info, err := usermwcli.UpdateUser(ctx, req)
+	if err != nil {
+		logger.Sugar().Errorw("UpdateUserKol", "err", err)
+		return nil, err
+	}
+
+	code, err := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetAppID(),
+		},
+		UserID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetTargetUserID(),
+		},
+	})
+	if err != nil {
+		logger.Sugar().Errorw("UpdateUserKol", "err", err)
+		return nil, err
+	}
+	if code == nil {
+		code, err = ivcodemwcli.CreateInvitationCode(ctx, &ivcodemwpb.InvitationCodeReq{
+			AppID:  &info.AppID,
+			UserID: &info.ID,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		info.InvitationCode = &code.InvitationCode
+	}
+
+	return info, nil
 }

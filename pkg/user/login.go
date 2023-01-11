@@ -13,11 +13,12 @@ import (
 	recaptcha "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/recaptcha"
 	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
 	loginhiscli "github.com/NpoolPlatform/appuser-manager/pkg/client/login/history"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	inspirecli "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/client"
+	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
@@ -142,15 +143,21 @@ func Login(
 	user.LoginClientIP = meta.ClientIP.String()
 	user.LoginClientUserAgent = meta.UserAgent
 
-	code, err := inspirecli.GetUserInvitationCodeByAppUser(ctx, appID, user.ID)
+	code, err := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		UserID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: user.ID,
+		},
+	})
 	if err != nil {
-		logger.Sugar().Errorw("GetUsers", "err", err)
 		return nil, err
 	}
 	if code != nil {
 		user.InvitationCode = &code.InvitationCode
-		user.InvitationCodeID = &code.ID
-		user.InvitationCodeConfirmed = code.Confirmed
 	}
 
 	if !app.SigninVerifyEnable {
@@ -288,11 +295,11 @@ func UpdateCache(ctx context.Context, user *usermwpb.User) error {
 		logger.Sugar().Errorw("UpdateCache", "err", err)
 		return err
 	}
+	if meta == nil || meta.User == nil {
+		return fmt.Errorf("invalid user")
+	}
 
-	user.InvitationCodeID = meta.User.InvitationCodeID
 	user.InvitationCode = meta.User.InvitationCode
-	user.InvitationCodeConfirmed = meta.User.InvitationCodeConfirmed
-
 	user.Logined = meta.User.Logined
 	user.LoginAccount = meta.User.LoginAccount
 	user.LoginAccountType = meta.User.LoginAccountType

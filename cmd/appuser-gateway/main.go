@@ -5,7 +5,6 @@ import (
 	"os"
 
 	ossconst "github.com/NpoolPlatform/go-service-framework/pkg/oss/const"
-	reviewconst "github.com/NpoolPlatform/review-middleware/pkg/message/const"
 
 	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 
@@ -39,7 +38,6 @@ func main() {
 		rabbitmqconst.RabbitMQServiceName,
 		redisconst.RedisServiceName,
 		ossconst.S3NameSpace,
-		reviewconst.ServiceName,
 	)
 	if err != nil {
 		logger.Sugar().Errorf("fail to create %v: %v", servicename.ServiceName, err)
