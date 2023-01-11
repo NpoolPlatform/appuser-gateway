@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220826022307-d72866fe3ec0
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
-	github.com/NpoolPlatform/message v0.0.0-20230110034922-5f6179b0ac28
+	github.com/NpoolPlatform/message v0.0.0-20230110162534-83df43757858
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
@@ -17,11 +17,11 @@ require (
 )
 
 require (
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20230109044457-821cf6489cbb
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230109115908-9473f9401ec1
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20230111060622-e3a10cc791c1
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230111062013-f804f8850e22
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/review-middleware v0.0.0-20221220122427-467680e5dde2
-	github.com/NpoolPlatform/third-middleware v0.0.0-20221009023028-a03f61587619
+	github.com/NpoolPlatform/review-middleware v0.0.0-20230105072527-025b5576faf7
+	github.com/NpoolPlatform/third-middleware v0.0.0-20221215071345-8f987b4b97db
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.4
 	go.opentelemetry.io/otel v1.10.0
