@@ -162,6 +162,9 @@ func ResetUser(ctx context.Context, in *npool.ResetUserRequest) error {
 
 	auser, err := appusermgrcli.GetAppUserOnly(ctx, conds)
 	if err != nil {
+		return err
+	}
+	if auser == nil {
 		return fmt.Errorf("invalid user")
 	}
 
