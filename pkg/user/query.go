@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 
+	mgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
+
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 
@@ -38,7 +40,12 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
 
-	infos, total, err := usermwcli.GetUsers(ctx, appID, offset, limit)
+	infos, total, err := usermwcli.GetUsers(ctx, &mgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+	}, offset, limit)
 	if err != nil {
 		logger.Sugar().Errorw("GetUsers", "err", err)
 		return nil, 0, err
