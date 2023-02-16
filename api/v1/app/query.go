@@ -1,19 +1,23 @@
-//nolint:dupl
 package app
 
 import (
 	"context"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
+
+	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/app"
 	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/recaptcha"
 	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+
 	"go.opentelemetry.io/otel/attribute"
 	"google.golang.org/grpc/codes"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/app"
+
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
@@ -126,9 +130,9 @@ func (s *Server) GetSignMethods(ctx context.Context, in *app.GetSignMethodsReque
 	}()
 
 	infos := []*signmethod.SignMethod{}
-	for _, val := range signmethod.SignMethodType_name {
+	for _, val := range basetypes.SignMethod_value {
 		infos = append(infos, &signmethod.SignMethod{
-			Method: val,
+			Method: basetypes.SignMethod(val),
 		})
 	}
 	return &app.GetSignMethodsResponse{

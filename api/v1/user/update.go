@@ -13,7 +13,7 @@ import (
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
-	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	regmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	regmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
@@ -87,11 +87,11 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 	}
 
 	switch in.GetNewAccountType() {
-	case signmethod.SignMethodType_Google:
+	case basetypes.SignMethod_Google:
 		fallthrough //nolint
-	case signmethod.SignMethodType_Email:
+	case basetypes.SignMethod_Email:
 		fallthrough //nolint
-	case signmethod.SignMethodType_Mobile:
+	case basetypes.SignMethod_Mobile:
 		if in.GetNewVerificationCode() == "" || in.GetVerificationCode() == "" {
 			logger.Sugar().Infow("UpdateUser", "NewVerificationCode", in.GetNewVerificationCode())
 			return &npool.UpdateUserResponse{}, status.Error(codes.InvalidArgument, "NewVerificationCode is invalid")
@@ -141,8 +141,8 @@ func (s *Server) ResetUser(ctx context.Context, in *npool.ResetUserRequest) (*np
 	}
 
 	switch in.GetAccountType() {
-	case signmethod.SignMethodType_Email:
-	case signmethod.SignMethodType_Mobile:
+	case basetypes.SignMethod_Email:
+	case basetypes.SignMethod_Mobile:
 	default:
 		logger.Sugar().Infow("ResetUser", "AccountType", in.GetAccountType())
 		return &npool.ResetUserResponse{}, status.Error(codes.InvalidArgument, "AccountType is invalid")

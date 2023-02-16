@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -15,11 +15,12 @@ import (
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
-	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
+
+	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
+	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
 
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
 	appusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
-	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
@@ -62,36 +63,38 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 		return nil, err
 	}
 
-	if in.NewAccount != nil || in.PasswordHash != nil || in.GetNewAccountType() == signmethod.SignMethodType_Google {
+	if in.NewAccount != nil || in.PasswordHash != nil || in.GetNewAccountType() == basetypes.SignMethod_Google {
 		account := in.GetAccount()
-		if in.GetAccountType() == signmethod.SignMethodType_Google {
+		if in.GetAccountType() == basetypes.SignMethod_Google {
 			account = user.GoogleSecret
 		}
 
-		if err := thirdmwcli.VerifyCode(
-			ctx, in.GetAppID(),
-			account,
-			in.GetVerificationCode(),
-			in.GetAccountType(),
-			usedfor.UsedFor_Update,
-		); err != nil {
+		if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+			AppID:       in.GetAppID(),
+			Account:     account,
+			AccountType: in.GetAccountType(),
+			UsedFor:     basetypes.UsedFor_Update,
+			Code:        in.GetVerificationCode(),
+		}); err != nil {
 			return nil, err
 		}
 	}
 
-	if in.NewAccount != nil || in.GetNewAccountType() == signmethod.SignMethodType_Google {
+	if in.NewAccount != nil || in.GetNewAccountType() == basetypes.SignMethod_Google {
 		account := in.GetNewAccount()
-		if in.GetNewAccountType() == signmethod.SignMethodType_Google {
+		if in.GetNewAccountType() == basetypes.SignMethod_Google {
 			account = user.GoogleSecret
 		}
 
-		if err := thirdmwcli.VerifyCode(
-			ctx, in.GetAppID(),
-			account,
-			in.GetNewVerificationCode(),
-			in.GetNewAccountType(),
-			usedfor.UsedFor_Update,
-		); err != nil {
+		if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+			AppID:       in.GetAppID(),
+			Account:     account,
+			AccountType: in.GetAccountType(),
+			UsedFor:     basetypes.UsedFor_Update,
+			Code:        in.GetVerificationCode(),
+		}); err != nil {
 			return nil, err
 		}
 	}
@@ -117,12 +120,12 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 		KolConfirmed:     in.KolConfirmed,
 	}
 	switch in.GetNewAccountType() {
-	case signmethod.SignMethodType_Google:
+	case basetypes.SignMethod_Google:
 		verified := true
 		req.GoogleAuthVerified = &verified
-	case signmethod.SignMethodType_Email:
+	case basetypes.SignMethod_Email:
 		req.EmailAddress = in.NewAccount
-	case signmethod.SignMethodType_Mobile:
+	case basetypes.SignMethod_Mobile:
 		req.PhoneNO = in.NewAccount
 	}
 
@@ -146,12 +149,12 @@ func ResetUser(ctx context.Context, in *npool.ResetUserRequest) error {
 	}
 
 	switch in.GetAccountType() {
-	case signmethod.SignMethodType_Email:
+	case basetypes.SignMethod_Email:
 		conds.EmailAddress = &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: in.GetAccount(),
 		}
-	case signmethod.SignMethodType_Mobile:
+	case basetypes.SignMethod_Mobile:
 		conds.PhoneNO = &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: in.GetAccount(),
@@ -168,13 +171,14 @@ func ResetUser(ctx context.Context, in *npool.ResetUserRequest) error {
 		return fmt.Errorf("invalid user")
 	}
 
-	if err := thirdmwcli.VerifyCode(
-		ctx, in.GetAppID(),
-		in.GetAccount(),
-		in.GetVerificationCode(),
-		in.GetAccountType(),
-		usedfor.UsedFor_Update,
-	); err != nil {
+	if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+		AppID:       in.GetAppID(),
+		Account:     in.GetAccount(),
+		AccountType: in.GetAccountType(),
+		UsedFor:     basetypes.UsedFor_Update,
+		Code:        in.GetVerificationCode(),
+	}); err != nil {
 		return err
 	}
 

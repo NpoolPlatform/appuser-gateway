@@ -7,8 +7,9 @@ import (
 	"time"
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
-	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
@@ -19,12 +20,12 @@ const (
 	loginExpiration = 4 * time.Hour
 )
 
-func appAccountKey(appID uuid.UUID, account string, accountType signmethod.SignMethodType) string {
+func appAccountKey(appID uuid.UUID, account string, accountType basetypes.SignMethod) string {
 	return fmt.Sprintf("login-%v:%v:%v", appID, account, accountType)
 }
 
 func metaToAccountKey(meta *Metadata) string {
-	return appAccountKey(meta.AppID, meta.Account, signmethod.SignMethodType(signmethod.SignMethodType_value[meta.AccountType]))
+	return appAccountKey(meta.AppID, meta.Account, basetypes.SignMethod(basetypes.SignMethod_value[meta.AccountType]))
 }
 
 func appUserKey(appID, userID uuid.UUID) string {
@@ -75,7 +76,7 @@ func createCache(ctx context.Context, meta *Metadata) error {
 	return nil
 }
 
-func QueryAppAccount(ctx context.Context, appID uuid.UUID, account string, accountType signmethod.SignMethodType) (*Metadata, error) {
+func QueryAppAccount(ctx context.Context, appID uuid.UUID, account string, accountType basetypes.SignMethod) (*Metadata, error) {
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return nil, err
@@ -133,7 +134,7 @@ func queryAppUser(ctx context.Context, appID, userID uuid.UUID) (*Metadata, erro
 	val, err = cli.Get(ctx,
 		appAccountKey(
 			appID, appUser.Account,
-			signmethod.SignMethodType(signmethod.SignMethodType_value[appUser.AccountType]),
+			basetypes.SignMethod(basetypes.SignMethod_value[appUser.AccountType]),
 		),
 	).Result()
 	if err == redis.Nil {
