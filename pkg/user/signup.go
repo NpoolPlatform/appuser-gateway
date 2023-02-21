@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
-	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+
+	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
+	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -21,7 +23,6 @@ import (
 	commonpb "github.com/NpoolPlatform/message/npool"
 	appctrlmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appcontrol"
 	rolemgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
-	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -33,7 +34,7 @@ import (
 func Signup(
 	ctx context.Context,
 	appID, account, passwordHash string,
-	accountType signmethod.SignMethodType,
+	accountType basetypes.SignMethod,
 	verificationCode string,
 	invitationCode *string,
 ) (
@@ -53,16 +54,23 @@ func Signup(
 		return nil, err
 	}
 
-	if err := thirdmwcli.VerifyCode(ctx, appID, account, verificationCode, accountType, usedfor.UsedFor_Signup); err != nil {
+	if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+		AppID:       appID,
+		Account:     account,
+		AccountType: accountType,
+		UsedFor:     basetypes.UsedFor_Signup,
+		Code:        verificationCode,
+	}); err != nil {
 		return nil, err
 	}
 
 	emailAddress := ""
 	phoneNO := ""
 
-	if accountType.String() == signmethod.SignMethodType_Mobile.String() {
+	if accountType.String() == basetypes.SignMethod_Mobile.String() {
 		phoneNO = account
-	} else if accountType.String() == signmethod.SignMethodType_Email.String() {
+	} else if accountType.String() == basetypes.SignMethod_Email.String() {
 		emailAddress = account
 	}
 

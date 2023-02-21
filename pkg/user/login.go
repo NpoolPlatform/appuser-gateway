@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	loginhispb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/login/history"
 	recaptcha "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/recaptcha"
-	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
@@ -20,6 +19,9 @@ import (
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
+
+	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
+	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
 
@@ -87,7 +89,7 @@ func addHistory(appID, userID, clientIP, userAgent string) {
 func Login(
 	ctx context.Context,
 	appID, account, passwordHash string,
-	accountType signmethod.SignMethodType,
+	accountType basetypes.SignMethod,
 	manMachineSpec, envSpec string,
 ) (
 	*usermwpb.User, error,
@@ -181,7 +183,7 @@ func LoginVerify(
 	ctx context.Context,
 	appID, userID, token string,
 	account string,
-	accountType signmethod.SignMethodType,
+	accountType basetypes.SignMethod,
 	code string,
 ) (*usermwpb.User, error) {
 	meta, err := queryAppUser(ctx, uuid.MustParse(appID), uuid.MustParse(userID))
@@ -201,15 +203,15 @@ func LoginVerify(
 	}
 
 	switch accountType {
-	case signmethod.SignMethodType_Email:
+	case basetypes.SignMethod_Email:
 		if account != meta.User.EmailAddress {
 			return nil, fmt.Errorf("invalid account")
 		}
-	case signmethod.SignMethodType_Mobile:
+	case basetypes.SignMethod_Mobile:
 		if account != meta.User.PhoneNO {
 			return nil, fmt.Errorf("invalid account")
 		}
-	case signmethod.SignMethodType_Google:
+	case basetypes.SignMethod_Google:
 	default:
 		return nil, fmt.Errorf("not supported")
 	}
@@ -224,21 +226,28 @@ func LoginVerify(
 	}
 
 	switch accountType {
-	case signmethod.SignMethodType_Mobile:
+	case basetypes.SignMethod_Mobile:
 		if user.GetPhoneNO() != account {
 			return nil, fmt.Errorf("invalid mobile")
 		}
-	case signmethod.SignMethodType_Email:
+	case basetypes.SignMethod_Email:
 		if user.EmailAddress != account {
 			return nil, fmt.Errorf("invalid email")
 		}
 	}
 
-	if accountType == signmethod.SignMethodType_Google {
+	if accountType == basetypes.SignMethod_Google {
 		account = user.GetGoogleSecret()
 	}
 
-	if err := thirdmwcli.VerifyCode(ctx, appID, account, code, accountType, usedfor.UsedFor_Signin); err != nil {
+	if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+		AppID:       appID,
+		Account:     account,
+		AccountType: accountType,
+		UsedFor:     basetypes.UsedFor_Signin,
+		Code:        code,
+	}); err != nil {
 		return nil, err
 	}
 

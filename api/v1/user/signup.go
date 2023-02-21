@@ -11,7 +11,7 @@ import (
 
 	usermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
 	usermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
-	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
 
@@ -54,8 +54,8 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 	}
 
 	switch in.GetAccountType() {
-	case signmethod.SignMethodType_Mobile:
-	case signmethod.SignMethodType_Email:
+	case basetypes.SignMethod_Mobile:
+	case basetypes.SignMethod_Email:
 	default:
 		logger.Sugar().Errorw("validate", "AccountType", in.GetAccountType())
 		return &user.SignupResponse{}, status.Error(codes.InvalidArgument, "AccountType is invalid")

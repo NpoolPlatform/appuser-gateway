@@ -14,7 +14,7 @@ import (
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
-	signmethod "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
 
@@ -59,15 +59,15 @@ func (s *Server) Login(ctx context.Context, in *user.LoginRequest) (*user.LoginR
 	}
 
 	switch in.GetAccountType() {
-	case signmethod.SignMethodType_Email:
-	case signmethod.SignMethodType_Mobile:
-	case signmethod.SignMethodType_Twitter:
-	case signmethod.SignMethodType_Github:
-	case signmethod.SignMethodType_Facebook:
-	case signmethod.SignMethodType_Linkedin:
-	case signmethod.SignMethodType_Wechat:
-	case signmethod.SignMethodType_Google:
-	case signmethod.SignMethodType_Username:
+	case basetypes.SignMethod_Email:
+	case basetypes.SignMethod_Mobile:
+	case basetypes.SignMethod_Twitter:
+	case basetypes.SignMethod_Github:
+	case basetypes.SignMethod_Facebook:
+	case basetypes.SignMethod_Linkedin:
+	case basetypes.SignMethod_Wechat:
+	case basetypes.SignMethod_Google:
+	case basetypes.SignMethod_Username:
 	default:
 		logger.Sugar().Errorw("validate", "AccountType", in.GetAccountType())
 		return &user.LoginResponse{}, status.Error(codes.InvalidArgument, "AccountType is invalid")

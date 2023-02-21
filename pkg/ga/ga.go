@@ -5,10 +5,12 @@ import (
 	"fmt"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/signmethod"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-	"github.com/NpoolPlatform/message/npool/third/mgr/v1/usedfor"
-	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
+
+	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
+	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
+
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 )
 
 func SetupGoogleAuth(ctx context.Context, appID, userID string) (*usermwpb.User, error) {
@@ -60,14 +62,14 @@ func VerifyGoogleAuth(ctx context.Context, appID, userID, code string) (*usermwp
 		return nil, fmt.Errorf("invalid user")
 	}
 
-	if err := thirdmwcli.VerifyCode(
-		ctx,
-		appID,
-		user.GoogleSecret,
-		code,
-		signmethod.SignMethodType_Google,
-		usedfor.UsedFor_Update,
-	); err != nil {
+	if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+		AppID:       appID,
+		Account:     user.GoogleSecret,
+		AccountType: basetypes.SignMethod_Google,
+		UsedFor:     basetypes.UsedFor_Update,
+		Code:        code,
+	}); err != nil {
 		return nil, err
 	}
 
