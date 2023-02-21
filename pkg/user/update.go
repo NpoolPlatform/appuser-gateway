@@ -24,6 +24,17 @@ import (
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
+	applangmwcli "github.com/NpoolPlatform/g11n-middleware/pkg/client/applang"
+	applangmgrpb "github.com/NpoolPlatform/message/npool/g11n/mgr/v1/applang"
+
+	chanmgrpb "github.com/NpoolPlatform/message/npool/notif/mgr/v1/channel"
+
+	sendmwpb "github.com/NpoolPlatform/message/npool/third/mw/v1/send"
+	sendmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/send"
+
+	tmplmwpb "github.com/NpoolPlatform/message/npool/notif/mw/v1/template"
+	tmplmwcli "github.com/NpoolPlatform/notif-middleware/pkg/client/template"
+
 	"go.opentelemetry.io/otel"
 	scodes "go.opentelemetry.io/otel/codes"
 
@@ -142,23 +153,14 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 
 func ResetUser(ctx context.Context, in *npool.ResetUserRequest) error {
 	conds := &appusermgrpb.Conds{
-		AppID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetAppID(),
-		},
+		AppID: &commonpb.StringVal{Op: cruder.EQ, Value: in.GetAppID()},
 	}
 
 	switch in.GetAccountType() {
 	case basetypes.SignMethod_Email:
-		conds.EmailAddress = &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetAccount(),
-		}
+		conds.EmailAddress = &commonpb.StringVal{Op: cruder.EQ, Value: in.GetAccount()}
 	case basetypes.SignMethod_Mobile:
-		conds.PhoneNO = &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetAccount(),
-		}
+		conds.PhoneNO = &commonpb.StringVal{Op: cruder.EQ, Value: in.GetAccount()}
 	default:
 		return fmt.Errorf("invalid account type")
 	}
@@ -226,14 +228,8 @@ func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermw
 	}
 
 	code, err := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
-		AppID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetAppID(),
-		},
-		UserID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetTargetUserID(),
-		},
+		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: in.GetAppID()},
+		UserID: &commonpb.StringVal{Op: cruder.EQ, Value: in.GetTargetUserID()},
 	})
 	if err != nil {
 		logger.Sugar().Errorw("UpdateUserKol", "err", err)
@@ -249,6 +245,48 @@ func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermw
 		}
 
 		info.InvitationCode = &code.InvitationCode
+
+		lang, err := applangmwcli.GetLangOnly(ctx, &applangmgrpb.Conds{
+			AppID: &commonpb.StringVal{Op: cruder.EQ, Value: info.AppID},
+			Main:  &commonpb.BoolVal{Op: cruder.EQ, Value: true},
+		})
+		if err != nil {
+			logger.Sugar().Errorw("UpdateUserKol", "Error", err)
+			return info, nil
+		}
+		if lang == nil {
+			logger.Sugar().Warnw("UpdateUserKol", "Error", "Main AppLang not exist")
+			return info, nil
+		}
+
+		info1, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
+			AppID:     info.AppID,
+			LangID:    lang.LangID,
+			Channel:   chanmgrpb.NotifChannel_ChannelEmail,
+			EventType: basetypes.UsedFor_CreateInvitationCode,
+		})
+		if err != nil {
+			logger.Sugar().Errorw("UpdateUserKol", "Error", err)
+			return info, nil
+		}
+		if info1 == nil {
+			logger.Sugar().Warnw("UpdateUserKol", "Error", "Cannot generate text")
+			return info, nil
+		}
+
+		err = sendmwcli.SendMessage(ctx, &sendmwpb.SendMessageRequest{
+			Subject:     info1.Subject,
+			Content:     info1.Content,
+			From:        info1.From,
+			To:          info.EmailAddress,
+			ToCCs:       info1.ToCCs,
+			ReplyTos:    info1.ReplyTos,
+			AccountType: basetypes.SignMethod_Email,
+		})
+		if err != nil {
+			logger.Sugar().Errorw("UpdateUserKol", "Error", err)
+			return info, nil
+		}
 	}
 
 	return info, nil
