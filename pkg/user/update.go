@@ -245,7 +245,9 @@ func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermw
 		}
 
 		info.InvitationCode = &code.InvitationCode
+	}
 
+	if in.GetKol() {
 		lang, err := applangmwcli.GetLangOnly(ctx, &applangmgrpb.Conds{
 			AppID: &commonpb.StringVal{Op: cruder.EQ, Value: info.AppID},
 			Main:  &commonpb.BoolVal{Op: cruder.EQ, Value: true},
