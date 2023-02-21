@@ -91,9 +91,9 @@ func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.Use
 			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
 			AppID:       in.GetAppID(),
 			Account:     account,
-			AccountType: in.GetAccountType(),
+			AccountType: in.GetNewAccountType(),
 			UsedFor:     basetypes.UsedFor_Update,
-			Code:        in.GetVerificationCode(),
+			Code:        in.GetNewVerificationCode(),
 		}); err != nil {
 			return nil, err
 		}
