@@ -51,6 +51,8 @@ func (s *Server) CreateApp(ctx context.Context, in *app.CreateAppRequest) (*app.
 		InvitationCodeMust:       &in.InvitationCodeMust,
 		CreateInvitationCodeWhen: &in.CreateInvitationCodeWhen,
 		MaxTypedCouponsPerOrder:  &in.MaxTypedCouponsPerOrder,
+		Maintaining:              &in.Maintaining,
+		CommitButtonTargets:      in.CommitButtonTargets,
 	}
 	span = tracer.Trace(span, appInfo)
 
