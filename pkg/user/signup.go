@@ -3,11 +3,10 @@ package user
 import (
 	"context"
 	"fmt"
-
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
+
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -18,8 +17,6 @@ import (
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
-	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
-
 	commonpb "github.com/NpoolPlatform/message/npool"
 	appctrlmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appcontrol"
 	rolemgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
@@ -28,6 +25,9 @@ import (
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
 	"github.com/google/uuid"
+
+	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
+	pubsubmsg "github.com/NpoolPlatform/message/npool/pubsub/v1"
 )
 
 //nolint
@@ -126,8 +126,7 @@ func Signup(
 		return userInfo, nil
 	}
 
-	// TODO: revert user info
-	_, err = registrationmwcli.CreateRegistration(ctx, &registrationmwpb.RegistrationReq{
+	err = pubsub.Publish(pubsubmsg.MessageID_SignupInvitation.String(), registrationmwpb.RegistrationReq{
 		AppID:     &appID,
 		InviterID: &inviterID,
 		InviteeID: &userID,
