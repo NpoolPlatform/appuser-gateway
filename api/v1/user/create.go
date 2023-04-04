@@ -113,3 +113,49 @@ func (s *Server) CreateUser(ctx context.Context, in *npool.CreateUserRequest) (*
 		Info: info,
 	}, nil
 }
+
+//nolint:dupl
+func (s *Server) CreateAppUser(ctx context.Context, in *npool.CreateAppUserRequest) (*npool.CreateAppUserResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppUser")
+	defer span.End()
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
+		logger.Sugar().Infow("CreateAppUser", "TargetAppID", in.GetTargetAppID())
+		return &npool.CreateAppUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if in.GetEmailAddress() == "" && in.GetPhoneNO() == "" {
+		logger.Sugar().Infow("CreateAppUser", "EmailAddress", in.GetEmailAddress(), "PhoneNO", in.GetPhoneNO())
+		return &npool.CreateAppUserResponse{}, status.Error(codes.InvalidArgument, "invalid account")
+	}
+	if in.GetPasswordHash() == "" {
+		logger.Sugar().Infow("CreateAppUser", "PasswordHash", in.GetPasswordHash())
+		return &npool.CreateAppUserResponse{}, status.Error(codes.InvalidArgument, "invalid password")
+	}
+
+	span = commontracer.TraceInvoker(span, "user", "middleware", "CreateAppUser")
+
+	userID := uuid.NewString()
+	info, err := usermwcli.CreateUser(ctx, &usermwpb.UserReq{
+		ID:           &userID,
+		AppID:        &in.TargetAppID,
+		EmailAddress: in.EmailAddress,
+		PhoneNO:      in.PhoneNO,
+		PasswordHash: &in.PasswordHash,
+	})
+	if err != nil {
+		logger.Sugar().Errorw("CreateAppUser", "err", err)
+		return &npool.CreateAppUserResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.CreateAppUserResponse{
+		Info: info,
+	}, nil
+}
