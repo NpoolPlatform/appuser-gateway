@@ -114,7 +114,6 @@ func (s *Server) CreateUser(ctx context.Context, in *npool.CreateUserRequest) (*
 	}, nil
 }
 
-//nolint:dupl
 func (s *Server) CreateAppUser(ctx context.Context, in *npool.CreateAppUserRequest) (*npool.CreateAppUserResponse, error) {
 	var err error
 
