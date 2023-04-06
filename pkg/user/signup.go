@@ -167,3 +167,7 @@ func checkInvitationCode(ctx context.Context, appID string, code *string, must b
 
 	return ivc.UserID, nil
 }
+
+func (h *Handler) Signup(ctx context.Context) (*usermwpb.User, error) {
+	return nil, nil
+}
