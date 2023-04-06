@@ -57,12 +57,13 @@ github.com/NpoolPlatform/basal-middleware v0.0.0-20230221094657-688f81366495/go.
 github.com/NpoolPlatform/g11n-manager v0.0.0-20230210192822-999a11e167c8 h1:7+HShGTyGFW3mIWMM0i7g7n4yaC40Uf++iBbjaWBX+Q=
 github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884 h1:H8yVZdgEVC45b6f0BZP3eDYH63hLVy6cOSErMJ1IXKk=
 github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884/go.mod h1:QYy5SMZaXgEzhTqjCMQnoHSKfD66Dj/19emGCBkJbk8=
-github.com/NpoolPlatform/go-service-framework v0.0.0-20230331033505-60718817b8c0 h1:f1xeAoCH+FMJNQq5Gw8+0vVc+SrYg7+ouCh3Cr2gsTE=
-github.com/NpoolPlatform/go-service-framework v0.0.0-20230331033505-60718817b8c0/go.mod h1:Kh7DMkWnYOMHxEKq7QfJqbxm1HaUPkhTNN74lfHQxyE=
+github.com/NpoolPlatform/go-service-framework v0.0.0-20230406011740-92e6137a3ee8 h1:H8/0VVPNJBQYT9eGjPQ/SPRbOgAn3XVpPAv1zcA8CfI=
+github.com/NpoolPlatform/go-service-framework v0.0.0-20230406011740-92e6137a3ee8/go.mod h1:Kh7DMkWnYOMHxEKq7QfJqbxm1HaUPkhTNN74lfHQxyE=
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20230109051825-dd2526447ac6 h1:vbPq+SpuKSniUL37QrOPPPaCFMFahixYwdOoUzGD7OY=
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20230109051825-dd2526447ac6/go.mod h1:1mw727Cnv5BS2l2pHnFIEiqN5EX2zhVyDfqLaZipFKI=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb h1:IAQOJ0xQWdJS1BnimNdM6GZMLgTL/FnIa8C8K4xffUA=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb/go.mod h1:zvvqlRwbOdTUauPQ9dFDhDuxa91ILV0CQfVdPBZj+eA=
+<<<<<<< HEAD
 <<<<<<< HEAD
 github.com/NpoolPlatform/message v0.0.0-20230404063815-6af2720474d3 h1:+hIVryc/rUeYgNFGwGR2taHAOcN+plcQzlEa0uJmXxk=
 github.com/NpoolPlatform/message v0.0.0-20230404063815-6af2720474d3/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
@@ -70,6 +71,10 @@ github.com/NpoolPlatform/message v0.0.0-20230404063815-6af2720474d3/go.mod h1:si
 github.com/NpoolPlatform/message v0.0.0-20230403042056-495a6237455f h1:6u8LtVJIM9pivhTW0ft+kSK/dGiwSWt4/o803DUKpvg=
 github.com/NpoolPlatform/message v0.0.0-20230403042056-495a6237455f/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
 >>>>>>> add pubsub.Publish
+=======
+github.com/NpoolPlatform/message v0.0.0-20230406035553-1c0dabd2e07b h1:fb8Vkk2eD6VN1GJ8W3vDZqlGvVVkS/DMtf864pnzs0M=
+github.com/NpoolPlatform/message v0.0.0-20230406035553-1c0dabd2e07b/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
+>>>>>>> Add pubsub timeout
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687 h1:EYQPrDW4UESGuEP49IV+Xwft4JUC16gb1DZQnH9YFu0=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687/go.mod h1:leYq+Scn4WZ72AQtq4bZKlmeMsxTXUpTgWOPZK7Eb34=
 github.com/NpoolPlatform/review-middleware v0.0.0-20230105072527-025b5576faf7 h1:I/a1RYA73gGktyHZH+1s571qQ+4+lIzJuZVFgYpJuIM=
