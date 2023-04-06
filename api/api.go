@@ -3,15 +3,15 @@ package api
 import (
 	"context"
 
-	"github.com/NpoolPlatform/appuser-gateway/api/v1/admin"
-	"github.com/NpoolPlatform/appuser-gateway/api/v1/app"
-	"github.com/NpoolPlatform/appuser-gateway/api/v1/authing"
-	"github.com/NpoolPlatform/appuser-gateway/api/v1/ban"
-	"github.com/NpoolPlatform/appuser-gateway/api/v1/ga"
-	"github.com/NpoolPlatform/appuser-gateway/api/v1/kyc"
-	"github.com/NpoolPlatform/appuser-gateway/api/v1/role"
-	"github.com/NpoolPlatform/appuser-gateway/api/v1/subscriber"
-	"github.com/NpoolPlatform/appuser-gateway/api/v1/user"
+	"github.com/NpoolPlatform/appuser-gateway/api/admin"
+	"github.com/NpoolPlatform/appuser-gateway/api/app"
+	"github.com/NpoolPlatform/appuser-gateway/api/authing"
+	"github.com/NpoolPlatform/appuser-gateway/api/ban"
+	"github.com/NpoolPlatform/appuser-gateway/api/ga"
+	"github.com/NpoolPlatform/appuser-gateway/api/kyc"
+	"github.com/NpoolPlatform/appuser-gateway/api/role"
+	"github.com/NpoolPlatform/appuser-gateway/api/subscriber"
+	"github.com/NpoolPlatform/appuser-gateway/api/user"
 
 	appusergw "github.com/NpoolPlatform/message/npool/appuser/gw/v1"
 
