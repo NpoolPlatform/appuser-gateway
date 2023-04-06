@@ -168,6 +168,66 @@ func checkInvitationCode(ctx context.Context, appID string, code *string, must b
 	return ivc.UserID, nil
 }
 
-func (h *Handler) Signup(ctx context.Context) (*usermwpb.User, error) {
+func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
+	inviterID, err := h.CheckInvitationCode(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := h.VerifyUserCode(ctx, basetypes.UsedFor_Signup); err != nil {
+		return nil, err
+	}
+
+	signupHandler := &signupHandler{
+		Handler:   h,
+		inviterID: inviterID,
+	}
+
+	defer func() {
+		if err == nil {
+			return
+		}
+
+		if err := signupHandler.cancel(ctx); err != nil {
+			logger.Sugar().Errorw(
+				"Signup",
+				"Step", "Cancel",
+				"Error", err,
+			)
+		}
+	}()
+
+	err = signupHandler.try(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err = signupHandler.confirm(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return info, nil
+}
+
+type signupHandler struct {
+	*Handler
+	inviterID *string
+}
+
+/// Signup
+///  1 Create invitation code according to application configuration
+///  2 Create user
+///  3 Create registration invitation
+
+func (h *signupHandler) try(ctx context.Context) error {
+	return nil
+}
+
+func (h *signupHandler) confirm(ctx context.Context) (*usermwpb.User, error) {
 	return nil, nil
+}
+
+func (h *signupHandler) cancel(ctx context.Context) error {
+	return nil
 }
