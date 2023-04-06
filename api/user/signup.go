@@ -26,6 +26,11 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(in.GetAppID()),
+		user1.WithPasswordHash(in.GetPasswordHash()),
+		user1.WithAccount(in.GetAccount()),
+		user1.WithAccountType(in.GetAccountType()),
+		user1.WithVerificationCode(in.GetVerificationCode()),
+		user1.WithInvitationCode(in.InvitationCode),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -44,100 +49,4 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 	return &user.SignupResponse{
 		Info: info,
 	}, nil
-
-	/*
-		var err error
-
-		_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Signup")
-		defer span.End()
-		defer func() {
-			if err != nil {
-				span.SetStatus(scodes.Error, err.Error())
-				span.RecordError(err)
-			}
-		}()
-
-		if _, err := uuid.Parse(in.GetAppID()); err != nil {
-			logger.Sugar().Errorw("validate", "AppID", in.GetAppID(), "error", err)
-			return &user.SignupResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
-		}
-
-		if in.GetPasswordHash() == "" {
-			logger.Sugar().Errorw("validate", "PasswordHash", in.GetPasswordHash())
-			return &user.SignupResponse{}, status.Error(codes.InvalidArgument, "PasswordHash is invalid")
-		}
-		if in.GetAccount() == "" {
-			logger.Sugar().Errorw("validate", "Account", in.GetAccount())
-			return &user.SignupResponse{}, status.Error(codes.InvalidArgument, "Account is invalid")
-		}
-
-		switch in.GetAccountType() {
-		case basetypes.SignMethod_Mobile:
-		case basetypes.SignMethod_Email:
-		default:
-			logger.Sugar().Errorw("validate", "AccountType", in.GetAccountType())
-			return &user.SignupResponse{}, status.Error(codes.InvalidArgument, "AccountType is invalid")
-		}
-
-		if in.GetVerificationCode() == "" {
-			logger.Sugar().Errorw("validate", "VerificationCode", in.GetVerificationCode())
-			return &user.SignupResponse{}, status.Error(codes.InvalidArgument, "VerificationCode is invalid")
-		}
-
-		exist, err := usermgrcli.ExistAppUserConds(ctx, &usermgrpb.Conds{
-			AppID: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: in.GetAppID(),
-			},
-			PhoneNO: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: in.GetAccount(),
-			},
-		})
-		if err != nil {
-			logger.Sugar().Errorw("validate", "err", err)
-			return &user.SignupResponse{}, status.Error(codes.Internal, err.Error())
-		}
-		if exist {
-			return &user.SignupResponse{}, status.Error(codes.AlreadyExists, "account already exist")
-		}
-
-		exist, err = usermgrcli.ExistAppUserConds(ctx, &usermgrpb.Conds{
-			AppID: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: in.GetAppID(),
-			},
-			EmailAddress: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: in.GetAccount(),
-			},
-		})
-		if err != nil {
-			logger.Sugar().Errorw("validate", "err", err)
-			return &user.SignupResponse{}, status.Error(codes.Internal, err.Error())
-		}
-
-		if exist {
-			return &user.SignupResponse{}, status.Error(codes.AlreadyExists, "account already exist")
-		}
-
-		span = commontracer.TraceInvoker(span, "user", "middleware", "Signup")
-
-		userInfo, err := user1.Signup(
-			ctx,
-			in.GetAppID(),
-			in.GetAccount(),
-			in.GetPasswordHash(),
-			in.GetAccountType(),
-			in.GetVerificationCode(),
-			in.InvitationCode,
-		)
-		if err != nil {
-			logger.Sugar().Errorw("Signup", "err", err)
-			return &user.SignupResponse{}, status.Error(codes.Internal, err.Error())
-		}
-		return &user.SignupResponse{
-			Info: userInfo,
-		}, nil
-	*/
 }
