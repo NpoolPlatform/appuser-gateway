@@ -2,19 +2,9 @@ package user
 
 import (
 	"context"
+	"time"
 
-	// "github.com/google/uuid"
-
-	// constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	// commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
-
-	// usermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
-	// usermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
-	// basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-
-	// commonpb "github.com/NpoolPlatform/message/npool"
-
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
 
@@ -31,6 +21,7 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 		user1.WithAccountType(in.GetAccountType()),
 		user1.WithVerificationCode(in.GetVerificationCode()),
 		user1.WithInvitationCode(in.InvitationCode),
+		user1.WithPubsubTimeout(10*time.Second),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

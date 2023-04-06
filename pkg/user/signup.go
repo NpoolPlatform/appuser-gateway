@@ -27,7 +27,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
-	pubsubmsg "github.com/NpoolPlatform/message/npool/pubsub/v1"
 )
 
 //nolint
@@ -126,11 +125,16 @@ func Signup(
 		return userInfo, nil
 	}
 
-	err = pubsub.Publish(pubsubmsg.MessageID_SignupInvitation.String(), registrationmwpb.RegistrationReq{
-		AppID:     &appID,
-		InviterID: &inviterID,
-		InviteeID: &userID,
-	})
+	err = pubsub.Publish(
+		basetypes.MsgID_CreateRegistrationInvitationConfirm.String(),
+		nil,
+		nil,
+		registrationmwpb.RegistrationReq{
+			AppID:     &appID,
+			InviterID: &inviterID,
+			InviteeID: &userID,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}

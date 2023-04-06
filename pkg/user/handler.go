@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"time"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
@@ -19,6 +20,7 @@ type Handler struct {
 	AccountType      basetypes.SignMethod
 	VerificationCode string
 	InvitationCode   *string
+	PubsubTimeout    time.Duration
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -101,6 +103,13 @@ func WithInvitationCode(code *string) func(context.Context, *Handler) error {
 			return fmt.Errorf("invalid invitation code")
 		}
 		h.InvitationCode = code
+		return nil
+	}
+}
+
+func WithPubsubTimeout(timeout time.Duration) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.PubsubTimeout = timeout
 		return nil
 	}
 }
