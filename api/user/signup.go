@@ -17,8 +17,7 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 		ctx,
 		user1.WithAppID(in.GetAppID()),
 		user1.WithPasswordHash(in.GetPasswordHash()),
-		user1.WithAccount(in.GetAccount()),
-		user1.WithAccountType(in.GetAccountType()),
+		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
 		user1.WithVerificationCode(in.GetVerificationCode()),
 		user1.WithInvitationCode(in.InvitationCode),
 		user1.WithPubsubTimeout(10*time.Second), //nolint

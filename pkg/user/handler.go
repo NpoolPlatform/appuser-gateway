@@ -3,8 +3,8 @@ package user
 import (
 	"context"
 	"fmt"
+	"net/mail"
 	"regexp"
-	"strings"
 	"time"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
@@ -65,25 +65,52 @@ func WithPasswordHash(pwdHash string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithAccount(account string) func(context.Context, *Handler) error {
+func validateEmailAddress(emailAddress string) error {
+	if _, err := mail.ParseAddress(emailAddress); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validatePhoneNO(phoneNO string) error {
+	re := regexp.MustCompile(
+		`^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[` +
+			`\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?)` +
+			`{0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)` +
+			`[\-\.\ \\\/]?(\d+))?$`,
+	)
+	if !re.MatchString(phoneNO) {
+		return fmt.Errorf("invalid phone no")
+	}
+
+	return nil
+}
+
+func WithAccount(account string, accountType basetypes.SignMethod) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if account == "" {
 			return fmt.Errorf("invalid account")
 		}
-		h.Account = account
-		return nil
-	}
-}
 
-func WithAccountType(accountType basetypes.SignMethod) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
+		var err error
+
 		switch accountType {
 		case basetypes.SignMethod_Mobile:
+			h.PhoneNO = &account
+			err = validatePhoneNO(account)
 		case basetypes.SignMethod_Email:
+			h.EmailAddress = &account
+			err = validateEmailAddress(account)
 		default:
 			return fmt.Errorf("invalid account type")
 		}
+
+		if err != nil {
+			return err
+		}
+
 		h.AccountType = accountType
+		h.Account = account
 		return nil
 	}
 }
@@ -114,40 +141,6 @@ func WithInvitationCode(code *string) func(context.Context, *Handler) error {
 func WithPubsubTimeout(timeout time.Duration) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.PubsubTimeout = timeout
-		return nil
-	}
-}
-
-func WithEmailAddress(emailAddress *string) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if emailAddress == nil {
-			return nil
-		}
-		if !strings.Contains(*emailAddress, "@") {
-			return fmt.Errorf("invalid email address")
-		}
-		h.EmailAddress = emailAddress
-		return nil
-	}
-}
-
-func WithPhoneNO(phoneNO *string) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if phoneNO == nil {
-			return nil
-		}
-
-		re := regexp.MustCompile(
-			`^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[` +
-				`\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?)` +
-				`{0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)` +
-				`[\-\.\ \\\/]?(\d+))?$`,
-		)
-		if !re.MatchString(*phoneNO) {
-			return fmt.Errorf("invalid phone no")
-		}
-
-		h.PhoneNO = phoneNO
 		return nil
 	}
 }
