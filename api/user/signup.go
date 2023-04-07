@@ -21,7 +21,7 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 		user1.WithAccountType(in.GetAccountType()),
 		user1.WithVerificationCode(in.GetVerificationCode()),
 		user1.WithInvitationCode(in.InvitationCode),
-		user1.WithPubsubTimeout(10*time.Second),
+		user1.WithPubsubTimeout(10*time.Second), //nolint
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
