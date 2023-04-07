@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/mail"
 	"regexp"
-	"time"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
@@ -15,17 +14,17 @@ import (
 )
 
 type Handler struct {
-	AppID            string
-	App              *appmwpb.App
-	Account          string
-	PasswordHash     string
-	AccountType      basetypes.SignMethod
-	VerificationCode string
-	InvitationCode   *string
-	PubsubTimeout    time.Duration
-	EmailAddress     *string
-	PhoneNO          *string
-	UserID           string
+	AppID                 string
+	App                   *appmwpb.App
+	Account               string
+	PasswordHash          string
+	AccountType           basetypes.SignMethod
+	VerificationCode      string
+	InvitationCode        *string
+	EmailAddress          *string
+	PhoneNO               *string
+	UserID                string
+	RequestTimeoutSeconds int64
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -139,9 +138,9 @@ func WithInvitationCode(code *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithPubsubTimeout(timeout time.Duration) func(context.Context, *Handler) error {
+func WithRequestTimeoutSeconds(seconds int64) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.PubsubTimeout = timeout
+		h.RequestTimeoutSeconds = seconds
 		return nil
 	}
 }

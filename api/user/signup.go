@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"time"
 
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -20,7 +19,7 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
 		user1.WithVerificationCode(in.GetVerificationCode()),
 		user1.WithInvitationCode(in.InvitationCode),
-		user1.WithPubsubTimeout(10*time.Second), //nolint
+		user1.WithRequestTimeoutSeconds(10),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
