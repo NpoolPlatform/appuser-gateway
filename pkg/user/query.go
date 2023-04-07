@@ -5,7 +5,7 @@ import (
 
 	mgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
 
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
@@ -26,7 +26,7 @@ import (
 func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.User, uint32, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetUsers")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "GetUsers")
 	defer span.End()
 	defer func() {
 		if err != nil {

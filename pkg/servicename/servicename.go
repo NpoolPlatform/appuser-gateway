@@ -1,3 +1,6 @@
 package servicename
 
-const ServiceName = "AppUserGateway"
+const (
+	ServiceName   = "AppUserGateway"
+	ServiceDomain = "appuser-gateway.npool.top"
+)

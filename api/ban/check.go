@@ -3,8 +3,8 @@ package ban
 import (
 	"context"
 
-	"github.com/NpoolPlatform/appuser-manager/api/v2/banapp"
-	"github.com/NpoolPlatform/appuser-manager/api/v2/banappuser"
+	"github.com/NpoolPlatform/appuser-manager/api/banapp"
+	"github.com/NpoolPlatform/appuser-manager/api/banappuser"
 	banappmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/banapp"
 	banappusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/banappuser"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"

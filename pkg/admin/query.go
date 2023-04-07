@@ -8,8 +8,8 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	constant1 "github.com/NpoolPlatform/appuser-gateway/pkg/const"
-	constant2 "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	constant3 "github.com/NpoolPlatform/appuser-manager/pkg/message/const"
+	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
+	servicename2 "github.com/NpoolPlatform/appuser-manager/pkg/servicename"
 
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 
@@ -40,7 +40,7 @@ func GetAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
 	var err error
 	genesisApps := []*appcrud.App{}
 
-	_, span := otel.Tracer(constant2.ServiceName).Start(ctx, "GetAdminApps")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "GetAdminApps")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -51,7 +51,7 @@ func GetAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetApps")
 
-	genesisAppStr := config.GetStringValueWithNameSpace(constant3.ServiceName, constant1.KeyGenesisApp)
+	genesisAppStr := config.GetStringValueWithNameSpace(servicename2.ServiceDomain, constant1.KeyGenesisApp)
 
 	err = json.Unmarshal([]byte(genesisAppStr), &genesisApps)
 	if err != nil {
@@ -75,7 +75,7 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, uint32, error) {
 	var err error
 	appRoles := []*approlemgrpb.AppRoleReq{}
 
-	_, span := otel.Tracer(constant2.ServiceName).Start(ctx, "GetGenesisRoles")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "GetGenesisRoles")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -86,7 +86,7 @@ func GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, uint32, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "manager", "GetGenesisRoles")
 
-	genesisRoleStr := config.GetStringValueWithNameSpace(constant3.ServiceName, constant1.KeyGenesisRole)
+	genesisRoleStr := config.GetStringValueWithNameSpace(servicename2.ServiceDomain, constant1.KeyGenesisRole)
 
 	err = json.Unmarshal([]byte(genesisRoleStr), &appRoles)
 	if err != nil {
@@ -130,7 +130,7 @@ func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, uint32, error) {
 	var err error
 	genesisRoles := []*approlemgrpb.AppRoleReq{}
 
-	_, span := otel.Tracer(constant2.ServiceName).Start(ctx, "GetGenesisUsers")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "GetGenesisUsers")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -141,7 +141,7 @@ func GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, uint32, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "middleware", "GetGenesisUsers")
 
-	genesisRoleStr := config.GetStringValueWithNameSpace(constant3.ServiceName, constant1.KeyGenesisRole)
+	genesisRoleStr := config.GetStringValueWithNameSpace(servicename2.ServiceDomain, constant1.KeyGenesisRole)
 
 	err = json.Unmarshal([]byte(genesisRoleStr), &genesisRoles)
 	if err != nil {
