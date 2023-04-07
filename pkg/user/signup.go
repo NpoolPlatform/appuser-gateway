@@ -33,7 +33,6 @@ import (
 type signupHandler struct {
 	*Handler
 	inviterID   *string
-	userID      string
 	defaultRole *rolemgrpb.AppRole
 }
 
@@ -46,7 +45,7 @@ func (h *signupHandler) withCreateInvitationCode(dispose *dtmcli.SagaDispose) {
 	req := &ivcodemgrpb.InvitationCodeReq{
 		ID:     &id,
 		AppID:  &h.AppID,
-		UserID: &h.userID,
+		UserID: &h.UserID,
 	}
 
 	dispose.Add(
@@ -59,7 +58,7 @@ func (h *signupHandler) withCreateInvitationCode(dispose *dtmcli.SagaDispose) {
 
 func (h *signupHandler) withCreateUser(dispose *dtmcli.SagaDispose) {
 	req := &usermwpb.UserReq{
-		ID:           &h.userID,
+		ID:           &h.UserID,
 		AppID:        &h.AppID,
 		EmailAddress: h.EmailAddress,
 		PhoneNO:      h.PhoneNO,
@@ -83,7 +82,7 @@ func (h *signupHandler) withCreateRegistrationInvitation(dispose *dtmcli.SagaDis
 	req := &registrationmgrpb.RegistrationReq{
 		AppID:     &h.AppID,
 		InviterID: h.inviterID,
-		InviteeID: &h.userID,
+		InviteeID: &h.UserID,
 	}
 
 	dispose.Add(
@@ -137,8 +136,9 @@ func (h *signupHandler) checkUser(ctx context.Context) error {
 func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 	signupHandler := &signupHandler{
 		Handler: h,
-		userID:  uuid.NewString(),
 	}
+
+	h.UserID = uuid.NewString()
 
 	if err := signupHandler.checkUser(ctx); err != nil {
 		return nil, err
@@ -161,7 +161,10 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 		return nil, err
 	}
 
-	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{})
+	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{
+		WaitResult:     true,
+		RequestTimeout: 10,
+	})
 	signupHandler.withCreateInvitationCode(sagaDispose)
 	signupHandler.withCreateUser(sagaDispose)
 	signupHandler.withCreateRegistrationInvitation(sagaDispose)
@@ -172,5 +175,5 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 
 	/// TODO: if newbie has coupon, send event to allocate coupon, and we don't care about allocate result
 
-	return info, nil
+	return h.GetUser(ctx)
 }

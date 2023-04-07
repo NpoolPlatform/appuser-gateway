@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	mgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
 
@@ -13,7 +14,7 @@ import (
 	ivcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
@@ -23,7 +24,7 @@ import (
 	scodes "go.opentelemetry.io/otel/codes"
 )
 
-func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.User, uint32, error) {
+func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*usermwpb.User, uint32, error) {
 	var err error
 
 	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "GetUsers")
@@ -51,7 +52,7 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 		return nil, 0, err
 	}
 	if len(infos) == 0 {
-		return []*user.User{}, 0, nil
+		return []*usermwpb.User{}, 0, nil
 	}
 
 	userIDs := []string{}
@@ -88,4 +89,24 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*user.U
 	}
 
 	return infos, total, nil
+}
+
+func (h *Handler) GetUser(ctx context.Context) (*usermwpb.User, error) {
+	info, err := usermwcli.GetUser(ctx, h.AppID, h.UserID)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil {
+		return nil, fmt.Errorf("invalid user %v:%v", h.AppID, h.UserID)
+	}
+
+	code, _ := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemgrpb.Conds{
+		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
+		UserID: &commonpb.StringVal{Op: cruder.IN, Value: h.UserID},
+	})
+
+	if code != nil {
+		info.InvitationCode = &code.InvitationCode
+	}
+	return info, nil
 }
