@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
-	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
 
 	rolemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
@@ -22,11 +22,16 @@ import (
 	rolemgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
+	inspiremwsvcname "github.com/NpoolPlatform/inspire-middleware/pkg/servicename"
+	ivcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
+
+	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
+	"github.com/dtm-labs/dtmcli/dtmimp"
+
+	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
 	"github.com/google/uuid"
-
-	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
 )
 
 //nolint
@@ -125,19 +130,22 @@ func Signup(
 		return userInfo, nil
 	}
 
-	err = pubsub.Publish(
-		basetypes.MsgID_CreateRegistrationInvitationConfirm.String(),
-		nil,
-		nil,
-		registrationmwpb.RegistrationReq{
-			AppID:     &appID,
-			InviterID: &inviterID,
-			InviteeID: &userID,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
+	/*
+		err = pubsub.Publish(
+			basetypes.MsgID_CreateRegistrationInvitationConfirm.String(),
+			nil,
+			nil,
+			nil,
+			registrationmwpb.RegistrationReq{
+				AppID:     &appID,
+				InviterID: &inviterID,
+				InviteeID: &userID,
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+	*/
 
 	return userInfo, nil
 }
@@ -172,6 +180,30 @@ func checkInvitationCode(ctx context.Context, appID string, code *string, must b
 	return ivc.UserID, nil
 }
 
+func (h *signupHandler) withCreateInvitationCode(ctx context.Context, dispose *dtmcli.SagaDispose) {
+	if h.App.CreateInvitationCodeWhen != appctrlmgrpb.CreateInvitationCodeWhen_Registration {
+		return
+	}
+
+	id := uuid.NewString()
+	req := &ivcodemgrpb.InvitationCodeReq{
+		ID:     &id,
+		AppID:  &h.AppID,
+		UserID: &h.userID,
+	}
+
+	dispose.Add(
+		inspiremwsvcname.ServiceDomain,
+		"inspire.middleware.invitation.invitationcode.v1.Middleware/CreateInvitationCode",
+		"inspire.middleware.invitation.invitationcode.v1.Middleware/DeleteInvitationCode",
+		req,
+	)
+}
+
+/// Signup
+///  1 Create invitation code according to application configuration
+///  2 Create user
+///  3 Create registration invitation
 func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 	inviterID, err := h.CheckInvitationCode(ctx)
 	if err != nil {
@@ -185,53 +217,41 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 	signupHandler := &signupHandler{
 		Handler:   h,
 		inviterID: inviterID,
+		userID:    uuid.NewString(),
 	}
 
-	defer func() {
-		if err == nil {
-			return
-		}
-
-		if err := signupHandler.cancel(ctx); err != nil {
-			logger.Sugar().Errorw(
-				"Signup",
-				"Step", "Cancel",
-				"Error", err,
-			)
-		}
-	}()
-
-	err = signupHandler.try(ctx)
-	if err != nil {
+	if err := signupHandler.getDefaultRole(ctx); err != nil {
 		return nil, err
 	}
 
-	info, err = signupHandler.confirm(ctx)
-	if err != nil {
-		return nil, err
-	}
+	/// TODO: dtm saga call to create invitation code, user, registration invitation
+	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{})
+	signupHandler.withCreateInvitationCode(ctx, sagaDispose)
+	/// TODO: if newbie has coupon, send event to allocate coupon, and we don't care about allocate result
 
 	return info, nil
 }
 
 type signupHandler struct {
 	*Handler
-	inviterID *string
+	inviterID   *string
+	userID      string
+	publisher   *pubsub.Publisher
+	defaultRole *rolemgrpb.AppRole
+	tryResp     map[basetypes.MsgID]uuid.UUID
 }
 
-/// Signup
-///  1 Create invitation code according to application configuration
-///  2 Create user
-///  3 Create registration invitation
-
-func (h *signupHandler) try(ctx context.Context) error {
-	return nil
-}
-
-func (h *signupHandler) confirm(ctx context.Context) (*usermwpb.User, error) {
-	return nil, nil
-}
-
-func (h *signupHandler) cancel(ctx context.Context) error {
+func (h *signupHandler) getDefaultRole(ctx context.Context) error {
+	role, err := rolemgrcli.GetAppRoleOnly(ctx, &rolemgrpb.Conds{
+		AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
+		Default: &commonpb.BoolVal{Op: cruder.EQ, Value: true},
+	})
+	if err != nil {
+		return err
+	}
+	if role == nil {
+		return fmt.Errorf("invalid default role")
+	}
+	h.defaultRole = role
 	return nil
 }

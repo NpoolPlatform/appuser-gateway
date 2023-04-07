@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
@@ -21,6 +23,8 @@ type Handler struct {
 	VerificationCode string
 	InvitationCode   *string
 	PubsubTimeout    time.Duration
+	EmailAddress     *string
+	PhoneNO          *string
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -110,6 +114,37 @@ func WithInvitationCode(code *string) func(context.Context, *Handler) error {
 func WithPubsubTimeout(timeout time.Duration) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.PubsubTimeout = timeout
+		return nil
+	}
+}
+
+func WithEmailAddress(emailAddress *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if emailAddress == nil {
+			return nil
+		}
+		if !strings.Contains(*emailAddress, "@") {
+			return fmt.Errorf("invalid email address")
+		}
+		h.EmailAddress = emailAddress
+		return nil
+	}
+}
+
+func WithPhoneNO(phoneNO *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if phoneNO == nil {
+			return nil
+		}
+
+		re := regexp.MustCompile(
+			`^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$`,
+		)
+		if !re.MatchString(*phoneNO) {
+			return fmt.Errorf("invalid phone no")
+		}
+
+		h.PhoneNO = phoneNO
 		return nil
 	}
 }
