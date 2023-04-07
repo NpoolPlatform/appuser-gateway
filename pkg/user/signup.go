@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	// basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	rolemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 	usermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
@@ -151,9 +151,11 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 
 	signupHandler.inviterID = inviterID
 
-	if err := h.VerifyUserCode(ctx, basetypes.UsedFor_Signup); err != nil {
-		return nil, err
-	}
+	/*
+		if err := h.VerifyUserCode(ctx, basetypes.UsedFor_Signup); err != nil {
+			return nil, err
+		}
+	*/
 
 	if err := signupHandler.getDefaultRole(ctx); err != nil {
 		return nil, err
