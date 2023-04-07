@@ -16,8 +16,8 @@ require (
 )
 
 require (
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20230406065206-574a42f1b152
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230402075446-5531161f2a6c
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20230407034742-442a05724f07
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230407040653-302e52b15dfc
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230406095906-83a0750e1787
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230407023646-a31e848cad36
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884

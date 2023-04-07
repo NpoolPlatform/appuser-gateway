@@ -20,8 +20,8 @@ import (
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
-	serconst "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	appusermgrconst "github.com/NpoolPlatform/appuser-manager/pkg/message/const"
+	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
+	servicename2 "github.com/NpoolPlatform/appuser-manager/pkg/servicename"
 
 	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 	roleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
@@ -46,7 +46,7 @@ import (
 
 func GetGenesisApps() ([]*appmrgpb.AppReq, error) {
 	genesisApps := []*appmrgpb.AppReq{}
-	genesisAppStr := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, constant.KeyGenesisApp)
+	genesisAppStr := config.GetStringValueWithNameSpace(servicename2.ServiceDomain, constant.KeyGenesisApp)
 
 	err := json.Unmarshal([]byte(genesisAppStr), &genesisApps)
 	if err != nil {
@@ -62,7 +62,7 @@ func GetGenesisApps() ([]*appmrgpb.AppReq, error) {
 func CreateAdminApps(ctx context.Context) ([]*appmw.App, error) {
 	var err error
 
-	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "CreateAdminApps")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "CreateAdminApps")
 	defer span.End()
 
 	defer func() {
@@ -124,7 +124,7 @@ func CreateGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 	var err error
 	genesisRoles := []*approlepb.AppRoleReq{}
 
-	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "CreateGenesisRoles")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "CreateGenesisRoles")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -135,7 +135,7 @@ func CreateGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 
 	span = commontracer.TraceInvoker(span, "admin", "apollo", "GetStringValueWithNameSpace")
 
-	genesisRoleStr := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, constant.KeyGenesisRole)
+	genesisRoleStr := config.GetStringValueWithNameSpace(servicename2.ServiceDomain, constant.KeyGenesisRole)
 
 	err = json.Unmarshal([]byte(genesisRoleStr), &genesisRoles)
 	if err != nil {
@@ -217,7 +217,7 @@ func CreateGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 func CreateGenesisUser(ctx context.Context, appID, emailAddress, passwordHash string) (*user.User, error) {
 	var err error
 
-	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "CreateGenesisUser")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "CreateGenesisUser")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -276,7 +276,7 @@ type genesisURL struct {
 }
 
 func createGenesisAuths(ctx context.Context, appID string) (infos []*authingmwpb.Auth, total uint32, err error) {
-	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "createGenesisAuths")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "createGenesisAuths")
 	defer span.End()
 
 	defer func() {
@@ -286,7 +286,7 @@ func createGenesisAuths(ctx context.Context, appID string) (infos []*authingmwpb
 		}
 	}()
 
-	apisJSON := config.GetStringValueWithNameSpace(appusermgrconst.ServiceName, constant.KeyGenesisAuthingAPIs)
+	apisJSON := config.GetStringValueWithNameSpace(servicename2.ServiceDomain, constant.KeyGenesisAuthingAPIs)
 	apis := []genesisURL{}
 	err = json.Unmarshal([]byte(apisJSON), &apis)
 	if err != nil {
@@ -331,7 +331,7 @@ func createGenesisAuths(ctx context.Context, appID string) (infos []*authingmwpb
 }
 
 func AuthorizeGenesis(ctx context.Context) (infos []*authingmwpb.Auth, total uint32, err error) {
-	_, span := otel.Tracer(serconst.ServiceName).Start(ctx, "AuthorizeGenesis")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "AuthorizeGenesis")
 	defer span.End()
 
 	defer func() {

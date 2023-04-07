@@ -1,7 +1,7 @@
 package authing
 
 import (
-	"github.com/NpoolPlatform/appuser-manager/api/v2/authing/auth"
+	"github.com/NpoolPlatform/appuser-manager/api/authing/auth"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	pb "github.com/NpoolPlatform/message/npool/appuser/gw/v1/authing"
 	authmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/authing/auth"

@@ -3,7 +3,7 @@ package kyc
 import (
 	"context"
 
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 
 	kycmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/kyc"
@@ -27,7 +27,7 @@ func CreateKyc(
 ) (
 	info *mwpb.Kyc, err error,
 ) {
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateKyc")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "CreateKyc")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -60,7 +60,7 @@ func CreateKyc(
 
 	span = commontracer.TraceInvoker(span, "kyc", "middleware", "CreateReview")
 
-	serviceName := constant.ServiceName
+	serviceName := servicename.ServiceDomain
 	objectType := reviewpb.ReviewObjectType_ObjectKyc
 
 	_, err = reviewmwcli.CreateReview(ctx, &reviewpb.ReviewReq{

@@ -6,7 +6,7 @@ import (
 
 	"github.com/NpoolPlatform/appuser-gateway/pkg/user"
 
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	authingmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/authing/auth"
 	historymgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/authing/history"
@@ -24,7 +24,7 @@ import (
 func Authenticate(ctx context.Context, appID string, userID, token *string, resource, method string) (resp bool, err error) {
 	allowed := false
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Authenticate")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "Authenticate")
 	defer span.End()
 	defer func() {
 		logger.Sugar().Warnw(
@@ -83,7 +83,7 @@ func Authenticate(ctx context.Context, appID string, userID, token *string, reso
 }
 
 func CreateAuth(ctx context.Context, appID string, userID, roleID *string, resource, method string) (resp *authmwpb.Auth, err error) {
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Authenticate")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "Authenticate")
 	defer span.End()
 	defer func() {
 		if err != nil {

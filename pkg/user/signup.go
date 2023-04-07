@@ -22,8 +22,11 @@ import (
 	rolemgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
+	appusersvcname "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
 	inspiremwsvcname "github.com/NpoolPlatform/inspire-middleware/pkg/servicename"
+
 	ivcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
+	registrationmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
 
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	"github.com/dtm-labs/dtmcli/dtmimp"
@@ -200,6 +203,43 @@ func (h *signupHandler) withCreateInvitationCode(ctx context.Context, dispose *d
 	)
 }
 
+func (h *signupHandler) withCreateUser(ctx context.Context, dispose *dtmcli.SagaDispose) {
+	req := &usermwpb.UserReq{
+		ID:           &h.userID,
+		AppID:        &h.AppID,
+		EmailAddress: h.EmailAddress,
+		PhoneNO:      h.PhoneNO,
+		PasswordHash: &h.PasswordHash,
+		RoleIDs:      []string{h.defaultRole.ID},
+	}
+
+	dispose.Add(
+		appusersvcname.ServiceDomain,
+		"appuser.middleware.user.v1.Middleware/CreateUser",
+		"appuser.middleware.user.v1.Middleware/DeleteUser",
+		req,
+	)
+}
+
+func (h *signupHandler) withCreateRegistrationInvitation(ctx context.Context, dispose *dtmcli.SagaDispose) {
+	if h.inviterID == nil {
+		return
+	}
+
+	req := &registrationmgrpb.RegistrationReq{
+		AppID:     &h.AppID,
+		InviterID: h.inviterID,
+		InviteeID: &h.userID,
+	}
+
+	dispose.Add(
+		inspiremwsvcname.ServiceDomain,
+		"inspire.middleware.invitation.registration.v1.Middleware/CreateRegistration",
+		"inspire.middleware.invitation.registration.v1.Middleware/DeleteRegistration",
+		req,
+	)
+}
+
 /// Signup
 ///  1 Create invitation code according to application configuration
 ///  2 Create user
@@ -224,9 +264,15 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 		return nil, err
 	}
 
-	/// TODO: dtm saga call to create invitation code, user, registration invitation
 	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{})
 	signupHandler.withCreateInvitationCode(ctx, sagaDispose)
+	signupHandler.withCreateUser(ctx, sagaDispose)
+	signupHandler.withCreateRegistrationInvitation(ctx, sagaDispose)
+
+	if err := dtmcli.WithSaga(ctx, sagaDispose); err != nil {
+		return nil, err
+	}
+
 	/// TODO: if newbie has coupon, send event to allocate coupon, and we don't care about allocate result
 
 	return info, nil
