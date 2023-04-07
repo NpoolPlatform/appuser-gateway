@@ -3,8 +3,8 @@ module github.com/NpoolPlatform/appuser-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20230406011740-92e6137a3ee8
-	github.com/NpoolPlatform/message v0.0.0-20230406035553-1c0dabd2e07b
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20230406075556-1bc2c60ab5f1
+	github.com/NpoolPlatform/message v0.0.0-20230407030149-3bc54926f671
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
@@ -16,15 +16,17 @@ require (
 )
 
 require (
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20230402073945-55efc452d38b
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20230406065206-574a42f1b152
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230402075446-5531161f2a6c
-	github.com/NpoolPlatform/basal-middleware v0.0.0-20230221094657-688f81366495
+	github.com/NpoolPlatform/basal-middleware v0.0.0-20230406095906-83a0750e1787
+	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230407023646-a31e848cad36
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687
 	github.com/NpoolPlatform/review-middleware v0.0.0-20230105072527-025b5576faf7
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230221094357-40a170d76e2b
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/dtm-labs/dtmcli v1.15.0
 	github.com/go-redis/redis/v8 v8.11.4
 	go.opentelemetry.io/otel v1.10.0
 	go.opentelemetry.io/otel/trace v1.10.0
@@ -53,28 +55,34 @@ require (
 	github.com/aws/smithy-go v1.13.2 // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/gin-gonic/gin v1.7.7 // indirect
-	github.com/google/btree v1.0.1 // indirect
-	github.com/hashicorp/consul/sdk v0.9.0 // indirect
-	github.com/hashicorp/go-msgpack v1.1.5 // indirect
-	github.com/hashicorp/go-sockaddr v1.0.2 // indirect
-	github.com/hashicorp/go-uuid v1.0.2 // indirect
+	github.com/dtm-labs/dtmdriver v0.0.3 // indirect
+	github.com/dtm-labs/dtmgrpc v1.13.5 // indirect
+	github.com/gin-contrib/sse v0.1.0 // indirect
+	github.com/go-stack/stack v1.8.0 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
+	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.7 // indirect
-	github.com/miekg/dns v1.1.45 // indirect
+	github.com/natefinch/lumberjack v2.0.0+incompatible // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.2.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
+	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
+	github.com/xdg-go/scram v1.0.2 // indirect
+	github.com/xdg-go/stringprep v1.0.2 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
+	go.mongodb.org/mongo-driver v1.8.3 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.31.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.6.3 // indirect
 	go.opentelemetry.io/otel/sdk v1.6.3 // indirect
-	go.uber.org/goleak v1.1.12 // indirect
+	golang.org/x/crypto v0.0.0-20220517005047-85d78b3ac167 // indirect
+	golang.org/x/sync v0.1.0 // indirect
 )
 
 require (
 	ariga.io/atlas v0.7.2-0.20220927111110-867ee0cca56a // indirect
 	entgo.io/ent v0.11.3 // indirect
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230109051825-dd2526447ac6
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230406080652-25dc64e4294d
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
