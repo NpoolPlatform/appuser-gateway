@@ -146,8 +146,6 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 		Handler: h,
 	}
 
-	h.UserID = uuid.NewString()
-
 	if err := signupHandler.checkUser(ctx); err != nil {
 		return nil, err
 	}
@@ -158,6 +156,7 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 	}
 
 	signupHandler.inviterID = inviterID
+	signupHandler.UserID = uuid.NewString()
 
 	if err := h.VerifyUserCode(ctx, basetypes.UsedFor_Signup); err != nil {
 		return nil, err
