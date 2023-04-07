@@ -18,6 +18,8 @@ import (
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	ivcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 	registrationmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
+	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/invitationcode"
+	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	"github.com/dtm-labs/dtmcli/dtmimp"
@@ -52,7 +54,9 @@ func (h *signupHandler) withCreateInvitationCode(dispose *dtmcli.SagaDispose) {
 		inspiremwsvcname.ServiceDomain,
 		"inspire.middleware.invitation.invitationcode.v1.Middleware/CreateInvitationCode",
 		"inspire.middleware.invitation.invitationcode.v1.Middleware/DeleteInvitationCode",
-		req,
+		&ivcodemwpb.CreateInvitationCodeRequest{
+			Info: req,
+		},
 	)
 }
 
@@ -70,7 +74,9 @@ func (h *signupHandler) withCreateUser(dispose *dtmcli.SagaDispose) {
 		appusersvcname.ServiceDomain,
 		"appuser.middleware.user.v1.Middleware/CreateUser",
 		"appuser.middleware.user.v1.Middleware/DeleteUser",
-		req,
+		&usermwpb.CreateUserRequest{
+			Info: req,
+		},
 	)
 }
 
@@ -89,7 +95,9 @@ func (h *signupHandler) withCreateRegistrationInvitation(dispose *dtmcli.SagaDis
 		inspiremwsvcname.ServiceDomain,
 		"inspire.middleware.invitation.registration.v1.Middleware/CreateRegistration",
 		"inspire.middleware.invitation.registration.v1.Middleware/DeleteRegistration",
-		req,
+		&registrationmwpb.CreateRegistrationRequest{
+			Info: req,
+		},
 	)
 }
 
