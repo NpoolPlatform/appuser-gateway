@@ -19,7 +19,7 @@ require (
 	github.com/NpoolPlatform/appuser-manager v0.0.0-20230407034742-442a05724f07
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230407040653-302e52b15dfc
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230406095906-83a0750e1787
-	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230407062038-252ffb6453eb
+	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230407083601-cf332b200bf0
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687
