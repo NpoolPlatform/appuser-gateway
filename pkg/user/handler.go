@@ -25,6 +25,7 @@ type Handler struct {
 	PubsubTimeout    time.Duration
 	EmailAddress     *string
 	PhoneNO          *string
+	UserID           string
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
