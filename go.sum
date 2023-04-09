@@ -69,6 +69,7 @@ github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb/go.mod
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/NpoolPlatform/message v0.0.0-20230404063815-6af2720474d3 h1:+hIVryc/rUeYgNFGwGR2taHAOcN+plcQzlEa0uJmXxk=
 github.com/NpoolPlatform/message v0.0.0-20230404063815-6af2720474d3/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
 =======
@@ -83,6 +84,10 @@ github.com/NpoolPlatform/message v0.0.0-20230406035553-1c0dabd2e07b/go.mod h1:si
 github.com/NpoolPlatform/message v0.0.0-20230407030149-3bc54926f671 h1:PgWPgCtcZouXBnbz+mT122vEiIwZt/pNbvB1mtkTxTI=
 github.com/NpoolPlatform/message v0.0.0-20230407030149-3bc54926f671/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
 >>>>>>> Use dtm
+=======
+github.com/NpoolPlatform/message v0.0.0-20230409050115-adf7fbc96dda h1:pAmiS/ivU9FsJsB+hcO5+O/GWU3oqC7A8Hs2AMr7rHM=
+github.com/NpoolPlatform/message v0.0.0-20230409050115-adf7fbc96dda/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
+>>>>>>> Send reward event after signup
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687 h1:EYQPrDW4UESGuEP49IV+Xwft4JUC16gb1DZQnH9YFu0=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687/go.mod h1:leYq+Scn4WZ72AQtq4bZKlmeMsxTXUpTgWOPZK7Eb34=
 github.com/NpoolPlatform/review-middleware v0.0.0-20230105072527-025b5576faf7 h1:I/a1RYA73gGktyHZH+1s571qQ+4+lIzJuZVFgYpJuIM=
