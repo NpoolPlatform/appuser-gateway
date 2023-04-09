@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230406075556-1bc2c60ab5f1
-	github.com/NpoolPlatform/message v0.0.0-20230407030149-3bc54926f671
+	github.com/NpoolPlatform/message v0.0.0-20230409050115-adf7fbc96dda
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3

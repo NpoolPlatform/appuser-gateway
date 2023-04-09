@@ -18,13 +18,15 @@ import (
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	ivcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 	registrationmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
+	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/invitationcode"
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	"github.com/dtm-labs/dtmcli/dtmimp"
 
-	_ "github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
@@ -137,6 +139,49 @@ func (h *signupHandler) checkUser(ctx context.Context) error {
 	return nil
 }
 
+func (h *signupHandler) rewardSignup() {
+	var err error
+	var publisher *pubsub.Publisher
+
+	defer func() {
+		if err != nil {
+			logger.Sugar().Errorw(
+				"rewardSignup",
+				"AppID", h.AppID,
+				"UserID", h.UserID,
+				"Account", h.Account,
+				"AccountType", h.AccountType,
+				"Error", err,
+			)
+		}
+	}()
+
+	publisher, err = pubsub.NewPublisher()
+	if err != nil {
+		return
+	}
+	defer publisher.Close()
+
+	req := &eventmwpb.RewardEventRequest{
+		AppID:       h.AppID,
+		UserID:      h.UserID,
+		EventType:   basetypes.UsedFor_Signup,
+		Consecutive: 1,
+	}
+	err = publisher.Update(
+		basetypes.MsgID_RewardEventReq.String(),
+		nil,
+		nil,
+		nil,
+		req,
+	)
+	if err != nil {
+		return
+	}
+
+	err = publisher.Publish()
+}
+
 /// Signup
 ///  1 Create invitation code according to application configuration
 ///  2 Create user
@@ -178,7 +223,7 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 		return nil, err
 	}
 
-	/// TODO: if newbie has coupon, send event to allocate coupon, and we don't care about allocate result
+	signupHandler.rewardSignup()
 
 	return h.GetUser(ctx)
 }
