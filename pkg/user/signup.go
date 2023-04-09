@@ -182,10 +182,11 @@ func (h *signupHandler) rewardSignup() {
 	err = publisher.Publish()
 }
 
-/// Signup
-///  1 Create invitation code according to application configuration
-///  2 Create user
-///  3 Create registration invitation
+// Signup
+//  1 Create invitation code according to application configuration
+//  2 Create user
+//  3 Create registration invitation
+//  4 Reward user's signup event and affiliate signup event
 func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 	signupHandler := &signupHandler{
 		Handler: h,
