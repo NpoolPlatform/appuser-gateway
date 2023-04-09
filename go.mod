@@ -3,7 +3,7 @@ module github.com/NpoolPlatform/appuser-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20230406075556-1bc2c60ab5f1
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20230409120551-6a1ca546da8a
 	github.com/NpoolPlatform/message v0.0.0-20230409095550-1cfc63ca0712
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
