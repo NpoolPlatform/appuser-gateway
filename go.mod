@@ -3,33 +3,30 @@ module github.com/NpoolPlatform/appuser-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20230409120551-6a1ca546da8a
-	github.com/NpoolPlatform/message v0.0.0-20230409095550-1cfc63ca0712
-	github.com/go-resty/resty/v2 v2.7.0
-	github.com/google/uuid v1.3.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
-	github.com/stretchr/testify v1.8.1
-	github.com/urfave/cli/v2 v2.16.3
-	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
-	google.golang.org/grpc v1.54.0
-	google.golang.org/protobuf v1.28.1
-)
-
-require (
 	github.com/NpoolPlatform/appuser-manager v0.0.0-20230407034742-442a05724f07
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230407040653-302e52b15dfc
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230406095906-83a0750e1787
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230409115901-056113b36f7f
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20230410062939-6eac58f55a79
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
+	github.com/NpoolPlatform/message v0.0.0-20230409095550-1cfc63ca0712
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687
 	github.com/NpoolPlatform/review-middleware v0.0.0-20230105072527-025b5576faf7
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230221094357-40a170d76e2b
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dtm-labs/dtmcli v1.15.0
 	github.com/go-redis/redis/v8 v8.11.4
+	github.com/go-resty/resty/v2 v2.7.0
+	github.com/google/uuid v1.3.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
+	github.com/stretchr/testify v1.8.1
+	github.com/urfave/cli/v2 v2.16.3
 	go.opentelemetry.io/otel v1.10.0
 	go.opentelemetry.io/otel/trace v1.10.0
+	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
+	google.golang.org/grpc v1.54.0
+	google.golang.org/protobuf v1.28.1
 )
 
 require (

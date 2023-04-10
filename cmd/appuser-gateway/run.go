@@ -46,7 +46,7 @@ func run(ctx context.Context) error {
 	return nil
 }
 
-func watch(ctx context.Context) error {
+func watch(ctx context.Context, cancel context.CancelFunc) error {
 	return nil
 }
 
