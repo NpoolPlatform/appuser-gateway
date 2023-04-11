@@ -102,7 +102,7 @@ func (h *Handler) GetUser(ctx context.Context) (*usermwpb.User, error) {
 
 	code, _ := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemgrpb.Conds{
 		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
-		UserID: &commonpb.StringVal{Op: cruder.IN, Value: h.UserID},
+		UserID: &commonpb.StringVal{Op: cruder.EQ, Value: h.UserID},
 	})
 
 	if code != nil {
