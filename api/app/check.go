@@ -4,7 +4,7 @@ import (
 	"context"
 
 	appuserapp "github.com/NpoolPlatform/appuser-manager/pkg/client/app"
-	"github.com/NpoolPlatform/appuser-middleware/api/v1/app"
+	"github.com/NpoolPlatform/appuser-middleware/api/app"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	"github.com/NpoolPlatform/message/npool"
