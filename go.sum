@@ -48,10 +48,10 @@ github.com/BurntSushi/toml v1.2.0 h1:Rt8g24XnyGTyglgET/PRUNlrUeu9F5L+7FilkXfZgs0
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DATA-DOG/go-sqlmock v1.5.0 h1:Shsta01QNfFxHCfpW6YH2STWB0MudeXXEWMr20OEh60=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
-github.com/NpoolPlatform/appuser-manager v0.0.0-20230409073854-15075e999555 h1:orgaQx8ZKdgyw/7vvCuEckmnARbwHwCHoE20XGwblz4=
-github.com/NpoolPlatform/appuser-manager v0.0.0-20230409073854-15075e999555/go.mod h1:pb+Z16qkDllVNRoA9kxO2jcF/r5mLW8JLX5YKXr3JdI=
-github.com/NpoolPlatform/appuser-middleware v0.0.0-20230411100707-c98298c42471 h1:YLPnDI2WVOly9ZKnKhiBqDyxWKntcm8Uw9iReXoQg6c=
-github.com/NpoolPlatform/appuser-middleware v0.0.0-20230411100707-c98298c42471/go.mod h1:TbWSTQR3NbOtN4/zdk/rQAXjWRc3P7pnljZ23waQS/I=
+github.com/NpoolPlatform/appuser-manager v0.0.0-20230412110739-6f9b3813c822 h1:zvRLIwihmBy94by7oBsVKuk2JzZ9H8r0v0GeSimEqMw=
+github.com/NpoolPlatform/appuser-manager v0.0.0-20230412110739-6f9b3813c822/go.mod h1:jWi4x37bekzPq0Cb2wXecfwi1A2xx1Jqc3rWZ8OQy1U=
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20230412115429-b5b48cdbde2a h1:1oM+ccj0yifeCi8OwklVKU4QJHda0imkfYMW4mpVFm8=
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20230412115429-b5b48cdbde2a/go.mod h1:Zi0rCBGA5ceja5uaQDqJyYCQlPj+mnLZRE8coxywsN8=
 github.com/NpoolPlatform/basal-middleware v0.0.0-20230406095906-83a0750e1787 h1:T9oAiOBqOgnGGqkKK2HQZz7Mi4+Ksb/6KogO+GcSxtc=
 github.com/NpoolPlatform/basal-middleware v0.0.0-20230406095906-83a0750e1787/go.mod h1:SHHNVulb3rMCPiay3PqcWKc6gFCBNAl7EvoIty5cEzw=
 github.com/NpoolPlatform/dtm-cluster v0.0.0-20230410125903-927c52f1a3d8 h1:qSoNmoAOCz96ABmhJnCmIAMIH4zIA6UuxI3FmdbpiHo=
@@ -61,10 +61,11 @@ github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884 h1:H
 github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884/go.mod h1:QYy5SMZaXgEzhTqjCMQnoHSKfD66Dj/19emGCBkJbk8=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20230412082654-0f8f9e7ae58d h1:LIzncKCI9pOcFubxViWu3tJoJNa79zGzGaZu88+ZdKU=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20230412082654-0f8f9e7ae58d/go.mod h1:Kh7DMkWnYOMHxEKq7QfJqbxm1HaUPkhTNN74lfHQxyE=
-github.com/NpoolPlatform/inspire-middleware v0.0.0-20230411101026-3d73c51b1d62 h1:2WJ391DBdXlyJJaZ4SYxfGmJoqZQB18qnMdNtoi1Cb0=
-github.com/NpoolPlatform/inspire-middleware v0.0.0-20230411101026-3d73c51b1d62/go.mod h1:xDR+eo2JcRqIq091t96w2ZkRlQjZiritRYMT324n8n0=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20230412115440-b52771cfc9e9 h1:Ia5/3tm3mwuVw4WNdxk3XpJRGoSVT1cS1e/28RTKLOU=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20230412115440-b52771cfc9e9/go.mod h1:ck3IXB5N5dAHa7IiJZvUA+o896y2LK9MVVDqGgXRPus=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb h1:IAQOJ0xQWdJS1BnimNdM6GZMLgTL/FnIa8C8K4xffUA=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb/go.mod h1:zvvqlRwbOdTUauPQ9dFDhDuxa91ILV0CQfVdPBZj+eA=
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -97,6 +98,10 @@ github.com/NpoolPlatform/message v0.0.0-20230409095550-1cfc63ca0712/go.mod h1:si
 github.com/NpoolPlatform/message v0.0.0-20230411080744-55b7e7a4dbcf h1:XbNusncjEDIj1ZnDGWPYjSNot6OZ9ik2ab2CQVZhUWU=
 github.com/NpoolPlatform/message v0.0.0-20230411080744-55b7e7a4dbcf/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
 >>>>>>> Update commit
+=======
+github.com/NpoolPlatform/message v0.0.0-20230412110246-1fd6805a4681 h1:m5TYql+mx7drB5MOAWkGLfNFVJtDFY+sfMe9BDWL8HQ=
+github.com/NpoolPlatform/message v0.0.0-20230412110246-1fd6805a4681/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
+>>>>>>> Support signup code recover
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687 h1:EYQPrDW4UESGuEP49IV+Xwft4JUC16gb1DZQnH9YFu0=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687/go.mod h1:leYq+Scn4WZ72AQtq4bZKlmeMsxTXUpTgWOPZK7Eb34=
 github.com/NpoolPlatform/review-middleware v0.0.0-20230105072527-025b5576faf7 h1:I/a1RYA73gGktyHZH+1s571qQ+4+lIzJuZVFgYpJuIM=
