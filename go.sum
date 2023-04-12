@@ -65,43 +65,8 @@ github.com/NpoolPlatform/inspire-middleware v0.0.0-20230412115440-b52771cfc9e9 h
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20230412115440-b52771cfc9e9/go.mod h1:ck3IXB5N5dAHa7IiJZvUA+o896y2LK9MVVDqGgXRPus=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb h1:IAQOJ0xQWdJS1BnimNdM6GZMLgTL/FnIa8C8K4xffUA=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb/go.mod h1:zvvqlRwbOdTUauPQ9dFDhDuxa91ILV0CQfVdPBZj+eA=
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-github.com/NpoolPlatform/message v0.0.0-20230404063815-6af2720474d3 h1:+hIVryc/rUeYgNFGwGR2taHAOcN+plcQzlEa0uJmXxk=
-github.com/NpoolPlatform/message v0.0.0-20230404063815-6af2720474d3/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
-=======
-github.com/NpoolPlatform/message v0.0.0-20230403042056-495a6237455f h1:6u8LtVJIM9pivhTW0ft+kSK/dGiwSWt4/o803DUKpvg=
-github.com/NpoolPlatform/message v0.0.0-20230403042056-495a6237455f/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
->>>>>>> add pubsub.Publish
-=======
-github.com/NpoolPlatform/message v0.0.0-20230406035553-1c0dabd2e07b h1:fb8Vkk2eD6VN1GJ8W3vDZqlGvVVkS/DMtf864pnzs0M=
-github.com/NpoolPlatform/message v0.0.0-20230406035553-1c0dabd2e07b/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
->>>>>>> Add pubsub timeout
-=======
-github.com/NpoolPlatform/message v0.0.0-20230407030149-3bc54926f671 h1:PgWPgCtcZouXBnbz+mT122vEiIwZt/pNbvB1mtkTxTI=
-github.com/NpoolPlatform/message v0.0.0-20230407030149-3bc54926f671/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
->>>>>>> Use dtm
-=======
-github.com/NpoolPlatform/message v0.0.0-20230409050115-adf7fbc96dda h1:pAmiS/ivU9FsJsB+hcO5+O/GWU3oqC7A8Hs2AMr7rHM=
-github.com/NpoolPlatform/message v0.0.0-20230409050115-adf7fbc96dda/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
->>>>>>> Send reward event after signup
-=======
-github.com/NpoolPlatform/message v0.0.0-20230409095550-1cfc63ca0712 h1:NmK7osPaKZ7v/z8IGhekk1uRk8MBHuhgkq9N6VboiDg=
-github.com/NpoolPlatform/message v0.0.0-20230409095550-1cfc63ca0712/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
->>>>>>> Disable concurrent in saga
-=======
-github.com/NpoolPlatform/message v0.0.0-20230411080744-55b7e7a4dbcf h1:XbNusncjEDIj1ZnDGWPYjSNot6OZ9ik2ab2CQVZhUWU=
-github.com/NpoolPlatform/message v0.0.0-20230411080744-55b7e7a4dbcf/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
->>>>>>> Update commit
-=======
 github.com/NpoolPlatform/message v0.0.0-20230412110246-1fd6805a4681 h1:m5TYql+mx7drB5MOAWkGLfNFVJtDFY+sfMe9BDWL8HQ=
 github.com/NpoolPlatform/message v0.0.0-20230412110246-1fd6805a4681/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
->>>>>>> Support signup code recover
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687 h1:EYQPrDW4UESGuEP49IV+Xwft4JUC16gb1DZQnH9YFu0=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687/go.mod h1:leYq+Scn4WZ72AQtq4bZKlmeMsxTXUpTgWOPZK7Eb34=
 github.com/NpoolPlatform/review-middleware v0.0.0-20230105072527-025b5576faf7 h1:I/a1RYA73gGktyHZH+1s571qQ+4+lIzJuZVFgYpJuIM=
