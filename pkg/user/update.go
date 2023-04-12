@@ -9,7 +9,7 @@ import (
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 
 	appusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
@@ -48,7 +48,7 @@ import (
 func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.User, error) { //nolint
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateUser")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "UpdateUser")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -196,7 +196,7 @@ func ResetUser(ctx context.Context, in *npool.ResetUserRequest) error {
 func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermwpb.User, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateUserKol")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "UpdateUserKol")
 	defer span.End()
 	defer func() {
 		if err != nil {

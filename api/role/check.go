@@ -3,7 +3,7 @@ package role
 import (
 	"context"
 
-	apiapproleuser "github.com/NpoolPlatform/appuser-manager/api/v2/approleuser"
+	apiapproleuser "github.com/NpoolPlatform/appuser-manager/api/approleuser"
 	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
 	approleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"

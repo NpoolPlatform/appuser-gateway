@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/kyc"
 
@@ -22,7 +22,7 @@ import (
 )
 
 func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc, err error) {
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateKyc")
+	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "UpdateKyc")
 	defer span.End()
 	defer func() {
 		if err != nil {
@@ -43,7 +43,7 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 	reviewInfo, err := reviewmwcli.GetObjectReview(
 		ctx,
 		kycInfo.AppID,
-		constant.ServiceName,
+		servicename.ServiceDomain,
 		kycInfo.ID,
 		reviewpb.ReviewObjectType_ObjectKyc,
 	)
@@ -94,7 +94,7 @@ func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc,
 	if newReview {
 		span = commontracer.TraceInvoker(span, "kyc", "manager", "CreateReview")
 
-		serviceName := constant.ServiceName
+		serviceName := servicename.ServiceDomain
 		objectType := reviewpb.ReviewObjectType_ObjectKyc
 
 		_, err = reviewmwcli.CreateReview(ctx, &reviewpb.ReviewReq{
