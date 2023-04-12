@@ -3,14 +3,14 @@ module github.com/NpoolPlatform/appuser-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20230409073854-15075e999555
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230411100707-c98298c42471
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20230412110739-6f9b3813c822
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230412115429-b5b48cdbde2a
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230406095906-83a0750e1787
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230410125903-927c52f1a3d8
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230412082654-0f8f9e7ae58d
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230411080744-55b7e7a4dbcf
+	github.com/NpoolPlatform/message v0.0.0-20230412110246-1fd6805a4681
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687
 	github.com/NpoolPlatform/review-middleware v0.0.0-20230105072527-025b5576faf7
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230221094357-40a170d76e2b
@@ -79,7 +79,7 @@ require (
 require (
 	ariga.io/atlas v0.7.2-0.20220927111110-867ee0cca56a // indirect
 	entgo.io/ent v0.11.3 // indirect
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230411101026-3d73c51b1d62
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230412115440-b52771cfc9e9
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
