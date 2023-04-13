@@ -132,20 +132,6 @@ func (h *signupHandler) checkUser(ctx context.Context) error {
 		conds.PhoneNO = &commonpb.StringVal{Op: cruder.EQ, Value: *h.PhoneNO}
 	}
 
-	key := fmt.Sprintf(
-		"%v:%v:%v:%v",
-		basetypes.Prefix_PrefixUserAccount,
-		h.AppID,
-		basetypes.UsedFor_Signup,
-		h.Account,
-	)
-	if err := redis2.TryLock(key, 0); err != nil {
-		return err
-	}
-	defer func() {
-		_ = redis2.Unlock(key)
-	}()
-
 	exist, err := usermgrcli.ExistAppUserConds(ctx, conds)
 	if err != nil {
 		return err
@@ -208,6 +194,20 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 	signupHandler := &signupHandler{
 		Handler: h,
 	}
+
+	key := fmt.Sprintf(
+		"%v:%v:%v:%v",
+		basetypes.Prefix_PrefixUserAccount,
+		h.AppID,
+		basetypes.UsedFor_Signup,
+		h.Account,
+	)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
 
 	if err := signupHandler.checkUser(ctx); err != nil {
 		return nil, err
