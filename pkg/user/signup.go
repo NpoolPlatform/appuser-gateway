@@ -27,6 +27,7 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
+	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
@@ -130,6 +131,20 @@ func (h *signupHandler) checkUser(ctx context.Context) error {
 	if h.PhoneNO != nil {
 		conds.PhoneNO = &commonpb.StringVal{Op: cruder.EQ, Value: *h.PhoneNO}
 	}
+
+	key := fmt.Sprintf(
+		"%v:%v:%v:%v",
+		basetypes.Prefix_PrefixUserAccount,
+		h.AccountType,
+		basetypes.UsedFor_Signup,
+		h.Account,
+	)
+	if err := redis2.TryLock(key, 0); err != nil {
+		return err
+	}
+	defer func() {
+		_ = redis2.Unlock(key)
+	}()
 
 	exist, err := usermgrcli.ExistAppUserConds(ctx, conds)
 	if err != nil {
