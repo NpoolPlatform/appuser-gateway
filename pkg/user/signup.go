@@ -135,7 +135,7 @@ func (h *signupHandler) checkUser(ctx context.Context) error {
 	key := fmt.Sprintf(
 		"%v:%v:%v:%v",
 		basetypes.Prefix_PrefixUserAccount,
-		h.AccountType,
+		h.AppID,
 		basetypes.UsedFor_Signup,
 		h.Account,
 	)
