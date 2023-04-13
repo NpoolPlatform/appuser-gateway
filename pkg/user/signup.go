@@ -203,7 +203,7 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 		h.Account,
 	)
 	if err := redis2.TryLock(key, 0); err != nil {
-		return err
+		return nil, err
 	}
 	defer func() {
 		_ = redis2.Unlock(key)
