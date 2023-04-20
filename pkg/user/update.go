@@ -334,6 +334,7 @@ func (h *updateHandler) tryCreateInvitationCode(ctx context.Context) error {
 	return nil
 }
 
+// TODO: move this to pubsub message
 func (h *updateHandler) sendKolNotification(ctx context.Context) {
 	if !*h.Kol {
 		return
