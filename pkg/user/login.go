@@ -37,7 +37,7 @@ func (h *loginHandler) notifyLogin(loginType basetypes.LoginType) {
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
 		req := &loginhispb.HistoryReq{
 			AppID:     &h.AppID,
-			UserID:    &h.UserID,
+			UserID:    h.UserID,
 			ClientIP:  &clientIP,
 			UserAgent: &h.Metadata.UserAgent,
 			LoginType: &loginType,
@@ -93,7 +93,7 @@ func (h *loginHandler) verifyAccount(ctx context.Context) error {
 	if _, err = uuid.Parse(info.ID); err != nil {
 		return err
 	}
-	h.UserID = info.ID
+	h.UserID = &info.ID
 	h.User = info
 	return nil
 }
@@ -106,7 +106,7 @@ func (h *loginHandler) prepareMetadata(ctx context.Context) error {
 	meta.AppID = uuid.MustParse(h.AppID)
 	meta.Account = *h.Account
 	meta.AccountType = h.AccountType.String()
-	meta.UserID = uuid.MustParse(h.UserID)
+	meta.UserID = uuid.MustParse(*h.UserID)
 	h.Metadata = meta
 	return nil
 }
@@ -135,7 +135,7 @@ func (h *loginHandler) getInvitationCode(ctx context.Context) error {
 		ctx,
 		&ivcodemwpb.Conds{
 			AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
-			UserID: &commonpb.StringVal{Op: cruder.EQ, Value: h.UserID},
+			UserID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.UserID},
 		},
 	)
 	if err != nil {
@@ -196,6 +196,9 @@ func (h *loginHandler) verifyUserCode(ctx context.Context) error {
 	if h.AccountType == nil {
 		return fmt.Errorf("invalid account type")
 	}
+	if h.VerificationCode == nil {
+		return fmt.Errorf("invalid verification code")
+	}
 
 	switch *h.AccountType {
 	case basetypes.SignMethod_Email:
@@ -230,7 +233,7 @@ func (h *loginHandler) verifyUserCode(ctx context.Context) error {
 			Account:     *h.Account,
 			AccountType: *h.AccountType,
 			UsedFor:     basetypes.UsedFor_Signin,
-			Code:        h.VerificationCode,
+			Code:        *h.VerificationCode,
 		},
 	); err != nil {
 		return err

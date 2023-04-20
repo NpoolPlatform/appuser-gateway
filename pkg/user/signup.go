@@ -47,7 +47,7 @@ func (h *signupHandler) withCreateInvitationCode(dispose *dtmcli.SagaDispose) {
 	req := &ivcodemgrpb.InvitationCodeReq{
 		ID:     &id,
 		AppID:  &h.AppID,
-		UserID: &h.UserID,
+		UserID: h.UserID,
 	}
 
 	dispose.Add(
@@ -62,7 +62,7 @@ func (h *signupHandler) withCreateInvitationCode(dispose *dtmcli.SagaDispose) {
 
 func (h *signupHandler) withCreateUser(dispose *dtmcli.SagaDispose) {
 	req := &usermwpb.UserReq{
-		ID:           &h.UserID,
+		ID:           h.UserID,
 		AppID:        &h.AppID,
 		EmailAddress: h.EmailAddress,
 		PhoneNO:      h.PhoneNO,
@@ -90,7 +90,7 @@ func (h *signupHandler) withCreateRegistrationInvitation(dispose *dtmcli.SagaDis
 		ID:        &id,
 		AppID:     &h.AppID,
 		InviterID: h.inviterID,
-		InviteeID: &h.UserID,
+		InviteeID: h.UserID,
 	}
 
 	dispose.Add(
@@ -143,7 +143,7 @@ func (h *signupHandler) rewardSignup() {
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
 		req := &eventmwpb.RewardEventRequest{
 			AppID:       h.AppID,
-			UserID:      h.UserID,
+			UserID:      *h.UserID,
 			EventType:   basetypes.UsedFor_Signup,
 			Consecutive: 1,
 		}
@@ -200,7 +200,8 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 	}
 
 	signupHandler.inviterID = inviterID
-	signupHandler.UserID = uuid.NewString()
+	id := uuid.NewString()
+	signupHandler.UserID = &id
 
 	if err := h.VerifyUserCode(ctx, basetypes.UsedFor_Signup); err != nil {
 		return nil, err

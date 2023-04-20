@@ -75,16 +75,19 @@ func (h *Handler) GetUsers(ctx context.Context) ([]*usermwpb.User, uint32, error
 }
 
 func (h *Handler) GetUser(ctx context.Context) (*usermwpb.User, error) {
-	info, err := usermwcli.GetUser(ctx, h.AppID, h.UserID)
+	if h.UserID == nil {
+		return nil, fmt.Errorf("invalid userid")
+	}
+	info, err := usermwcli.GetUser(ctx, h.AppID, *h.UserID)
 	if err != nil {
 		return nil, err
 	}
 	if info == nil {
-		return nil, fmt.Errorf("invalid user %v:%v", h.AppID, h.UserID)
+		return nil, fmt.Errorf("invalid user %v:%v", h.AppID, *h.UserID)
 	}
 	code, _ := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemgrpb.Conds{
 		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
-		UserID: &commonpb.StringVal{Op: cruder.EQ, Value: h.UserID},
+		UserID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.UserID},
 	})
 	if code != nil {
 		info.InvitationCode = &code.InvitationCode

@@ -81,6 +81,10 @@ func (h *Handler) CreateCache(ctx context.Context) error {
 }
 
 func (h *Handler) QueryCache(ctx context.Context) (*Metadata, error) {
+	if h.UserID == nil {
+		return nil, fmt.Errorf("invalid userid")
+	}
+
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return nil, err
@@ -93,7 +97,7 @@ func (h *Handler) QueryCache(ctx context.Context) (*Metadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	userID, err := uuid.Parse(h.UserID)
+	userID, err := uuid.Parse(*h.UserID)
 	if err != nil {
 		return nil, err
 	}

@@ -14,6 +14,9 @@ func (h *Handler) VerifyUserCode(ctx context.Context, usedFor basetypes.UsedFor)
 	if h.Account == nil || h.AccountType == nil {
 		return fmt.Errorf("invalid account type")
 	}
+	if h.VerificationCode == nil {
+		return fmt.Errorf("invalid verification code")
+	}
 	return usercodemwcli.VerifyUserCode(
 		ctx,
 		&usercodemwpb.VerifyUserCodeRequest{
@@ -22,7 +25,7 @@ func (h *Handler) VerifyUserCode(ctx context.Context, usedFor basetypes.UsedFor)
 			Account:     *h.Account,
 			AccountType: *h.AccountType,
 			UsedFor:     usedFor,
-			Code:        h.VerificationCode,
+			Code:        *h.VerificationCode,
 		},
 	)
 }

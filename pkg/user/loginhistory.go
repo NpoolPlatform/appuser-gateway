@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	hismwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user/login/history"
 	hismwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user/login/history"
@@ -11,11 +12,14 @@ import (
 )
 
 func (h *Handler) GetLoginHistories(ctx context.Context) ([]*hismwpb.History, uint32, error) {
+	if h.UserID == nil {
+		return nil, 0, fmt.Errorf("invalid userid")
+	}
 	return hismwcli.GetHistories(
 		ctx,
 		&hismwpb.Conds{
 			AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-			UserID: &basetypes.StringVal{Op: cruder.EQ, Value: h.UserID},
+			UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
 		},
 		h.Offset,
 		h.Limit,

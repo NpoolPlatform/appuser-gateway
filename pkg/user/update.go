@@ -46,7 +46,7 @@ func (h *updateHandler) verifyOldPasswordHash(ctx context.Context) error {
 	if _, err := usermwcli.VerifyUser(
 		ctx,
 		h.AppID,
-		h.UserID,
+		*h.UserID,
 		*h.OldPasswordHash,
 	); err != nil {
 		return err
@@ -56,7 +56,7 @@ func (h *updateHandler) verifyOldPasswordHash(ctx context.Context) error {
 }
 
 func (h *updateHandler) getUser(ctx context.Context) error {
-	info, err := usermwcli.GetUser(ctx, h.AppID, h.UserID)
+	info, err := usermwcli.GetUser(ctx, h.AppID, *h.UserID)
 	if err != nil {
 		return err
 	}
@@ -92,6 +92,9 @@ func (h *updateHandler) verifyOldAccountCode(ctx context.Context) error {
 	if !h.shouldVerifyOldCode(ctx) {
 		return nil
 	}
+	if h.VerificationCode == nil {
+		return fmt.Errorf("invalid verification code")
+	}
 	if h.AccountType == nil {
 		return fmt.Errorf("invalid account type")
 	}
@@ -109,7 +112,7 @@ func (h *updateHandler) verifyOldAccountCode(ctx context.Context) error {
 			Account:     account,
 			AccountType: *h.AccountType,
 			UsedFor:     basetypes.UsedFor_Update,
-			Code:        h.VerificationCode,
+			Code:        *h.VerificationCode,
 		},
 	)
 }
@@ -120,6 +123,9 @@ func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
 	}
 	if h.NewAccountType == nil {
 		return fmt.Errorf("invalid account type")
+	}
+	if h.NewVerificationCode == nil {
+		return fmt.Errorf("invalid new verification code")
 	}
 	account := ""
 	if *h.NewAccountType == basetypes.SignMethod_Google {
@@ -135,14 +141,14 @@ func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
 			Account:     account,
 			AccountType: *h.NewAccountType,
 			UsedFor:     basetypes.UsedFor_Update,
-			Code:        h.NewVerificationCode,
+			Code:        *h.NewVerificationCode,
 		},
 	)
 }
 
 func (h *updateHandler) updateUser(ctx context.Context) error {
 	req := &usermwpb.UserReq{
-		ID:               &h.UserID,
+		ID:               h.UserID,
 		AppID:            &h.AppID,
 		Username:         h.Username,
 		AddressFields:    h.AddressFields,
@@ -186,6 +192,10 @@ func (h *updateHandler) updateUser(ctx context.Context) error {
 func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	handler := &updateHandler{
 		Handler: h,
+	}
+
+	if h.UserID == nil {
+		return nil, fmt.Errorf("invalid userid")
 	}
 
 	if err := handler.verifyOldPasswordHash(ctx); err != nil {
@@ -241,8 +251,8 @@ func (h *updateHandler) getAccountUser(ctx context.Context) error {
 		return fmt.Errorf("invalid user")
 	}
 
+	h.UserID = &info.ID
 	h.User = info
-	h.UserID = info.ID
 
 	return nil
 }
@@ -250,6 +260,9 @@ func (h *updateHandler) getAccountUser(ctx context.Context) error {
 func (h *updateHandler) verifyAccountCode(ctx context.Context) error {
 	if h.Account == nil || h.AccountType == nil {
 		return fmt.Errorf("invalid account")
+	}
+	if h.VerificationCode == nil {
+		return fmt.Errorf("invalid verification code")
 	}
 	return usercodemwcli.VerifyUserCode(
 		ctx,
@@ -259,7 +272,7 @@ func (h *updateHandler) verifyAccountCode(ctx context.Context) error {
 			Account:     *h.Account,
 			AccountType: *h.AccountType,
 			UsedFor:     basetypes.UsedFor_Update,
-			Code:        h.VerificationCode,
+			Code:        *h.VerificationCode,
 		})
 }
 
@@ -277,7 +290,7 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	if _, err := usermwcli.UpdateUser(
 		ctx,
 		&usermwpb.UserReq{
-			ID:           &h.UserID,
+			ID:           h.UserID,
 			AppID:        &h.AppID,
 			PasswordHash: h.PasswordHash,
 		},
@@ -294,7 +307,7 @@ func (h *updateHandler) verifyRegistrationInvitation(ctx context.Context) error 
 
 	reg, err := regmwcli.GetRegistrationOnly(ctx, &regmgrpb.Conds{
 		AppID:     &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
-		InviterID: &commonpb.StringVal{Op: cruder.EQ, Value: h.UserID},
+		InviterID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.UserID},
 		InviteeID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
 	})
 	if err != nil {
@@ -385,6 +398,9 @@ func (h *updateHandler) sendKolNotification(ctx context.Context) {
 func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 	if h.Kol == nil {
 		return nil, fmt.Errorf("invalid kol")
+	}
+	if h.UserID == nil {
+		return nil, fmt.Errorf("invalid userid")
 	}
 
 	handler := &updateHandler{

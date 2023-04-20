@@ -32,6 +32,11 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 
 	info, err := handler.Signup(ctx)
 	if err != nil {
+		logger.Sugar().Errorw(
+			"Signup",
+			"In", in,
+			"Error", err,
+		)
 		return &user.SignupResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
