@@ -62,9 +62,12 @@ func (h *loginHandler) notifyLogin(loginType basetypes.LoginType) {
 }
 
 func (h *loginHandler) verifyRecaptcha(ctx context.Context) error {
+	if h.ManMachineSpec == nil {
+		return fmt.Errorf("invalid manmachinespec")
+	}
 	switch h.App.RecaptchaMethod {
 	case basetypes.RecaptchaMethod_GoogleRecaptchaV3:
-		return thirdmwcli.VerifyGoogleRecaptchaV3(ctx, h.ManMachineSpec)
+		return thirdmwcli.VerifyGoogleRecaptchaV3(ctx, *h.ManMachineSpec)
 	default:
 	}
 	return nil
@@ -275,11 +278,9 @@ func (h *Handler) Logined(ctx context.Context) (*usermwpb.User, error) {
 	if !h.Metadata.User.LoginVerified {
 		return nil, nil
 	}
-
 	if err := verifyToken(h.Metadata, *h.Token); err != nil {
 		return nil, err
 	}
-
 	if err := h.CreateCache(ctx); err != nil {
 		return nil, err
 	}

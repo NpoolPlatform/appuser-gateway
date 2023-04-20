@@ -6,6 +6,7 @@ import (
 	"net/mail"
 	"regexp"
 
+	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
@@ -33,7 +34,8 @@ type Handler struct {
 	EmailAddress          *string
 	PhoneNO               *string
 	RequestTimeoutSeconds int64
-	ManMachineSpec        string
+	ManMachineSpec        *string
+	EnvironmentSpec       *string
 	Metadata              *Metadata
 	Token                 *string
 	Username              *string
@@ -78,6 +80,16 @@ func WithAppID(id string) func(context.Context, *Handler) error {
 		}
 		h.AppID = id
 		h.App = app
+		return nil
+	}
+}
+
+func WithUserID(id string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if _, err := uuid.Parse(id); err != nil {
+			return err
+		}
+		h.UserID = id
 		return nil
 	}
 }
@@ -174,7 +186,38 @@ func WithRequestTimeoutSeconds(seconds int64) func(context.Context, *Handler) er
 
 func WithManMachineSpec(manMachineSpec string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.ManMachineSpec = manMachineSpec
+		h.ManMachineSpec = &manMachineSpec
+		return nil
+	}
+}
+
+func WithEnvironmentSpec(envSpec string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.EnvironmentSpec = &envSpec
+		return nil
+	}
+}
+
+func WithToken(token string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.Token = &token
+		return nil
+	}
+}
+
+func WithOffset(offset int32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.Offset = offset
+		return nil
+	}
+}
+
+func WithLimit(limit int32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if limit <= 0 {
+			limit = constant.DefaultRowLimit
+		}
+		h.Limit = limit
 		return nil
 	}
 }
