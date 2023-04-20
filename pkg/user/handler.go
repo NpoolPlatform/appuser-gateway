@@ -19,6 +19,8 @@ type Handler struct {
 	App                   *appmwpb.App
 	UserID                string
 	User                  *usermwpb.User
+	TargetUserID          *string
+	TargetUser            *usermwpb.User
 	Account               *string
 	NewAccount            *string
 	PasswordHash          *string
@@ -47,6 +49,7 @@ type Handler struct {
 	IDNumber              *string
 	SigninVerifyType      *basetypes.SignMethod
 	KolConfirmed          *bool
+	Kol                   *bool
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
