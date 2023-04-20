@@ -54,8 +54,8 @@ func MetadataFromContext(ctx context.Context) (*Metadata, error) {
 func (meta *Metadata) ToJWTClaims() jwt.MapClaims {
 	claims := jwt.MapClaims{}
 
-	claims["app_id"] = meta.AppID
-	claims["user_id"] = meta.UserID
+	claims["app_id"] = meta.AppID.String()
+	claims["user_id"] = meta.UserID.String()
 	claims["account"] = meta.Account
 	claims["account_type"] = meta.AccountType
 	claims["client_ip"] = meta.ClientIP

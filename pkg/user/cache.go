@@ -7,8 +7,6 @@ import (
 	"time"
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
-	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/go-redis/redis/v8"
@@ -41,7 +39,11 @@ type valAppUser struct {
 	AccountType string
 }
 
-func createCache(ctx context.Context, meta *Metadata) error {
+func (h *Handler) CreateCache(ctx context.Context) error {
+	if h.Metadata == nil {
+		return fmt.Errorf("invalid metadata")
+	}
+
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return err
@@ -49,6 +51,8 @@ func createCache(ctx context.Context, meta *Metadata) error {
 
 	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
 	defer cancel()
+
+	meta := h.Metadata
 
 	body, err := json.Marshal(meta)
 	if err != nil {
@@ -76,7 +80,7 @@ func createCache(ctx context.Context, meta *Metadata) error {
 	return nil
 }
 
-func QueryAppAccount(ctx context.Context, appID uuid.UUID, account string, accountType basetypes.SignMethod) (*Metadata, error) {
+func (h *Handler) QueryCache(ctx context.Context) (*Metadata, error) {
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return nil, err
@@ -85,38 +89,14 @@ func QueryAppAccount(ctx context.Context, appID uuid.UUID, account string, accou
 	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
 	defer cancel()
 
-	val, err := cli.Get(ctx, appAccountKey(appID, account, accountType)).Result()
-	if err == redis.Nil {
-		return nil, nil
-	} else if err != nil {
-		return nil, err
-	}
-
-	meta := Metadata{}
-	err = json.Unmarshal([]byte(val), &meta)
+	appID, err := uuid.Parse(h.AppID)
 	if err != nil {
 		return nil, err
 	}
-
-	return &meta, nil
-}
-
-func QueryAppUser(ctx context.Context, appID, userID uuid.UUID) (*usermwpb.User, error) {
-	meta, err := queryAppUser(ctx, appID, userID)
+	userID, err := uuid.Parse(h.UserID)
 	if err != nil {
 		return nil, err
 	}
-	return meta.User, nil
-}
-
-func queryAppUser(ctx context.Context, appID, userID uuid.UUID) (*Metadata, error) {
-	cli, err := redis2.GetClient()
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
-	defer cancel()
 
 	val, err := cli.Get(ctx, appUserKey(appID, userID)).Result()
 	if err == redis.Nil {
@@ -152,7 +132,7 @@ func queryAppUser(ctx context.Context, appID, userID uuid.UUID) (*Metadata, erro
 	return &meta, nil
 }
 
-func deleteCache(ctx context.Context, meta *Metadata) error {
+func (h *Handler) DeleteCache(ctx context.Context) error {
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return err
@@ -161,15 +141,47 @@ func deleteCache(ctx context.Context, meta *Metadata) error {
 	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
 	defer cancel()
 
-	err = cli.Del(ctx, metaToUserKey(meta)).Err()
+	err = cli.Del(ctx, metaToUserKey(h.Metadata)).Err()
 	if err != nil {
 		return err
 	}
 
-	err = cli.Del(ctx, metaToAccountKey(meta)).Err()
+	err = cli.Del(ctx, metaToAccountKey(h.Metadata)).Err()
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (h *Handler) UpdateCache(ctx context.Context) error {
+	if h.User == nil {
+		return fmt.Errorf("invalid user")
+	}
+
+	meta, err := h.QueryCache(ctx)
+	if err != nil {
+		return err
+	}
+	if meta == nil || meta.User == nil {
+		return fmt.Errorf("invalid user")
+	}
+
+	h.User.InvitationCode = meta.User.InvitationCode
+	h.User.Logined = meta.User.Logined
+	h.User.LoginAccount = meta.User.LoginAccount
+	h.User.LoginAccountType = meta.User.LoginAccountType
+	h.User.LoginToken = meta.User.LoginToken
+	h.User.LoginClientIP = meta.User.LoginClientIP
+	h.User.LoginClientUserAgent = meta.User.LoginClientUserAgent
+	h.User.LoginVerified = meta.User.LoginVerified
+
+	if h.User.GoogleOTPAuth == "" {
+		h.User.GoogleOTPAuth = meta.User.GoogleOTPAuth
+	}
+
+	meta.User = h.User
+	h.Metadata = meta
+
+	return h.CreateCache(ctx)
 }

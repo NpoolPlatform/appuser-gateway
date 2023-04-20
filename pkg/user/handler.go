@@ -8,6 +8,7 @@ import (
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
+	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/google/uuid"
@@ -16,6 +17,8 @@ import (
 type Handler struct {
 	AppID                 string
 	App                   *appmwpb.App
+	UserID                string
+	User                  *usermwpb.User
 	Account               string
 	PasswordHash          string
 	AccountType           basetypes.SignMethod
@@ -23,8 +26,10 @@ type Handler struct {
 	InvitationCode        *string
 	EmailAddress          *string
 	PhoneNO               *string
-	UserID                string
 	RequestTimeoutSeconds int64
+	ManMachineSpec        string
+	Metadata              *Metadata
+	Token                 *string
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -37,19 +42,19 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithAppID(appID string) func(context.Context, *Handler) error {
+func WithAppID(id string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if _, err := uuid.Parse(appID); err != nil {
-			return err
-		}
-		app, err := appmwcli.GetApp(ctx, appID)
+		app, err := appmwcli.GetApp(ctx, id)
 		if err != nil {
 			return err
 		}
 		if app == nil {
 			return fmt.Errorf("invalid app")
 		}
-		h.AppID = appID
+		if _, err := uuid.Parse(id); err != nil {
+			return err
+		}
+		h.AppID = id
 		h.App = app
 		return nil
 	}
@@ -141,6 +146,13 @@ func WithInvitationCode(code *string) func(context.Context, *Handler) error {
 func WithRequestTimeoutSeconds(seconds int64) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.RequestTimeoutSeconds = seconds
+		return nil
+	}
+}
+
+func WithManMachineSpec(manMachineSpec string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.ManMachineSpec = manMachineSpec
 		return nil
 	}
 }
