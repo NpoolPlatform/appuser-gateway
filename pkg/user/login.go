@@ -71,12 +71,15 @@ func (h *loginHandler) verifyRecaptcha(ctx context.Context) error {
 }
 
 func (h *loginHandler) verifyAccount(ctx context.Context) error {
+	if h.Account == nil || h.AccountType == nil || h.PasswordHash == nil {
+		return fmt.Errorf("invalid account or password")
+	}
 	info, err := usermwcli.VerifyAccount(
 		ctx,
 		h.AppID,
-		h.Account,
-		h.AccountType,
-		h.PasswordHash,
+		*h.Account,
+		*h.AccountType,
+		*h.PasswordHash,
 	)
 	if err != nil {
 		return err
@@ -84,14 +87,11 @@ func (h *loginHandler) verifyAccount(ctx context.Context) error {
 	if info == nil {
 		return fmt.Errorf("invalid user")
 	}
-
 	if _, err = uuid.Parse(info.ID); err != nil {
 		return err
 	}
-
 	h.UserID = info.ID
 	h.User = info
-
 	return nil
 }
 
@@ -100,21 +100,18 @@ func (h *loginHandler) prepareMetadata(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
 	meta.AppID = uuid.MustParse(h.AppID)
-	meta.Account = h.Account
+	meta.Account = *h.Account
 	meta.AccountType = h.AccountType.String()
 	meta.UserID = uuid.MustParse(h.UserID)
-
 	h.Metadata = meta
-
 	return nil
 }
 
 func (h *loginHandler) formalizeUser(ctx context.Context) {
 	h.User.Logined = true
-	h.User.LoginAccount = h.Account
-	h.User.LoginAccountType = h.AccountType
+	h.User.LoginAccount = *h.Account
+	h.User.LoginAccountType = *h.AccountType
 	h.User.LoginToken = *h.Token
 	h.User.LoginClientIP = h.Metadata.ClientIP.String()
 	h.User.LoginClientUserAgent = h.Metadata.UserAgent
@@ -153,37 +150,28 @@ func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 	handler := &loginHandler{
 		Handler: h,
 	}
-
 	if err := handler.verifyRecaptcha(ctx); err != nil {
 		return nil, err
 	}
-
 	if err := handler.verifyAccount(ctx); err != nil {
 		return nil, err
 	}
-
 	if err := handler.prepareMetadata(ctx); err != nil {
 		return nil, err
 	}
-
 	token, err := createToken(h.Metadata)
 	if err != nil {
 		return nil, err
 	}
-
 	h.Token = &token
 	handler.formalizeUser(ctx)
-
 	if err := handler.getInvitationCode(ctx); err != nil {
 		return nil, err
 	}
-
 	if err := h.CreateCache(ctx); err != nil {
 		return nil, err
 	}
-
 	handler.notifyLogin(basetypes.LoginType_FreshLogin)
-
 	return h.User, nil
 }
 
@@ -202,19 +190,33 @@ func (h *loginHandler) mustQueryMetadata(ctx context.Context) (err error) {
 }
 
 func (h *loginHandler) verifyUserCode(ctx context.Context) error {
-	switch h.AccountType {
+	if h.AccountType == nil {
+		return fmt.Errorf("invalid account type")
+	}
+
+	switch *h.AccountType {
 	case basetypes.SignMethod_Email:
-		if h.Account != h.Metadata.User.EmailAddress {
-			return fmt.Errorf("invalid account")
-		}
+		fallthrough //nolint
 	case basetypes.SignMethod_Mobile:
-		if h.Account != h.Metadata.User.PhoneNO {
+		if h.Account == nil {
 			return fmt.Errorf("invalid account")
 		}
 	case basetypes.SignMethod_Google:
-		h.Account = h.Metadata.User.GoogleSecret
 	default:
 		return fmt.Errorf("not supported")
+	}
+
+	switch *h.AccountType {
+	case basetypes.SignMethod_Email:
+		if *h.Account != h.Metadata.User.EmailAddress {
+			return fmt.Errorf("invalid account")
+		}
+	case basetypes.SignMethod_Mobile:
+		if *h.Account != h.Metadata.User.PhoneNO {
+			return fmt.Errorf("invalid account")
+		}
+	case basetypes.SignMethod_Google:
+		h.Account = &h.Metadata.User.GoogleSecret
 	}
 
 	if err := usercodemwcli.VerifyUserCode(
@@ -222,8 +224,8 @@ func (h *loginHandler) verifyUserCode(ctx context.Context) error {
 		&usercodemwpb.VerifyUserCodeRequest{
 			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
 			AppID:       h.AppID,
-			Account:     h.Account,
-			AccountType: h.AccountType,
+			Account:     *h.Account,
+			AccountType: *h.AccountType,
 			UsedFor:     basetypes.UsedFor_Signin,
 			Code:        h.VerificationCode,
 		},
@@ -240,27 +242,21 @@ func (h *Handler) LoginVerify(ctx context.Context) (*usermwpb.User, error) {
 	if h.Token == nil {
 		return nil, fmt.Errorf("invalid token")
 	}
-
 	handler := &loginHandler{
 		Handler: h,
 	}
-
 	if err := handler.mustQueryMetadata(ctx); err != nil {
 		return nil, err
 	}
-
 	if err := verifyToken(h.Metadata, *h.Token); err != nil {
 		return nil, err
 	}
-
 	if err := handler.verifyUserCode(ctx); err != nil {
 		return nil, err
 	}
-
 	if err := h.CreateCache(ctx); err != nil {
 		return nil, err
 	}
-
 	return h.User, nil
 }
 

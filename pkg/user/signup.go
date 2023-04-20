@@ -66,7 +66,7 @@ func (h *signupHandler) withCreateUser(dispose *dtmcli.SagaDispose) {
 		AppID:        &h.AppID,
 		EmailAddress: h.EmailAddress,
 		PhoneNO:      h.PhoneNO,
-		PasswordHash: &h.PasswordHash,
+		PasswordHash: h.PasswordHash,
 		RoleIDs:      []string{h.defaultRole.ID},
 	}
 
