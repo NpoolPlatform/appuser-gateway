@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	mgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
-
 	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 
@@ -18,6 +16,7 @@ import (
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -41,11 +40,8 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*usermw
 
 	span = commontracer.TraceInvoker(span, "role", "middleware", "CreateUser")
 
-	infos, total, err := usermwcli.GetUsers(ctx, &mgrpb.Conds{
-		AppID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: appID,
-		},
+	infos, total, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: appID},
 	}, offset, limit)
 	if err != nil {
 		logger.Sugar().Errorw("GetUsers", "err", err)
@@ -61,14 +57,8 @@ func GetUsers(ctx context.Context, appID string, offset, limit int32) ([]*usermw
 	}
 
 	codes, _, err := ivcodemwcli.GetInvitationCodes(ctx, &ivcodemgrpb.Conds{
-		AppID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: appID,
-		},
-		UserIDs: &commonpb.StringSliceVal{
-			Op:    cruder.IN,
-			Value: userIDs,
-		},
+		AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: appID},
+		UserIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: userIDs},
 	}, int32(0), int32(len(userIDs)))
 	if err != nil {
 		logger.Sugar().Errorw("GetUsers", "err", err)

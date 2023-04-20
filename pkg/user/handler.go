@@ -19,10 +19,14 @@ type Handler struct {
 	App                   *appmwpb.App
 	UserID                string
 	User                  *usermwpb.User
-	Account               string
-	PasswordHash          string
-	AccountType           basetypes.SignMethod
+	Account               *string
+	NewAccount            *string
+	PasswordHash          *string
+	OldPasswordHash       *string
+	AccountType           *basetypes.SignMethod
+	NewAccountType        *basetypes.SignMethod
 	VerificationCode      string
+	NewVerificationCode   string
 	InvitationCode        *string
 	EmailAddress          *string
 	PhoneNO               *string
@@ -30,6 +34,19 @@ type Handler struct {
 	ManMachineSpec        string
 	Metadata              *Metadata
 	Token                 *string
+	Username              *string
+	AddressFields         []string
+	Gender                *string
+	PostalCode            *string
+	Age                   *uint32
+	Birthday              *uint32
+	Avatar                *string
+	Organization          *string
+	FirstName             *string
+	LastName              *string
+	IDNumber              *string
+	SigninVerifyType      *basetypes.SignMethod
+	KolConfirmed          *bool
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -65,7 +82,7 @@ func WithPasswordHash(pwdHash string) func(context.Context, *Handler) error {
 		if pwdHash == "" {
 			return fmt.Errorf("invalid password")
 		}
-		h.PasswordHash = pwdHash
+		h.PasswordHash = &pwdHash
 		return nil
 	}
 }
@@ -114,8 +131,8 @@ func WithAccount(account string, accountType basetypes.SignMethod) func(context.
 			return err
 		}
 
-		h.AccountType = accountType
-		h.Account = account
+		h.AccountType = &accountType
+		h.Account = &account
 		return nil
 	}
 }
