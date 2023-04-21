@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/google/uuid"
@@ -11,6 +12,7 @@ import (
 
 type Handler struct {
 	ID                       *string
+	IDs                      []string
 	CreatedBy                *string
 	Name                     *string
 	Logo                     *string
@@ -25,6 +27,8 @@ type Handler struct {
 	MaxTypedCouponsPerOrder  *uint32
 	Maintaining              *bool
 	CommitButtonTargets      []string
+	Offset                   int32
+	Limit                    int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -200,6 +204,30 @@ func WithMaintaining(maintaining *bool) func(context.Context, *Handler) error {
 func WithCommitButtonTargets(targets []string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.CommitButtonTargets = targets
+		return nil
+	}
+}
+
+func WithOffset(offset int32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.Offset = offset
+		return nil
+	}
+}
+
+func WithLimit(limit int32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if limit <= 0 {
+			limit = constant.DefaultRowLimit
+		}
+		h.Limit = limit
+		return nil
+	}
+}
+
+func WithIDs(ids []string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.IDs = ids
 		return nil
 	}
 }
