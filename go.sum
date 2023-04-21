@@ -65,6 +65,10 @@ github.com/NpoolPlatform/appuser-middleware v0.0.0-20230421031044-8c0257ad17b2 h
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20230421031044-8c0257ad17b2/go.mod h1:DdjT6oLmaf7BTaVqJcm/WjN0KjbWYkMSIK3IIewQp/0=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20230421063423-fdfd2a336205 h1:rmQioZtRhQlAbOiQmhNA11qD7WxI95i0apKg5zTKvI8=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20230421063423-fdfd2a336205/go.mod h1:oDmsV71z6n52m+g+8+wXec+oB1RS2equx+yunRXAOQ8=
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20230421071012-a1885aa1f55c h1:sBAdx9i5YPrmBo4ASIBeIYbp1zsfw4tzoLDCobVtIdk=
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20230421071012-a1885aa1f55c/go.mod h1:lRDG3Qd2pRiikHumRgxS069G2jtPo8z91YyVubIR98M=
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20230421073159-8afc75af59af h1:Reru64VnHg7uvqSBjLqPKaQE06daHHSAzHCRINVsLX0=
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20230421073159-8afc75af59af/go.mod h1:WIsvEJVfkUMT4zMeWKJgYgGuk+bfzSKNIIEeYbNq+cI=
 github.com/NpoolPlatform/basal-middleware v0.0.0-20230406095906-83a0750e1787 h1:T9oAiOBqOgnGGqkKK2HQZz7Mi4+Ksb/6KogO+GcSxtc=
 github.com/NpoolPlatform/basal-middleware v0.0.0-20230406095906-83a0750e1787/go.mod h1:SHHNVulb3rMCPiay3PqcWKc6gFCBNAl7EvoIty5cEzw=
 github.com/NpoolPlatform/dtm-cluster v0.0.0-20230410125903-927c52f1a3d8 h1:qSoNmoAOCz96ABmhJnCmIAMIH4zIA6UuxI3FmdbpiHo=
@@ -90,6 +94,10 @@ github.com/NpoolPlatform/message v0.0.0-20230421030315-279a265ba682 h1:RUOz1/3XB
 github.com/NpoolPlatform/message v0.0.0-20230421030315-279a265ba682/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
 github.com/NpoolPlatform/message v0.0.0-20230421061555-eb6d975dd106 h1:HB55LYDjVlF2Hvi4PaOmoXIayKu+QOVgc30dR/7yO40=
 github.com/NpoolPlatform/message v0.0.0-20230421061555-eb6d975dd106/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
+github.com/NpoolPlatform/message v0.0.0-20230421070320-5d008d339f57 h1:D+K988mAcBfpAh0Kum9KQpJpr1vg9NKAKPvpyijXhSA=
+github.com/NpoolPlatform/message v0.0.0-20230421070320-5d008d339f57/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
+github.com/NpoolPlatform/message v0.0.0-20230421072711-827f88631784 h1:2yjfa+5b3x+K8gl4kq+OjU5kCHZiet52Mj2iHjlGj7Y=
+github.com/NpoolPlatform/message v0.0.0-20230421072711-827f88631784/go.mod h1:siMqIrLuxDkKaqlPyeNSXCfvGsiEwmDBoEqgXMXFyjc=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687 h1:EYQPrDW4UESGuEP49IV+Xwft4JUC16gb1DZQnH9YFu0=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687/go.mod h1:leYq+Scn4WZ72AQtq4bZKlmeMsxTXUpTgWOPZK7Eb34=
 github.com/NpoolPlatform/review-middleware v0.0.0-20230105072527-025b5576faf7 h1:I/a1RYA73gGktyHZH+1s571qQ+4+lIzJuZVFgYpJuIM=

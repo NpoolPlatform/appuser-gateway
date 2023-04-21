@@ -15,12 +15,12 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 )
 
-type genesisAppHandler struct {
+type createGenesisAppHandler struct {
 	*Handler
 	apps []*appmwpb.App
 }
 
-func (h *genesisAppHandler) getGenesisAppConfig() error {
+func (h *createGenesisAppHandler) getGenesisAppConfig() error {
 	str := config.GetStringValueWithNameSpace(
 		servicename.ServiceDomain,
 		constant.KeyGenesisApp,
@@ -34,7 +34,7 @@ func (h *genesisAppHandler) getGenesisAppConfig() error {
 	return nil
 }
 
-func (h *genesisAppHandler) getGenesisApps(ctx context.Context) (bool, error) {
+func (h *createGenesisAppHandler) getGenesisApps(ctx context.Context) (bool, error) {
 	ids := []string{}
 	for _, _app := range h.apps {
 		ids = append(ids, _app.ID)
@@ -52,7 +52,7 @@ func (h *genesisAppHandler) getGenesisApps(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (h *genesisAppHandler) createGenesisApps(ctx context.Context) error {
+func (h *createGenesisAppHandler) createGenesisApps(ctx context.Context) error {
 	createdBy := uuid1.InvalidUUIDStr
 	logo := "NOT SET"
 	reqs := []*appmwpb.AppReq{}
@@ -77,7 +77,7 @@ func (h *genesisAppHandler) createGenesisApps(ctx context.Context) error {
 }
 
 func (h *Handler) CreateAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
-	handler := &genesisAppHandler{
+	handler := &createGenesisAppHandler{
 		Handler: h,
 	}
 	if err := handler.getGenesisAppConfig(); err != nil {
