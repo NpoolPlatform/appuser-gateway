@@ -2,79 +2,97 @@ package kyc
 
 import (
 	"context"
+	"fmt"
 
 	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
-	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-
-	kycmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/kyc"
-	kycmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/kyc"
-	mwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
-	reviewpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
-	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
-
-	"go.opentelemetry.io/otel"
-	scodes "go.opentelemetry.io/otel/codes"
+	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
+	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
 
 	"github.com/google/uuid"
 )
 
-func CreateKyc(
-	ctx context.Context,
-	appID, userID, frontImg, selfieImg string,
-	idNumber, backImg *string,
-	documentType kycmgrpb.KycDocumentType,
-	entityType kycmgrpb.KycEntityType,
-) (
-	info *mwpb.Kyc, err error,
-) {
-	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "CreateKyc")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
+type createHandler struct {
+	*Handler
+	info *npool.Kyc
+}
 
+func (h *createHandler) createKyc(ctx context.Context) error {
 	reviewID := uuid.NewString()
+	if h.ReviewID == nil {
+		h.ReviewID = &reviewID
+	}
+	id := uuid.NewString()
+	if h.ID == nil {
+		h.ID = &id
+	}
+	state := basetypes.KycState_Reviewing
 
-	span = commontracer.TraceInvoker(span, "kyc", "middleware", "CreateKyc")
+	if h.FrontImg == nil || h.SelfieImg == nil {
+		return fmt.Errorf("invalid image")
+	}
 
-	state := kycmgrpb.KycState_Reviewing
-	kycInfo, err := kycmgrcli.CreateKyc(ctx, &kycmgrpb.KycReq{
-		AppID:        &appID,
-		UserID:       &userID,
-		DocumentType: &documentType,
-		IDNumber:     idNumber,
-		FrontImg:     &frontImg,
-		BackImg:      backImg,
-		SelfieImg:    &selfieImg,
-		EntityType:   &entityType,
-		ReviewID:     &reviewID,
+	info, err := kycmwcli.CreateKyc(ctx, &npool.KycReq{
+		ID:           h.ID,
+		AppID:        &h.AppID,
+		UserID:       &h.UserID,
+		DocumentType: h.DocumentType,
+		IDNumber:     h.IDNumber,
+		FrontImg:     h.FrontImg,
+		BackImg:      h.BackImg,
+		SelfieImg:    h.SelfieImg,
+		EntityType:   h.EntityType,
+		ReviewID:     h.ReviewID,
 		State:        &state,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	// TODO: distributed transaction
 
-	span = commontracer.TraceInvoker(span, "kyc", "middleware", "CreateReview")
+	h.info = info
+	return nil
+}
 
+func (h *createHandler) createReview(ctx context.Context) {
 	serviceName := servicename.ServiceDomain
-	objectType := reviewpb.ReviewObjectType_ObjectKyc
+	objectType := reviewmgrpb.ReviewObjectType_ObjectKyc
 
-	_, err = reviewmwcli.CreateReview(ctx, &reviewpb.ReviewReq{
-		ID:         &reviewID,
-		AppID:      &appID,
-		ObjectID:   &kycInfo.ID,
-		Domain:     &serviceName,
-		ObjectType: &objectType,
-	})
-	if err != nil {
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		req := &reviewmgrpb.ReviewReq{
+			ID:         h.ReviewID,
+			AppID:      &h.AppID,
+			ObjectID:   h.ID,
+			Domain:     &serviceName,
+			ObjectType: &objectType,
+		}
+		return publisher.Update(
+			basetypes.MsgID_CreateReviewReq.String(),
+			nil,
+			nil,
+			nil,
+			req,
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"createReview",
+			"AppID", h.AppID,
+			"UserID", h.UserID,
+			"ObjectID", *h.ID,
+			"Error", err,
+		)
+	}
+}
+
+func (h *Handler) CreateKyc(ctx context.Context) (*npool.Kyc, error) {
+	handler := &createHandler{
+		Handler: h,
+	}
+	if err := handler.createKyc(ctx); err != nil {
 		return nil, err
 	}
-
-	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKyc")
-
-	return GetKyc(ctx, kycInfo.ID)
+	handler.createReview(ctx)
+	return handler.info, nil
 }
