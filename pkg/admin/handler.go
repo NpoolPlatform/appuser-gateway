@@ -8,6 +8,7 @@ import (
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
 	rolemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role"
+	roleusermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role/user"
 
 	"github.com/google/uuid"
 )
@@ -20,6 +21,7 @@ type Handler struct {
 	Limit        int32
 	GenesisApps  []*appmwpb.App
 	GenesisRoles []*rolemwpb.Role
+	GenesisUsers []*roleusermwpb.User
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
