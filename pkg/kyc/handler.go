@@ -14,7 +14,7 @@ import (
 type Handler struct {
 	ID           *string
 	AppID        string
-	UserID       string
+	UserID       *string
 	DocumentType *basetypes.KycDocumentType
 	IDNumber     *string
 	FrontImg     *string
@@ -23,6 +23,7 @@ type Handler struct {
 	EntityType   *basetypes.KycEntityType
 	ReviewID     *string
 	State        *basetypes.KycState
+	ImageType    *basetypes.KycImageType
 	Offset       int32
 	Limit        int32
 }
@@ -73,7 +74,7 @@ func WithUserID(id string) func(context.Context, *Handler) error {
 			return err
 		}
 		// Here shoud check app/user exist at low level
-		h.UserID = id
+		h.UserID = &id
 		return nil
 	}
 }
@@ -172,6 +173,23 @@ func WithState(state *basetypes.KycState) func(context.Context, *Handler) error 
 			return fmt.Errorf("invalid state")
 		}
 		h.State = state
+		return nil
+	}
+}
+
+func WithImageType(imgType *basetypes.KycImageType) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if imgType == nil {
+			return nil
+		}
+		switch *imgType {
+		case basetypes.KycImageType_FrontImg:
+		case basetypes.KycImageType_BackImg:
+		case basetypes.KycImageType_SelfieImg:
+		default:
+			return fmt.Errorf("invalid image type")
+		}
+		h.ImageType = imgType
 		return nil
 	}
 }
