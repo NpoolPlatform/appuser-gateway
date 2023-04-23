@@ -5,75 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/config"
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-
-	tracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/admin"
-	appmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/app"
-	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	appmrgpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/app"
-	rolemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role"
-
-	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/admin"
-	"github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-
-	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
-	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
-	servicename2 "github.com/NpoolPlatform/appuser-manager/pkg/servicename"
-
-	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
-	roleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
-	authmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/authing/auth"
-	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
-	authmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/authing"
-	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
-	roleusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approleuser"
-
-	approlepb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
-	authmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/authing/auth"
-	appmw "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
-	authmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/authing/auth"
-
+	authmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/authing/auth"
+	roleusermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role/user"
+	servicename "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
+	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	"github.com/NpoolPlatform/message/npool"
-
-	"github.com/google/uuid"
-	"go.opentelemetry.io/otel"
-	scodes "go.opentelemetry.io/otel/codes"
+	authmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/authing/auth"
+	roleusermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role/user"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 )
-
-func createGenesisAuths(ctx context.Context, appID string) (infos []*authmwpb.Auth, total uint32, err error) {
-	roleUsers, _, err := roleusermgrcli.GetAppRoleUsers(ctx, &roleusermgrpb.Conds{
-		AppID: &npool.StringVal{
-			Op:    cruder.EQ,
-			Value: appID,
-		},
-	}, 0, 0)
-
-	auths := []*authmgrpb.AuthReq{}
-
-	for _, val := range roleUsers {
-		for _, _api := range apis {
-			api := _api
-			auths = append(auths, &authmgrpb.AuthReq{
-				AppID:    &val.AppID,
-				Resource: &api.Path,
-				Method:   &api.Method,
-				UserID:   &val.UserID,
-				RoleID:   &val.RoleID,
-			})
-		}
-	}
-
-	_, err = authmgrcli.CreateAuths(ctx, auths)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return authmwcli.GetAuths(ctx, appID, 0, 0)
-}
 
 type genesisURL struct {
 	Path   string
@@ -82,16 +23,17 @@ type genesisURL struct {
 
 type createGenesisAuthHandler struct {
 	*Handler
-	auths []*authmwpb.Auth
-	urls  []*genesisURL
+	auths     []*authmwpb.Auth
+	urls      []*genesisURL
+	roleusers []*roleusermwpb.User
 }
 
 func (h *createGenesisAuthHandler) getGenesisUrls() error {
 	str := config.GetStringValueWithNameSpace(
-		servicename2.ServiceDomain,
+		servicename.ServiceDomain,
 		constant.KeyGenesisAuthingAPIs,
 	)
-	if err := json.Unmarshal([]byte(apisJSON), &h.urls); err != nil {
+	if err := json.Unmarshal([]byte(str), &h.urls); err != nil {
 		return err
 	}
 	if len(h.urls) == 0 {
@@ -101,13 +43,47 @@ func (h *createGenesisAuthHandler) getGenesisUrls() error {
 }
 
 func (h *createGenesisAuthHandler) createGenesisAuths(ctx context.Context) error {
-	for _, _app := range h.GenesisApps {
-		authInfos, _, err := createGenesisAuths(ctx, val.GetID())
-		if err != nil {
-			return err
+	reqs := []*authmwpb.AuthReq{}
+	for _, _user := range h.roleusers {
+		for _, _url := range h.urls {
+			reqs = append(reqs, &authmwpb.AuthReq{
+				AppID:    &_user.AppID,
+				Resource: &_url.Path,
+				Method:   &_url.Method,
+				UserID:   &_user.UserID,
+				RoleID:   &_user.RoleID,
+			})
 		}
-		infos = append(infos, authInfos...)
 	}
+	auths, err := authmwcli.CreateAuths(ctx, reqs)
+	if err != nil {
+		return err
+	}
+
+	h.auths = auths
+
+	return nil
+}
+
+func (h *createGenesisAuthHandler) getGenesisUsers(ctx context.Context) error {
+	appIDs := []string{}
+	for _, _app := range h.GenesisApps {
+		appIDs = append(appIDs, _app.ID)
+	}
+
+	const maxGenesisUsers = int32(100)
+	infos, _, err := roleusermwcli.GetUsers(ctx, &roleusermwpb.Conds{
+		AppIDs:  &basetypes.StringSliceVal{Op: cruder.EQ, Value: appIDs},
+		Genesis: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
+	}, 0, maxGenesisUsers)
+	if err != nil {
+		return err
+	}
+	if len(infos) == 0 {
+		return fmt.Errorf("invalid genesis user")
+	}
+
+	h.roleusers = infos
 	return nil
 }
 
@@ -115,8 +91,12 @@ func (h *Handler) AuthorizeGenesis(ctx context.Context) (infos []*authmwpb.Auth,
 	if err := h.GetGenesisAppConfig(); err != nil {
 		return nil, err
 	}
-	if err := h.GetGenesisApps(ctx); err != nil {
-		return err
+	created, err := h.GetGenesisApps(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !created {
+		return nil, fmt.Errorf("genesis app not created")
 	}
 
 	handler := &createGenesisAuthHandler{
@@ -125,8 +105,11 @@ func (h *Handler) AuthorizeGenesis(ctx context.Context) (infos []*authmwpb.Auth,
 	if err := handler.getGenesisUrls(); err != nil {
 		return nil, err
 	}
+	if err := handler.getGenesisUsers(ctx); err != nil {
+		return nil, err
+	}
 	if err := handler.createGenesisAuths(ctx); err != nil {
 		return nil, err
 	}
-	return h.auths, nil
+	return handler.auths, nil
 }

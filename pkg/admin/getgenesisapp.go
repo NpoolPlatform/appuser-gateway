@@ -9,7 +9,6 @@ import (
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	servicename "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
-	uuid1 "github.com/NpoolPlatform/go-service-framework/pkg/const/uuid"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -29,7 +28,7 @@ func (h *Handler) GetGenesisAppConfig() error {
 	return nil
 }
 
-func (h *Handler) getGenesisApps(ctx context.Context) (bool, error) {
+func (h *Handler) GetGenesisApps(ctx context.Context) (bool, error) {
 	ids := []string{}
 	for _, _app := range h.GenesisApps {
 		ids = append(ids, _app.ID)
