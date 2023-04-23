@@ -38,7 +38,7 @@ func (h *createHandler) createKyc(ctx context.Context) error {
 	info, err := kycmwcli.CreateKyc(ctx, &npool.KycReq{
 		ID:           h.ID,
 		AppID:        &h.AppID,
-		UserID:       &h.UserID,
+		UserID:       h.UserID,
 		DocumentType: h.DocumentType,
 		IDNumber:     h.IDNumber,
 		FrontImg:     h.FrontImg,

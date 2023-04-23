@@ -19,7 +19,7 @@ func (h *Handler) UploadKycImage(ctx context.Context) (string, error) {
 	var image *string
 	switch *h.ImageType {
 	case basetypes.KycImageType_FrontImg:
-		iamge = h.FrontImg
+		image = h.FrontImg
 	case basetypes.KycImageType_BackImg:
 		image = h.BackImg
 	case basetypes.KycImageType_SelfieImg:
