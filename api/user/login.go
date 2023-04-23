@@ -16,7 +16,7 @@ func (s *Server) Login(ctx context.Context, in *npool.LoginRequest) (*npool.Logi
 		ctx,
 		user1.WithAppID(in.GetAppID()),
 		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
-		user1.WithPasswordHash(in.GetPasswordHash()),
+		user1.WithPasswordHash(&in.PasswordHash),
 		user1.WithManMachineSpec(in.GetManMachineSpec()),
 		user1.WithEnvironmentSpec(in.GetEnvironmentSpec()),
 	)
@@ -48,9 +48,9 @@ func (s *Server) LoginVerify(ctx context.Context, in *npool.LoginVerifyRequest) 
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(in.GetUserID()),
+		user1.WithUserID(&in.UserID),
 		user1.WithToken(in.GetToken()),
-		user1.WithVerificationCode(in.GetVerificationCode()),
+		user1.WithVerificationCode(&in.VerificationCode),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -80,7 +80,7 @@ func (s *Server) Logined(ctx context.Context, in *npool.LoginedRequest) (*npool.
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(in.GetUserID()),
+		user1.WithUserID(&in.UserID),
 		user1.WithToken(in.GetToken()),
 	)
 	if err != nil {
@@ -111,7 +111,7 @@ func (s *Server) Logout(ctx context.Context, in *npool.LogoutRequest) (*npool.Lo
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(in.GetUserID()),
+		user1.WithUserID(&in.UserID),
 		user1.WithToken(in.GetToken()),
 	)
 	if err != nil {
@@ -148,7 +148,7 @@ func (s *Server) GetLoginHistories(
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(in.GetUserID()),
+		user1.WithUserID(&in.UserID),
 		user1.WithOffset(in.GetOffset()),
 		user1.WithLimit(in.GetLimit()),
 	)
