@@ -41,15 +41,12 @@ func (h *Handler) CreateGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, err
 	handler := &createGenesisRoleHandler{
 		Handler: h,
 	}
-	if err := h.GetGenesisRoleConfig(); err != nil {
-		return nil, err
-	}
-	created, err := h.GetGenesisRoles(ctx)
+	_roles, err := h.GetGenesisRoles(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if created {
-		return handler.GenesisRoles, nil
+	if len(_roles) > 0 {
+		return _roles, nil
 	}
 	if err := handler.createGenesisRoles(ctx); err != nil {
 		return nil, err

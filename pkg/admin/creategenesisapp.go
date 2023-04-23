@@ -40,19 +40,15 @@ func (h *Handler) CreateAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
 	handler := &createGenesisAppHandler{
 		Handler: h,
 	}
-	if err := handler.GetGenesisAppConfig(); err != nil {
-		return nil, err
-	}
-	created, err := h.GetGenesisApps(ctx)
+	_apps, err := h.GetGenesisApps(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if created {
-		return h.GenesisApps, nil
+	if len(_apps) > 0 {
+		return _apps, nil
 	}
 	if err := handler.createGenesisApps(ctx); err != nil {
 		return nil, err
 	}
-
 	return h.GenesisApps, nil
 }

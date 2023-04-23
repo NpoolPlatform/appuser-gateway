@@ -11,29 +11,27 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 )
 
-func (h *Handler) GetGenesisUsers(ctx context.Context) error {
+func (h *Handler) GetGenesisRoleUsers(ctx context.Context) ([]*roleusermwpb.User, error) {
 	const maxGenesisUsers = int32(20)
-
 	infos, _, err := roleusermwcli.GetUsers(ctx, &roleusermwpb.Conds{
 		Genesis: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 	}, 0, maxGenesisUsers)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	h.GenesisRoleUsers = infos
+	return infos, nil
+}
 
+func (h *Handler) GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error) {
 	ids := []string{}
-	for _, info := range infos {
+	for _, info := range h.GenesisRoleUsers {
 		ids = append(ids, info.UserID)
 	}
-
-	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
+	infos, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
 		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, 0, int32(len(ids)))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	h.GenesisUsers = users
-
-	return nil
+	return infos, nil
 }

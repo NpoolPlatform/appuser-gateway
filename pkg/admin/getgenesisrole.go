@@ -14,7 +14,11 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 )
 
-func (h *Handler) GetGenesisRoleConfig() error {
+type getGenesisRoleHandler struct {
+	*Handler
+}
+
+func (h *getGenesisRoleHandler) getGenesisRoleConfig() error {
 	str := config.GetStringValueWithNameSpace(
 		servicename.ServiceDomain,
 		constant.KeyGenesisRole,
@@ -28,7 +32,14 @@ func (h *Handler) GetGenesisRoleConfig() error {
 	return nil
 }
 
-func (h *Handler) GetGenesisRoles(ctx context.Context) (bool, error) {
+func (h *Handler) GetGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
+	handler := &getGenesisRoleHandler{
+		Handler: h,
+	}
+	if err := handler.getGenesisRoleConfig(); err != nil {
+		return nil, err
+	}
+
 	ids := []string{}
 	for _, _role := range h.GenesisRoles {
 		ids = append(ids, _role.ID)
@@ -37,11 +48,7 @@ func (h *Handler) GetGenesisRoles(ctx context.Context) (bool, error) {
 		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, 0, int32(len(ids)))
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	if len(infos) == 0 {
-		return false, nil
-	}
-	h.GenesisRoles = infos
-	return true, nil
+	return infos, nil
 }

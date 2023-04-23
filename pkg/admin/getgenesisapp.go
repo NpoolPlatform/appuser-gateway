@@ -14,7 +14,11 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 )
 
-func (h *Handler) GetGenesisAppConfig() error {
+type getGenesisAppHandler struct {
+	*Handler
+}
+
+func (h *getGenesisAppHandler) getGenesisAppConfig() error {
 	str := config.GetStringValueWithNameSpace(
 		servicename.ServiceDomain,
 		constant.KeyGenesisApp,
@@ -28,7 +32,14 @@ func (h *Handler) GetGenesisAppConfig() error {
 	return nil
 }
 
-func (h *Handler) GetGenesisApps(ctx context.Context) (bool, error) {
+func (h *Handler) GetGenesisApps(ctx context.Context) ([]*appmwpb.App, error) {
+	handler := &getGenesisAppHandler{
+		Handler: h,
+	}
+	if err := handler.getGenesisAppConfig(); err != nil {
+		return nil, err
+	}
+
 	ids := []string{}
 	for _, _app := range h.GenesisApps {
 		ids = append(ids, _app.ID)
@@ -37,11 +48,7 @@ func (h *Handler) GetGenesisApps(ctx context.Context) (bool, error) {
 		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, 0, int32(len(ids)))
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	if len(infos) == 0 {
-		return false, nil
-	}
-	h.GenesisApps = infos
-	return true, nil
+	return infos, nil
 }
