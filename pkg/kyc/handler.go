@@ -110,9 +110,25 @@ func WithIDNumber(idNumber *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithFrontImg(img *string) func(context.Context, *Handler) error {
+func WithImage(imgType *basetypes.KycImageType, img *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.FrontImg = img
+		if imgType == nil || img == nil {
+			return nil
+		}
+		if img != nil && *img == "" {
+			return fmt.Errorf("invalid image")
+		}
+		switch *imgType {
+		case basetypes.KycImageType_FrontImg:
+			h.FrontImg = img
+		case basetypes.KycImageType_BackImg:
+			h.BackImg = img
+		case basetypes.KycImageType_SelfieImg:
+			h.SelfieImg = img
+		default:
+			return fmt.Errorf("invalid image type")
+		}
+		h.ImageType = imgType
 		return nil
 	}
 }
@@ -173,23 +189,6 @@ func WithState(state *basetypes.KycState) func(context.Context, *Handler) error 
 			return fmt.Errorf("invalid state")
 		}
 		h.State = state
-		return nil
-	}
-}
-
-func WithImageType(imgType *basetypes.KycImageType) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if imgType == nil {
-			return nil
-		}
-		switch *imgType {
-		case basetypes.KycImageType_FrontImg:
-		case basetypes.KycImageType_BackImg:
-		case basetypes.KycImageType_SelfieImg:
-		default:
-			return fmt.Errorf("invalid image type")
-		}
-		h.ImageType = imgType
 		return nil
 	}
 }
