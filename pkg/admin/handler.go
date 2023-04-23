@@ -6,6 +6,8 @@ import (
 	"net/mail"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
+	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
+	rolemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role"
 
 	"github.com/google/uuid"
 )
@@ -16,6 +18,8 @@ type Handler struct {
 	PasswordHash *string
 	Offset       int32
 	Limit        int32
+	GenesisApps  []*appmwpb.App
+	GenesisRoles []*rolemwpb.Role
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {

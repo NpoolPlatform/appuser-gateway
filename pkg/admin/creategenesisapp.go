@@ -17,26 +17,11 @@ import (
 
 type createGenesisAppHandler struct {
 	*Handler
-	apps []*appmwpb.App
-}
-
-func (h *createGenesisAppHandler) getGenesisAppConfig() error {
-	str := config.GetStringValueWithNameSpace(
-		servicename.ServiceDomain,
-		constant.KeyGenesisApp,
-	)
-	if err := json.Unmarshal([]byte(str), &h.apps); err != nil {
-		return err
-	}
-	if len(h.apps) == 0 {
-		return fmt.Errorf("invalid genesis app")
-	}
-	return nil
 }
 
 func (h *createGenesisAppHandler) getGenesisApps(ctx context.Context) (bool, error) {
 	ids := []string{}
-	for _, _app := range h.apps {
+	for _, _app := range h.GenesisApps {
 		ids = append(ids, _app.ID)
 	}
 	infos, _, err := appmwcli.GetApps(ctx, &appmwpb.Conds{
@@ -48,7 +33,7 @@ func (h *createGenesisAppHandler) getGenesisApps(ctx context.Context) (bool, err
 	if len(infos) == 0 {
 		return false, nil
 	}
-	h.apps = infos
+	h.GenesisApps = infos
 	return true, nil
 }
 
@@ -57,7 +42,7 @@ func (h *createGenesisAppHandler) createGenesisApps(ctx context.Context) error {
 	logo := "NOT SET"
 	reqs := []*appmwpb.AppReq{}
 
-	for _, _app := range h.apps {
+	for _, _app := range h.GenesisApps {
 		reqs = append(reqs, &appmwpb.AppReq{
 			ID:          &_app.ID,
 			CreatedBy:   &createdBy,
@@ -72,7 +57,7 @@ func (h *createGenesisAppHandler) createGenesisApps(ctx context.Context) error {
 		return err
 	}
 
-	h.apps = infos
+	h.GenesisApps = infos
 	return nil
 }
 
@@ -80,7 +65,7 @@ func (h *Handler) CreateAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
 	handler := &createGenesisAppHandler{
 		Handler: h,
 	}
-	if err := handler.getGenesisAppConfig(); err != nil {
+	if err := handler.GetGenesisAppConfig(); err != nil {
 		return nil, err
 	}
 	created, err := handler.getGenesisApps(ctx)
@@ -88,11 +73,11 @@ func (h *Handler) CreateAdminApps(ctx context.Context) ([]*appmwpb.App, error) {
 		return nil, err
 	}
 	if created {
-		return handler.apps, nil
+		return handler.GenesisApps, nil
 	}
 	if err := handler.createGenesisApps(ctx); err != nil {
 		return nil, err
 	}
 
-	return handler.apps, nil
+	return handler.GenesisApps, nil
 }
