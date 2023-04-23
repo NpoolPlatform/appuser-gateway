@@ -93,6 +93,6 @@ func (h *Handler) CreateKyc(ctx context.Context) (*npool.Kyc, error) {
 	if err := handler.createKyc(ctx); err != nil {
 		return nil, err
 	}
-	handler.createReview(ctx)
+	h.CreateKycReview(ctx)
 	return handler.info, nil
 }

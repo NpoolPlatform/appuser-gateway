@@ -5,111 +5,98 @@ import (
 	"fmt"
 
 	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
-	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/kyc"
-
-	kycmgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/kyc"
 	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
-	kycmgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/kyc"
-	mwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
-
-	reviewpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
+	kycmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
 	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
 
 	"github.com/google/uuid"
-	"go.opentelemetry.io/otel"
-	scodes "go.opentelemetry.io/otel/codes"
 )
 
-func UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (info *mwpb.Kyc, err error) {
-	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "UpdateKyc")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
+type updateHandler struct {
+	*Handler
+	info *kycmwpb.Kyc
+}
 
-	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKyc")
-
-	kycInfo, err := kycmwcli.GetKyc(ctx, in.KycID)
-	if err != nil {
-		return nil, err
-	}
-
-	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetReview")
-
-	reviewInfo, err := reviewmwcli.GetObjectReview(
+func (h *updateHandler) checkReview(ctx context.Context) (bool, error) {
+	info, err := reviewmwcli.GetObjectReview(
 		ctx,
-		kycInfo.AppID,
+		h.info.AppID,
 		servicename.ServiceDomain,
-		kycInfo.ID,
-		reviewpb.ReviewObjectType_ObjectKyc,
+		*h.ID,
+		reviewmgrpb.ReviewObjectType_ObjectKyc,
 	)
 	if err != nil {
-		return nil, err
+		return false, err
+	}
+	if info == nil {
+		return true, nil
 	}
 
-	newReview := true
-	var reviewID *string
-
-	if reviewInfo != nil {
-		switch reviewInfo.State {
-		case reviewpb.ReviewState_Wait:
-			reviewID = &reviewInfo.ID
-			newReview = false
-		case reviewpb.ReviewState_Approved:
-			return nil, fmt.Errorf("not allowed")
-		}
+	switch info.State {
+	case reviewmgrpb.ReviewState_Wait:
+		h.ReviewID = &info.ID
+		return false, nil
+	case reviewmgrpb.ReviewState_Approved:
+		return false, fmt.Errorf("not allowed")
 	}
 
-	if newReview {
-		_reviewID := uuid.NewString()
-		reviewID = &_reviewID
-	}
+	return true, nil
+}
 
-	// TODO: distributed transaction
-	span = commontracer.TraceInvoker(span, "kyc", "manager", "UpdateKyc")
-
-	state := kycmgrpb.KycState_Reviewing
-
-	kyc, err := kycmgrcli.UpdateKyc(ctx, &kycmgrpb.KycReq{
-		ID:           &in.KycID,
-		AppID:        &in.AppID,
-		UserID:       &in.UserID,
-		IDNumber:     in.IDNumber,
-		FrontImg:     in.FrontImg,
-		BackImg:      in.BackImg,
-		SelfieImg:    in.SelfieImg,
-		DocumentType: in.DocumentType,
-		EntityType:   in.EntityType,
-		ReviewID:     reviewID,
+func (h *updateHandler) updateKyc(ctx context.Context) error {
+	state := basetypes.KycState_Reviewing
+	info, err := kycmwcli.UpdateKyc(ctx, &kycmwpb.KycReq{
+		ID:           h.ID,
+		AppID:        &h.info.AppID,
+		UserID:       &h.info.UserID,
+		IDNumber:     h.IDNumber,
+		FrontImg:     h.FrontImg,
+		BackImg:      h.BackImg,
+		SelfieImg:    h.SelfieImg,
+		DocumentType: h.DocumentType,
+		EntityType:   h.EntityType,
+		ReviewID:     h.ReviewID,
 		State:        &state,
 	})
 	if err != nil {
+		return err
+	}
+	h.info = info
+	return nil
+}
+
+func (h *Handler) UpdateKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
+	if h.ID == nil {
+		return nil, fmt.Errorf("invalid id")
+	}
+	info, err := h.GetKyc(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	if newReview {
-		span = commontracer.TraceInvoker(span, "kyc", "manager", "CreateReview")
+	h.AppID = info.AppID
 
-		serviceName := servicename.ServiceDomain
-		objectType := reviewpb.ReviewObjectType_ObjectKyc
-
-		_, err = reviewmwcli.CreateReview(ctx, &reviewpb.ReviewReq{
-			ID:         reviewID,
-			AppID:      &in.AppID,
-			ObjectID:   &kyc.ID,
-			Domain:     &serviceName,
-			ObjectType: &objectType,
-		})
-		if err != nil {
-			return nil, err
-		}
+	handler := &updateHandler{
+		Handler: h,
+		info:    info,
+	}
+	new, err := handler.checkReview(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	span = commontracer.TraceInvoker(span, "kyc", "middleware", "GetKyc")
+	if new {
+		id := uuid.NewString()
+		h.ReviewID = &id
+	}
 
-	return GetKyc(ctx, kyc.ID)
+	if err := handler.updateKyc(ctx); err != nil {
+		return nil, err
+	}
+	if new {
+		h.CreateKycReview(ctx)
+	}
+	return handler.info, nil
 }
