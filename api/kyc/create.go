@@ -15,7 +15,7 @@ func (s *Server) CreateKyc(ctx context.Context, in *npool.CreateKycRequest) (res
 	handler, err := kyc1.NewHandler(
 		ctx,
 		kyc1.WithAppID(in.GetAppID()),
-		kyc1.WithUserID(in.UserID),
+		kyc1.WithUserID(in.GetUserID()),
 		kyc1.WithDocumentType(&in.DocumentType),
 		kyc1.WithIDNumber(in.IDNumber),
 		kyc1.WithFrontImg(&in.FrontImg),
