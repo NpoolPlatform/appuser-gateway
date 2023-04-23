@@ -1,52 +1,41 @@
-package authing
+package auth
 
 import (
 	"context"
 
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
+	auth1 "github.com/NpoolPlatform/appuser-gateway/pkg/authing/auth"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/google/uuid"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	scodes "go.opentelemetry.io/otel/codes"
+	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/authing/auth"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	mgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/authing/auth"
-	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/authing"
-	mwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/authing"
 )
 
 func (s *Server) DeleteAppAuth(ctx context.Context, in *npool.DeleteAppAuthRequest) (resp *npool.DeleteAppAuthResponse, err error) {
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteAppAuth")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-	span.SetAttributes(attribute.String("ID", in.GetID()))
-
-	if _, err := uuid.Parse(in.GetID()); err != nil {
-		logger.Sugar().Errorw("DeleteAppAuth", "ID", in.GetID(), "error", err)
-		return &npool.DeleteAppAuthResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
+	handler, err := auth1.NewHandler(
+		ctx,
+		auth1.WithID(&in.ID),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"DeleteAppAuth",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.DeleteAppAuthResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	dInfo, err := mgrcli.DeleteAuth(ctx, in.GetID())
+	info, err := handler.DeleteAuth(ctx)
 	if err != nil {
-		logger.Sugar().Errorw("DeleteAppAuth", "error", err)
+		logger.Sugar().Errorw(
+			"DeleteAppAuth",
+			"In", in,
+			"Error", err,
+		)
 		return &npool.DeleteAppAuthResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &npool.DeleteAppAuthResponse{
-		Info: &mwpb.Auth{
-			AppID:     dInfo.AppID,
-			RoleID:    dInfo.RoleID,
-			UserID:    dInfo.UserID,
-			Resource:  dInfo.Resource,
-			Method:    dInfo.Method,
-			CreatedAt: dInfo.CreatedAt,
-		},
+		Info: info,
 	}, nil
 }

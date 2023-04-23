@@ -1,3 +1,4 @@
+//nolint:dupl
 package auth
 
 import (
@@ -11,35 +12,35 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateAppAuth(ctx context.Context, in *npool.CreateAppAuthRequest) (resp *npool.CreateAppAuthResponse, err error) {
+func (s *Server) Authenticate(ctx context.Context, in *npool.AuthenticateRequest) (*npool.AuthenticateResponse, error) {
 	handler, err := auth1.NewHandler(
 		ctx,
-		auth1.WithAppID(in.GetTargetAppID()),
-		auth1.WithRoleID(in.RoleID),
-		auth1.WithUserID(in.TargetUserID),
+		auth1.WithAppID(in.GetAppID()),
+		auth1.WithUserID(in.UserID),
+		auth1.WithToken(in.Token),
 		auth1.WithResource(in.GetResource()),
 		auth1.WithMethod(in.GetMethod()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateAppAuth",
+			"Authenticate",
 			"In", in,
 			"Error", err,
 		)
-		return &npool.CreateAppAuthResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.AuthenticateResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	info, err := handler.CreateAuth(ctx)
+	allowed, err := handler.Authenticate(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateAppAuth",
+			"Authenticate",
 			"In", in,
 			"Error", err,
 		)
-		return &npool.CreateAppAuthResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.AuthenticateResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.CreateAppAuthResponse{
-		Info: info,
+	return &npool.AuthenticateResponse{
+		Info: allowed,
 	}, nil
 }
