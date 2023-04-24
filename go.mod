@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/NpoolPlatform/appuser-manager v0.0.0-20230412110739-6f9b3813c822
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230423073914-ad3fbcd42ff9
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230424050801-787a8feac17c
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230406095906-83a0750e1787
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230410125903-927c52f1a3d8
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
