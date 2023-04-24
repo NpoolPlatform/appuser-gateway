@@ -55,7 +55,7 @@ func (s *Server) CreateAppRole(ctx context.Context, in *npool.CreateAppRoleReque
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateRole",
+			"CreateAppRole",
 			"In", in,
 			"Error", err,
 		)
@@ -65,7 +65,7 @@ func (s *Server) CreateAppRole(ctx context.Context, in *npool.CreateAppRoleReque
 	info, err := handler.CreateRole(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateRole",
+			"CreateAppRole",
 			"In", in,
 			"Error", err,
 		)
