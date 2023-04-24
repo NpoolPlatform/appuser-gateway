@@ -1,3 +1,4 @@
+//nolint:dupl
 package user
 
 import (
@@ -11,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) Login(ctx context.Context, in *npool.LoginRequest) (*npool.LoginResponse, error) { //nolint
+func (s *Server) Login(ctx context.Context, in *npool.LoginRequest) (*npool.LoginResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(in.GetAppID()),

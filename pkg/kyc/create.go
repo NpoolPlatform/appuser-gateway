@@ -4,13 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
 	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
 
 	"github.com/google/uuid"
 )
@@ -54,36 +50,6 @@ func (h *createHandler) createKyc(ctx context.Context) error {
 
 	h.info = info
 	return nil
-}
-
-func (h *createHandler) createReview(ctx context.Context) {
-	serviceName := servicename.ServiceDomain
-	objectType := reviewmgrpb.ReviewObjectType_ObjectKyc
-
-	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
-		req := &reviewmgrpb.ReviewReq{
-			ID:         h.ReviewID,
-			AppID:      &h.AppID,
-			ObjectID:   h.ID,
-			Domain:     &serviceName,
-			ObjectType: &objectType,
-		}
-		return publisher.Update(
-			basetypes.MsgID_CreateReviewReq.String(),
-			nil,
-			nil,
-			nil,
-			req,
-		)
-	}); err != nil {
-		logger.Sugar().Errorw(
-			"createReview",
-			"AppID", h.AppID,
-			"UserID", h.UserID,
-			"ObjectID", *h.ID,
-			"Error", err,
-		)
-	}
 }
 
 func (h *Handler) CreateKyc(ctx context.Context) (*npool.Kyc, error) {

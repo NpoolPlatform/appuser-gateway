@@ -23,12 +23,14 @@ func (h *getGenesisAppHandler) getGenesisAppConfig() error {
 		servicename.ServiceDomain,
 		constant.KeyGenesisApp,
 	)
+
 	if err := json.Unmarshal([]byte(str), &h.GenesisApps); err != nil {
 		return err
 	}
 	if len(h.GenesisApps) == 0 {
 		return fmt.Errorf("invalid genesis app")
 	}
+
 	return nil
 }
 
@@ -50,5 +52,6 @@ func (h *Handler) GetGenesisApps(ctx context.Context) ([]*appmwpb.App, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return infos, nil
 }

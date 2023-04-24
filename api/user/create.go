@@ -11,7 +11,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-//nolint:dupl
 func (s *Server) CreateUser(ctx context.Context, in *npool.CreateUserRequest) (*npool.CreateUserResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,

@@ -82,12 +82,12 @@ func (h *Handler) UpdateKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
 		Handler: h,
 		info:    info,
 	}
-	new, err := handler.checkReview(ctx)
+	newReview, err := handler.checkReview(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if new {
+	if newReview {
 		id := uuid.NewString()
 		h.ReviewID = &id
 	}
@@ -95,7 +95,7 @@ func (h *Handler) UpdateKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
 	if err := handler.updateKyc(ctx); err != nil {
 		return nil, err
 	}
-	if new {
+	if newReview {
 		h.CreateKycReview(ctx)
 	}
 	return handler.info, nil

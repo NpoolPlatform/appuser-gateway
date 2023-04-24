@@ -111,7 +111,7 @@ func (h *loginHandler) prepareMetadata(ctx context.Context) error {
 	return nil
 }
 
-func (h *loginHandler) formalizeUser(ctx context.Context) {
+func (h *loginHandler) formalizeUser() {
 	h.User.Logined = true
 	h.User.LoginAccount = *h.Account
 	h.User.LoginAccountType = *h.AccountType
@@ -125,7 +125,7 @@ func (h *loginHandler) formalizeUser(ctx context.Context) {
 
 	h.User.GoogleOTPAuth = fmt.Sprintf(
 		"otpauth://totp/%s?secret=%s",
-		h.Account,
+		*h.Account,
 		h.User.GoogleSecret,
 	)
 }
@@ -167,7 +167,7 @@ func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 		return nil, err
 	}
 	h.Token = &token
-	handler.formalizeUser(ctx)
+	handler.formalizeUser()
 	if err := handler.getInvitationCode(ctx); err != nil {
 		return nil, err
 	}

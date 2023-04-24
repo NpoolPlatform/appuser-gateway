@@ -1,3 +1,4 @@
+//nolint:dupl
 package user
 
 import (
@@ -68,7 +69,7 @@ func (h *updateHandler) getUser(ctx context.Context) error {
 	return nil
 }
 
-func (h *updateHandler) shouldVerifyNewCode(ctx context.Context) bool {
+func (h *updateHandler) shouldVerifyNewCode() bool {
 	if h.NewAccount != nil {
 		return true
 	}
@@ -78,8 +79,8 @@ func (h *updateHandler) shouldVerifyNewCode(ctx context.Context) bool {
 	return false
 }
 
-func (h *updateHandler) shouldVerifyOldCode(ctx context.Context) bool {
-	if h.shouldVerifyNewCode(ctx) {
+func (h *updateHandler) shouldVerifyOldCode() bool {
+	if h.shouldVerifyNewCode() {
 		return true
 	}
 	if h.PasswordHash != nil {
@@ -89,7 +90,7 @@ func (h *updateHandler) shouldVerifyOldCode(ctx context.Context) bool {
 }
 
 func (h *updateHandler) verifyOldAccountCode(ctx context.Context) error {
-	if !h.shouldVerifyOldCode(ctx) {
+	if !h.shouldVerifyOldCode() {
 		return nil
 	}
 	if h.VerificationCode == nil {
@@ -118,7 +119,7 @@ func (h *updateHandler) verifyOldAccountCode(ctx context.Context) error {
 }
 
 func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
-	if !h.shouldVerifyNewCode(ctx) {
+	if !h.shouldVerifyNewCode() {
 		return nil
 	}
 	if h.NewAccountType == nil {

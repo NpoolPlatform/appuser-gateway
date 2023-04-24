@@ -34,6 +34,7 @@ func (h *Handler) UploadKycImage(ctx context.Context) (string, error) {
 	return key, oss.PutObject(ctx, key, []byte(*image), true)
 }
 
+//nolint:gocyclo
 func (h *Handler) GetKycImage(ctx context.Context) (string, error) {
 	if h.UserID == nil {
 		return "", fmt.Errorf("invalid userid")
