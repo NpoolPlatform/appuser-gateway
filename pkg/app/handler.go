@@ -27,6 +27,8 @@ type Handler struct {
 	MaxTypedCouponsPerOrder  *uint32
 	Maintaining              *bool
 	CommitButtonTargets      []string
+	Banned                   *bool
+	BanMessage               *string
 	Offset                   int32
 	Limit                    int32
 }
@@ -228,6 +230,20 @@ func WithLimit(limit int32) func(context.Context, *Handler) error {
 func WithIDs(ids []string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.IDs = ids
+		return nil
+	}
+}
+
+func WithBanned(banned *bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.Banned = banned
+		return nil
+	}
+}
+
+func WithBanMessage(message *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.BanMessage = message
 		return nil
 	}
 }

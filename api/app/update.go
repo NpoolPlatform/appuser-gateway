@@ -14,6 +14,7 @@ import (
 func (s *Server) UpdateApp(ctx context.Context, in *npool.UpdateAppRequest) (*npool.UpdateAppResponse, error) {
 	handler, err := app1.NewHandler(
 		ctx,
+		app1.WithID(&in.ID),
 		app1.WithName(in.Name),
 		app1.WithLogo(in.Logo),
 		app1.WithDescription(in.Description),

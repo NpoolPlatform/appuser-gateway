@@ -45,6 +45,8 @@ func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
 			MaxTypedCouponsPerOrder:  h.MaxTypedCouponsPerOrder,
 			Maintaining:              h.Maintaining,
 			CommitButtonTargets:      h.CommitButtonTargets,
+			Banned:                   h.Banned,
+			BanMessage:               h.BanMessage,
 		},
 	)
 }
