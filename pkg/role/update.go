@@ -17,6 +17,7 @@ func (h *Handler) UpdateRole(ctx context.Context) (*rolemwpb.Role, error) {
 		ctx,
 		&rolemwpb.RoleReq{
 			ID:          h.ID,
+			AppID:       &h.AppID,
 			CreatedBy:   &h.CreatedBy,
 			Role:        h.Role,
 			Description: h.Description,

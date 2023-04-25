@@ -71,7 +71,7 @@ func WithRoleID(id string) func(context.Context, *Handler) error {
 		if _, err := uuid.Parse(id); err != nil {
 			return err
 		}
-		h.UserID = id
+		h.RoleID = id
 		return nil
 	}
 }
