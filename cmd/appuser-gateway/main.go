@@ -4,15 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	ossconst "github.com/NpoolPlatform/go-service-framework/pkg/oss/const"
-
-	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
-
-	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
-
 	"github.com/NpoolPlatform/go-service-framework/pkg/app"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
+	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
+	appmwsrvname "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
+	mysqlconst "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
+	ossconst "github.com/NpoolPlatform/go-service-framework/pkg/oss/const"
 	rabbitmqconst "github.com/NpoolPlatform/go-service-framework/pkg/rabbitmq/const"
 	redisconst "github.com/NpoolPlatform/go-service-framework/pkg/redis/const"
 
@@ -38,6 +36,7 @@ func main() {
 		rabbitmqconst.RabbitMQServiceName,
 		redisconst.RedisServiceName,
 		ossconst.S3NameSpace,
+		appmwsrvname.ServiceDomain,
 	)
 	if err != nil {
 		logger.Sugar().Errorf("fail to create %v: %v", servicename.ServiceName, err)
