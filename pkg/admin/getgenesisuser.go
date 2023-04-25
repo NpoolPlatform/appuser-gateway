@@ -23,8 +23,16 @@ func (h *Handler) GetGenesisRoleUsers(ctx context.Context) ([]*roleusermwpb.User
 }
 
 func (h *Handler) GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error) {
+	roleusers, err := h.GetGenesisRoleUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(roleusers) == 0 {
+		return nil, nil
+	}
+
 	ids := []string{}
-	for _, info := range h.GenesisRoleUsers {
+	for _, info := range roleusers {
 		ids = append(ids, info.UserID)
 	}
 	infos, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
