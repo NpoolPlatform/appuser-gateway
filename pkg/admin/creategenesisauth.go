@@ -76,13 +76,20 @@ func (h *Handler) AuthorizeGenesis(ctx context.Context) (infos []*authmwpb.Auth,
 		return nil, err
 	}
 
-	_users, err := handler.GetGenesisUsers(ctx)
+	_roleusers, err := h.GetGenesisRoleUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	h.GenesisRoleUsers = _roleusers
+
+	_users, err := h.GetGenesisUsers(ctx)
 	if err != nil {
 		return nil, err
 	}
 	if len(_users) == 0 {
 		return nil, fmt.Errorf("genesis user not created")
 	}
+	h.GenesisUsers = _users
 
 	if err := handler.createGenesisAuths(ctx); err != nil {
 		return nil, err
