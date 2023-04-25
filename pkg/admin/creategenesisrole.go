@@ -37,6 +37,24 @@ func (h *createGenesisRoleHandler) createGenesisRoles(ctx context.Context) error
 	return nil
 }
 
+func (h *createGenesisRoleHandler) patchGenesisRole(ctx context.Context) error {
+	for _, _role := range h.GenesisRoles {
+		if _role.Genesis {
+			continue
+		}
+		genesis := true
+		_, err := rolemwcli.UpdateRole(ctx, &rolemwpb.RoleReq{
+			ID:      &_role.ID,
+			AppID:   &_role.AppID,
+			Genesis: &genesis,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (h *Handler) CreateGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, error) {
 	handler := &createGenesisRoleHandler{
 		Handler: h,
@@ -46,6 +64,8 @@ func (h *Handler) CreateGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, err
 		return nil, err
 	}
 	if len(_roles) > 0 {
+		h.GenesisRoles = _roles
+		handler.patchGenesisRole(ctx)
 		return _roles, nil
 	}
 	if err := handler.createGenesisRoles(ctx); err != nil {
