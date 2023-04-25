@@ -112,7 +112,7 @@ func WithIDNumber(idNumber *string) func(context.Context, *Handler) error {
 
 func WithImage(imgType *basetypes.KycImageType, img *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if imgType == nil || img == nil {
+		if imgType == nil {
 			return nil
 		}
 		if img != nil && *img == "" {
