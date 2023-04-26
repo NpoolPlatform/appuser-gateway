@@ -128,6 +128,8 @@ func (h *loginHandler) formalizeUser() {
 		*h.Account,
 		h.User.GoogleSecret,
 	)
+
+	h.Metadata.User = h.User
 }
 
 func (h *loginHandler) getInvitationCode(ctx context.Context) error {

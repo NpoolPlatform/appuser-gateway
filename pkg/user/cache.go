@@ -19,15 +19,30 @@ const (
 )
 
 func appAccountKey(appID uuid.UUID, account string, accountType basetypes.SignMethod) string {
-	return fmt.Sprintf("login-%v:%v:%v", appID, account, accountType)
+	return fmt.Sprintf(
+		"%v:%v:%v:%v",
+		basetypes.Prefix_PrefixUserLogin,
+		appID,
+		account,
+		accountType,
+	)
 }
 
 func metaToAccountKey(meta *Metadata) string {
-	return appAccountKey(meta.AppID, meta.Account, basetypes.SignMethod(basetypes.SignMethod_value[meta.AccountType]))
+	return appAccountKey(
+		meta.AppID,
+		meta.Account,
+		basetypes.SignMethod(basetypes.SignMethod_value[meta.AccountType]),
+	)
 }
 
 func appUserKey(appID, userID uuid.UUID) string {
-	return fmt.Sprintf("login-%v:%v", appID, userID)
+	return fmt.Sprintf(
+		"%v:%v:%v",
+		basetypes.Prefix_PrefixUserLogin,
+		appID,
+		userID,
+	)
 }
 
 func metaToUserKey(meta *Metadata) string {
