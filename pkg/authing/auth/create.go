@@ -16,6 +16,12 @@ func (h *Handler) CreateAuth(ctx context.Context) (*authmwpb.Auth, error) {
 		Resource: &basetypes.StringVal{Op: cruder.EQ, Value: h.Resource},
 		Method:   &basetypes.StringVal{Op: cruder.EQ, Value: h.Method},
 	}
+	if h.RoleID != nil {
+		conds.RoleID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.RoleID}
+	}
+	if h.UserID != nil {
+		conds.UserID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID}
+	}
 	exist, err := authmwcli.ExistAuthConds(ctx, conds)
 	if err != nil {
 		return nil, err
