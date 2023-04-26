@@ -119,7 +119,7 @@ func (h *loginHandler) formalizeUser() {
 	h.User.LoginClientIP = h.Metadata.ClientIP.String()
 	h.User.LoginClientUserAgent = h.Metadata.UserAgent
 
-	if h.App.SigninVerifyEnable {
+	if !h.App.SigninVerifyEnable {
 		h.User.LoginVerified = true
 	}
 
@@ -279,7 +279,7 @@ func (h *Handler) Logined(ctx context.Context) (*usermwpb.User, error) {
 		return nil, err
 	}
 	if !h.User.LoginVerified {
-		return h.Metadata.User, nil
+		return nil, nil
 	}
 	if err := verifyToken(h.Metadata, *h.Token); err != nil {
 		return nil, err
