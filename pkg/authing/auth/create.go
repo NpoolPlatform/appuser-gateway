@@ -16,9 +16,6 @@ func (h *Handler) CreateAuth(ctx context.Context) (*authmwpb.Auth, error) {
 		Resource: &basetypes.StringVal{Op: cruder.EQ, Value: h.Resource},
 		Method:   &basetypes.StringVal{Op: cruder.EQ, Value: h.Method},
 	}
-	if h.RoleID != nil {
-		conds.RoleID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.RoleID}
-	}
 	if h.UserID != nil {
 		conds.UserID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID}
 	}
@@ -33,6 +30,7 @@ func (h *Handler) CreateAuth(ctx context.Context) (*authmwpb.Auth, error) {
 	if h.RoleID != nil {
 		conds.RoleID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.RoleID}
 	}
+	h.UserID = nil
 	exist, err = authmwcli.ExistAuthConds(ctx, conds)
 	if err != nil {
 		return nil, err
@@ -41,9 +39,7 @@ func (h *Handler) CreateAuth(ctx context.Context) (*authmwpb.Auth, error) {
 		return nil, fmt.Errorf("auth already exist")
 	}
 
-	if h.UserID != nil {
-		conds.UserID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID}
-	}
+	h.RoleID = nil
 	exist, err = authmwcli.ExistAuthConds(ctx, conds)
 	if err != nil {
 		return nil, err
