@@ -76,20 +76,29 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 	handler := &authenticateHandler{
 		Handler: h,
 	}
+
+	_allowed := false
+	defer handler.notifyAuthenticate(_allowed)
+
 	_logined, err := handler.logined(ctx)
 	if err != nil {
 		return false, err
 	}
 	if !_logined {
+		logger.Sugar().Warnw(
+			"Authenticate",
+			"AppID", h.AppID,
+			"UserID", h.UserID,
+			"Resource", h.Resource,
+			"Method", h.Method,
+		)
 		return false, nil
 	}
 
-	_allowed, err := authmwcli.ExistAuth(ctx, h.AppID, h.UserID, h.Resource, h.Method)
+	_allowed, err = authmwcli.ExistAuth(ctx, h.AppID, h.UserID, h.Resource, h.Method)
 	if err != nil {
 		return false, err
 	}
-
-	handler.notifyAuthenticate(_allowed)
 
 	return _allowed, nil
 }

@@ -278,8 +278,8 @@ func (h *Handler) Logined(ctx context.Context) (*usermwpb.User, error) {
 	if err := handler.mustQueryMetadata(ctx); err != nil {
 		return nil, err
 	}
-	if !h.Metadata.User.LoginVerified {
-		return nil, nil
+	if !h.User.LoginVerified {
+		return h.Metadata.User, nil
 	}
 	if err := verifyToken(h.Metadata, *h.Token); err != nil {
 		return nil, err
