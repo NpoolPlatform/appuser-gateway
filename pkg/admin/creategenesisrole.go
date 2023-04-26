@@ -65,7 +65,7 @@ func (h *Handler) CreateGenesisRoles(ctx context.Context) ([]*rolemwpb.Role, err
 	}
 	if len(_roles) > 0 {
 		h.GenesisRoles = _roles
-		handler.patchGenesisRole(ctx)
+		_ = handler.patchGenesisRole(ctx)
 		return _roles, nil
 	}
 	if err := handler.createGenesisRoles(ctx); err != nil {
