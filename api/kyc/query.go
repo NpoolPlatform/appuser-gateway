@@ -39,6 +39,11 @@ func (s *Server) GetKyc(ctx context.Context, in *npool.GetKycRequest) (resp *npo
 		return &npool.GetKycResponse{}, status.Error(codes.Internal, err.Error())
 	}
 	if len(infos) == 0 {
+		logger.Sugar().Errorw(
+			"GetKyc",
+			"In", in,
+			"Error", "not found",
+		)
 		return &npool.GetKycResponse{}, status.Error(codes.Internal, "not found")
 	}
 
