@@ -50,6 +50,7 @@ func (s *Server) LoginVerify(ctx context.Context, in *npool.LoginVerifyRequest) 
 		ctx,
 		user1.WithAppID(in.GetAppID()),
 		user1.WithUserID(&in.UserID),
+		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
 		user1.WithToken(in.GetToken()),
 		user1.WithVerificationCode(&in.VerificationCode),
 	)

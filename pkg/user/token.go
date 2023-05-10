@@ -83,7 +83,7 @@ func (meta *Metadata) ValidateJWTClaims(claims jwt.MapClaims) error {
 	}
 	clientIP, ok := claims["client_ip"]
 	if !ok || clientIP.(string) != meta.ClientIP.String() {
-		return fmt.Errorf("invalid client ip")
+		return fmt.Errorf("invalid client ip, ok=%v, client_ip=%v, meta.client_ip=%v", ok, clientIP, meta.ClientIP)
 	}
 	userAgent, ok := claims["user_agent"]
 	if !ok || userAgent.(string) != meta.UserAgent {
