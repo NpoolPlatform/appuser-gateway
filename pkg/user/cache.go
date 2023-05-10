@@ -183,7 +183,7 @@ func (h *Handler) UpdateCache(ctx context.Context) error {
 		return err
 	}
 	if meta == nil || meta.User == nil {
-		return fmt.Errorf("invalid user")
+		return fmt.Errorf("invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
 	}
 
 	h.User.InvitationCode = meta.User.InvitationCode

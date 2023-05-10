@@ -71,7 +71,7 @@ func WithAppID(id string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		app, err := appmwcli.GetApp(ctx, id)
 		if err != nil {
-			return err
+			return fmt.Errorf("get app error: %v", err)
 		}
 		if app == nil {
 			return fmt.Errorf("invalid app")

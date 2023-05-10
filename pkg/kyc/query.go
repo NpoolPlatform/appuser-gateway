@@ -26,7 +26,7 @@ func (h *Handler) GetKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
 	rinfo, err := reviewmwcli.GetObjectReview(
 		ctx,
 		info.AppID,
-		servicename.ServiceName,
+		servicename.ServiceDomain,
 		info.ID,
 		reviewmgrpb.ReviewObjectType_ObjectKyc,
 	)
@@ -34,7 +34,12 @@ func (h *Handler) GetKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
 		return nil, err
 	}
 	if rinfo == nil {
-		return nil, fmt.Errorf("invalid review")
+		return nil, fmt.Errorf(
+			"invalid review: app_id=%v, domain=%v, id=%v",
+			info.AppID,
+			servicename.ServiceDomain,
+			info.ID,
+		)
 	}
 
 	if rinfo.State == reviewmgrpb.ReviewState_Rejected {

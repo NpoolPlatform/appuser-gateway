@@ -62,7 +62,7 @@ func (h *updateHandler) getUser(ctx context.Context) error {
 		return err
 	}
 	if info == nil {
-		return fmt.Errorf("invalid user")
+		return fmt.Errorf("invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
 	}
 
 	h.User = info
@@ -249,7 +249,7 @@ func (h *updateHandler) getAccountUser(ctx context.Context) error {
 		return err
 	}
 	if info == nil {
-		return fmt.Errorf("invalid user")
+		return fmt.Errorf("invalid user: conds=%v", conds)
 	}
 
 	h.UserID = &info.ID

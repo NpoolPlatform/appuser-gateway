@@ -51,7 +51,7 @@ func WithUserID(id string) func(context.Context, *Handler) error {
 
 func WithCode(code string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.UserID = code
+		h.Code = code
 		return nil
 	}
 }

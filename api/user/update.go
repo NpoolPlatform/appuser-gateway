@@ -22,6 +22,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		user1.WithVerificationCode(in.VerificationCode),
 		user1.WithNewVerificationCode(in.NewVerificationCode),
 		user1.WithIDNumber(in.IDNumber),
+		// user1.WithUsername(&in.Username),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
