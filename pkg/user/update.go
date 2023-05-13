@@ -167,6 +167,8 @@ func (h *updateHandler) updateUser(ctx context.Context) error {
 		KolConfirmed:       h.KolConfirmed,
 		GoogleSecret:       h.GoogleSecret,
 		GoogleAuthVerified: h.GoogleAuthVerified,
+		Banned:             h.Banned,
+		BanMessage:         h.BanMessage,
 	}
 	if h.NewAccountType != nil {
 		if h.NewAccount == nil {
