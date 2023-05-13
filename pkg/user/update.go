@@ -72,8 +72,15 @@ func (h *updateHandler) shouldVerifyNewCode() bool {
 	if h.NewAccount != nil {
 		return true
 	}
-	if h.NewAccountType != nil && *h.NewAccountType == basetypes.SignMethod_Google {
-		return true
+	if h.NewAccountType != nil {
+		switch *h.NewAccountType {
+		case basetypes.SignMethod_Google:
+			fallthrough //nolint
+		case basetypes.SignMethod_Email:
+			fallthrough //nolint
+		case basetypes.SignMethod_Mobile:
+			return true
+		}
 	}
 	return false
 }
@@ -133,7 +140,7 @@ func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
 	} else if h.NewAccount != nil {
 		account = *h.NewAccount
 	}
-	if err := usercodemwcli.VerifyUserCode(
+	return usercodemwcli.VerifyUserCode(
 		ctx,
 		&usercodemwpb.VerifyUserCodeRequest{
 			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
@@ -143,14 +150,7 @@ func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
 			UsedFor:     basetypes.UsedFor_Update,
 			Code:        *h.NewVerificationCode,
 		},
-	); err != nil {
-		return err
-	}
-	if *h.NewAccountType == basetypes.SignMethod_Google {
-		verified := true
-		h.GoogleAuthVerified = &verified
-	}
-	return nil
+	)
 }
 
 func (h *updateHandler) updateUser(ctx context.Context) error {
@@ -177,7 +177,7 @@ func (h *updateHandler) updateUser(ctx context.Context) error {
 		BanMessage:         h.BanMessage,
 	}
 	if h.NewAccountType != nil {
-		if h.NewAccount == nil {
+		if *h.NewAccountType != basetypes.SignMethod_Google && h.NewAccount == nil {
 			return fmt.Errorf("invalid account")
 		}
 		switch *h.NewAccountType {

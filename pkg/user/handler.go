@@ -282,7 +282,7 @@ func WithLimit(limit int32) func(context.Context, *Handler) error {
 
 func WithNewAccount(account *string, accountType *basetypes.SignMethod) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if account == nil || accountType == nil {
+		if accountType == nil {
 			return nil
 		}
 
@@ -293,6 +293,7 @@ func WithNewAccount(account *string, accountType *basetypes.SignMethod) func(con
 			err = validatePhoneNO(*account)
 		case basetypes.SignMethod_Email:
 			err = validateEmailAddress(*account)
+		case basetypes.SignMethod_Google:
 		default:
 			return fmt.Errorf("invalid account type")
 		}
