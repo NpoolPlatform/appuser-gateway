@@ -354,7 +354,7 @@ func (h *updateHandler) tryCreateInvitationCode(ctx context.Context) error {
 		ctx,
 		&ivcodemwpb.InvitationCodeReq{
 			AppID:  &h.AppID,
-			UserID: h.UserID,
+			UserID: h.TargetUserID,
 		},
 	)
 	if err != nil {
