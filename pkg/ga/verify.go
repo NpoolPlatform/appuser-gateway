@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
@@ -14,12 +14,24 @@ import (
 )
 
 func (h *Handler) VerifyGoogleAuth(ctx context.Context) (*usermwpb.User, error) {
-	user, err := usermwcli.GetUser(ctx, h.AppID, h.UserID)
+	handler, err := user1.NewHandler(
+		ctx,
+		user1.WithAppID(h.AppID),
+		user1.WithUserID(&h.UserID),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := handler.GetUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 	if user == nil {
 		return nil, fmt.Errorf("invalid user")
+	}
+	if !user.HasGoogleSecret {
+		return nil, fmt.Errorf("invalid google secret")
 	}
 
 	if err := usercodemwcli.VerifyUserCode(
@@ -37,12 +49,8 @@ func (h *Handler) VerifyGoogleAuth(ctx context.Context) (*usermwpb.User, error) 
 	}
 
 	verified := true
-
-	user, err = usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
-		ID:                 &h.UserID,
-		AppID:              &h.AppID,
-		GoogleAuthVerified: &verified,
-	})
+	handler.GoogleAuthVerified = &verified
+	user, err = handler.UpdateUser(ctx)
 	if err != nil {
 		return nil, err
 	}

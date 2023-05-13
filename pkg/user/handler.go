@@ -53,6 +53,8 @@ type Handler struct {
 	SigninVerifyType      *basetypes.SignMethod
 	KolConfirmed          *bool
 	Kol                   *bool
+	GoogleSecret          *string
+	GoogleAuthVerified    *bool
 	RecoveryCode          *string
 	Offset                int32
 	Limit                 int32
@@ -312,19 +314,6 @@ func WithOldPasswordHash(pwdHash *string) func(context.Context, *Handler) error 
 	}
 }
 
-func WithIDNumber(idNumber *string) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if idNumber == nil {
-			return nil
-		}
-		if *idNumber == "" {
-			return fmt.Errorf("invalid id number")
-		}
-		h.IDNumber = idNumber
-		return nil
-	}
-}
-
 func WithRecoveryCode(code *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if code == nil {
@@ -361,6 +350,162 @@ func WithCheckInvitation(check bool) func(context.Context, *Handler) error {
 func WithKol(kol *bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Kol = kol
+		return nil
+	}
+}
+
+func WithUsername(username *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if username == nil {
+			return nil
+		}
+		re := regexp.MustCompile("^[a-zA-Z0-9\u3040-\u31ff][[a-zA-Z0-9_\\-\\.\u3040-\u31ff]{3,32}$") //nolint
+		if !re.MatchString(*username) {
+			return fmt.Errorf("invalid username")
+		}
+		h.Username = username
+		return nil
+	}
+}
+
+func WithAddressFields(addressFields []string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.AddressFields = addressFields
+		return nil
+	}
+}
+
+func WithGender(gender *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if gender == nil {
+			return nil
+		}
+		if *gender == "" {
+			return fmt.Errorf("invalid gender")
+		}
+		h.Gender = gender
+		return nil
+	}
+}
+
+func WithPostalCode(postalCode *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if postalCode == nil {
+			return nil
+		}
+		if *postalCode == "" {
+			return fmt.Errorf("invalid postalCode")
+		}
+		h.PostalCode = postalCode
+		return nil
+	}
+}
+
+func WithAge(age *uint32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if age == nil {
+			return nil
+		}
+		h.Age = age
+		return nil
+	}
+}
+
+func WithBirthday(birthday *uint32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if birthday == nil {
+			return nil
+		}
+		h.Birthday = birthday
+		return nil
+	}
+}
+
+func WithAvatar(avatar *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if avatar == nil {
+			return nil
+		}
+		if *avatar == "" {
+			return fmt.Errorf("invalid avatar")
+		}
+		h.Avatar = avatar
+		return nil
+	}
+}
+
+func WithOrganization(organization *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if organization == nil {
+			return nil
+		}
+		if *organization == "" {
+			return fmt.Errorf("invalid organization")
+		}
+		h.Organization = organization
+		return nil
+	}
+}
+
+func WithFirstName(firstName *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if firstName == nil {
+			return nil
+		}
+		if *firstName == "" {
+			return fmt.Errorf("invalid firstname")
+		}
+		h.FirstName = firstName
+		return nil
+	}
+}
+
+func WithLastName(lastName *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if lastName == nil {
+			return nil
+		}
+		if *lastName == "" {
+			return fmt.Errorf("invalid lastname")
+		}
+		h.LastName = lastName
+		return nil
+	}
+}
+
+func WithIDNumber(idNumber *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if idNumber == nil {
+			return nil
+		}
+		if *idNumber == "" {
+			return fmt.Errorf("invalid idnumber")
+		}
+		h.IDNumber = idNumber
+		return nil
+	}
+}
+
+func WithSigninVerifyType(verifyType *basetypes.SignMethod) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if verifyType == nil {
+			return nil
+		}
+		switch *verifyType {
+		case basetypes.SignMethod_Email:
+		case basetypes.SignMethod_Mobile:
+		case basetypes.SignMethod_Google:
+		default:
+			return fmt.Errorf("invalid sign verify type")
+		}
+		h.SigninVerifyType = verifyType
+		return nil
+	}
+}
+
+func WithKolConfirmed(confirmed *bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.KolConfirmed = confirmed
 		return nil
 	}
 }
