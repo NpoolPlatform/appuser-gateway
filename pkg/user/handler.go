@@ -141,21 +141,31 @@ func validatePhoneNO(phoneNO string) error {
 	return nil
 }
 
-func WithAccount(account string, accountType basetypes.SignMethod) func(context.Context, *Handler) error {
+func WithAccount(account *string, accountType *basetypes.SignMethod) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if account == "" {
-			return fmt.Errorf("invalid account")
+		if accountType == nil {
+			return nil
+		}
+
+		switch *accountType {
+		case basetypes.SignMethod_Mobile:
+			fallthrough //nolint
+		case basetypes.SignMethod_Email:
+			if account == nil {
+				return fmt.Errorf("invalid account")
+			}
 		}
 
 		var err error
 
-		switch accountType {
+		switch *accountType {
 		case basetypes.SignMethod_Mobile:
-			h.PhoneNO = &account
-			err = validatePhoneNO(account)
+			h.PhoneNO = account
+			err = validatePhoneNO(*account)
 		case basetypes.SignMethod_Email:
-			h.EmailAddress = &account
-			err = validateEmailAddress(account)
+			h.EmailAddress = account
+			err = validateEmailAddress(*account)
+		case basetypes.SignMethod_Google:
 		default:
 			return fmt.Errorf("invalid account type")
 		}
@@ -164,8 +174,8 @@ func WithAccount(account string, accountType basetypes.SignMethod) func(context.
 			return err
 		}
 
-		h.AccountType = &accountType
-		h.Account = &account
+		h.AccountType = accountType
+		h.Account = account
 		return nil
 	}
 }
@@ -284,6 +294,15 @@ func WithNewAccount(account *string, accountType *basetypes.SignMethod) func(con
 	return func(ctx context.Context, h *Handler) error {
 		if accountType == nil {
 			return nil
+		}
+
+		switch *accountType {
+		case basetypes.SignMethod_Mobile:
+			fallthrough //nolint
+		case basetypes.SignMethod_Email:
+			if account == nil {
+				return fmt.Errorf("invalid account")
+			}
 		}
 
 		var err error

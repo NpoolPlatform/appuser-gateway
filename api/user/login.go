@@ -16,7 +16,7 @@ func (s *Server) Login(ctx context.Context, in *npool.LoginRequest) (*npool.Logi
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(in.GetAppID()),
-		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
+		user1.WithAccount(&in.Account, &in.AccountType),
 		user1.WithPasswordHash(&in.PasswordHash),
 		user1.WithManMachineSpec(in.GetManMachineSpec()),
 		user1.WithEnvironmentSpec(in.GetEnvironmentSpec()),
@@ -50,7 +50,7 @@ func (s *Server) LoginVerify(ctx context.Context, in *npool.LoginVerifyRequest) 
 		ctx,
 		user1.WithAppID(in.GetAppID()),
 		user1.WithUserID(&in.UserID),
-		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
+		user1.WithAccount(&in.Account, &in.AccountType),
 		user1.WithToken(in.GetToken()),
 		user1.WithVerificationCode(&in.VerificationCode),
 	)

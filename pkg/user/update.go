@@ -177,6 +177,7 @@ func (h *updateHandler) updateUser(ctx context.Context) error {
 		Banned:             h.Banned,
 		BanMessage:         h.BanMessage,
 	}
+	fmt.Printf("new_account_type=%v, new_account=%v\n", h.NewAccountType, h.NewAccount)
 	if h.NewAccountType != nil {
 		if *h.NewAccountType != basetypes.SignMethod_Google && h.NewAccount == nil {
 			return fmt.Errorf("invalid account")

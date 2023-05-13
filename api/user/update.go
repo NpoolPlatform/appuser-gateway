@@ -16,7 +16,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		ctx,
 		user1.WithAppID(in.GetAppID()),
 		user1.WithUserID(&in.UserID),
-		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
+		user1.WithAccount(in.Account, in.AccountType),
 		user1.WithNewAccount(in.NewAccount, in.NewAccountType),
 		user1.WithPasswordHash(in.PasswordHash),
 		user1.WithOldPasswordHash(in.OldPasswordHash),

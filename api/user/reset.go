@@ -16,7 +16,7 @@ func (s *Server) ResetUser(ctx context.Context, in *npool.ResetUserRequest) (*np
 		ctx,
 		user1.WithAppID(in.GetAppID()),
 		user1.WithUserID(in.UserID),
-		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
+		user1.WithAccount(&in.Account, &in.AccountType),
 		user1.WithVerificationCode(&in.VerificationCode),
 		user1.WithPasswordHash(in.PasswordHash),
 		user1.WithRecoveryCode(in.RecoveryCode),
