@@ -83,7 +83,7 @@ func (h *Handler) GetUser(ctx context.Context) (*usermwpb.User, error) {
 		return nil, err
 	}
 	if info == nil {
-		return nil, fmt.Errorf("invalid user app_id=%v, user_id=%v", h.AppID, *h.UserID)
+		return nil, fmt.Errorf("query: invalid user app_id=%v, user_id=%v", h.AppID, *h.UserID)
 	}
 	code, _ := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemgrpb.Conds{
 		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},

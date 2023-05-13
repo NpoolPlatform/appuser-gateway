@@ -62,7 +62,7 @@ func (h *updateHandler) getUser(ctx context.Context) error {
 		return err
 	}
 	if info == nil {
-		return fmt.Errorf("invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
+		return fmt.Errorf("update: invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
 	}
 
 	h.User = info
@@ -219,6 +219,10 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 		return nil, err
 	}
 
+	if !h.ShouldUpdateCache {
+		return h.User, nil
+	}
+
 	if err := h.UpdateCache(ctx); err != nil {
 		return nil, err
 	}
@@ -226,7 +230,6 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	h.Metadata = meta
 
 	return h.Metadata.User, nil

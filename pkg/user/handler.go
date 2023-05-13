@@ -58,12 +58,16 @@ type Handler struct {
 	Banned                *bool
 	BanMessage            *string
 	RecoveryCode          *string
+	ShouldUpdateCache     bool
 	Offset                int32
 	Limit                 int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
-	handler := &Handler{}
+	handler := &Handler{
+		ShouldUpdateCache: true,
+	}
+
 	for _, opt := range options {
 		if err := opt(ctx, handler); err != nil {
 			return nil, err
@@ -522,6 +526,13 @@ func WithBanned(banned *bool) func(context.Context, *Handler) error {
 func WithBanMessage(message *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.BanMessage = message
+		return nil
+	}
+}
+
+func WithShouldUpdateCache(update bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.ShouldUpdateCache = update
 		return nil
 	}
 }

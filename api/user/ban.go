@@ -19,6 +19,7 @@ func (s *Server) BanUser(ctx context.Context, in *npool.BanUserRequest) (*npool.
 		user1.WithUserID(&in.TargetUserID),
 		user1.WithBanned(&in.Banned),
 		user1.WithBanMessage(&in.BanMessage),
+		user1.WithShouldUpdateCache(false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -48,6 +49,7 @@ func (s *Server) BanAppUser(ctx context.Context, in *npool.BanAppUserRequest) (*
 		user1.WithUserID(&in.TargetUserID),
 		user1.WithBanned(&in.Banned),
 		user1.WithBanMessage(&in.BanMessage),
+		user1.WithShouldUpdateCache(false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
