@@ -1,227 +1,79 @@
+//nolint:dupl
 package role
 
 import (
 	"context"
 
-	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-	tracerrole "github.com/NpoolPlatform/appuser-gateway/pkg/tracer/role"
-	approleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
-	"github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approle"
-	approleusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/approleuser"
-	"github.com/google/uuid"
-	"google.golang.org/grpc/codes"
-
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
-	tracer "github.com/NpoolPlatform/appuser-manager/pkg/tracer/approleuser"
-	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
+	role1 "github.com/NpoolPlatform/appuser-gateway/pkg/role"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/role"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	scodes "go.opentelemetry.io/otel/codes"
+	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/role"
+
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateRole(ctx context.Context, in *role.CreateRoleRequest) (*role.CreateRoleResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateRole")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	span = tracerrole.TraceCreate(span, in)
-
-	err = validate(ctx, in)
+func (s *Server) CreateRole(ctx context.Context, in *npool.CreateRoleRequest) (*npool.CreateRoleResponse, error) {
+	handler, err := role1.NewHandler(
+		ctx,
+		role1.WithAppID(in.GetAppID()),
+		role1.WithCreatedBy(&in.UserID),
+		role1.WithRole(&in.RoleName),
+		role1.WithDescription(&in.Description),
+		role1.WithDefault(&in.Default),
+	)
 	if err != nil {
-		logger.Sugar().Errorw("CreateRole", "err", err)
-		return nil, err
+		logger.Sugar().Errorw(
+			"CreateRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.CreateRoleResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	span = commontracer.TraceInvoker(span, "role", "manager", "CreateAppRole")
-
-	appRole, err := approlemgrcli.CreateAppRole(ctx, &approle.AppRoleReq{
-		AppID:       &in.AppID,
-		CreatedBy:   &in.UserID,
-		Role:        &in.RoleName,
-		Description: &in.Description,
-		Default:     &in.Default,
-	})
+	info, err := handler.CreateRole(ctx)
 	if err != nil {
-		logger.Sugar().Errorw("CreateRole", "err", err)
-		return &role.CreateRoleResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw(
+			"CreateRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.CreateRoleResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	info, err := rolemwcli.GetRole(ctx, appRole.ID)
-	if err != nil {
-		logger.Sugar().Errorw("CreateRole", "err", err)
-		return &role.CreateRoleResponse{}, status.Error(codes.Internal, err.Error())
-	}
-
-	return &role.CreateRoleResponse{
+	return &npool.CreateRoleResponse{
 		Info: info,
 	}, nil
 }
 
-func (s *Server) CreateAppRole(ctx context.Context, in *role.CreateAppRoleRequest) (*role.CreateAppRoleResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateAppRole")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	span.SetAttributes(attribute.String("TargetAppID", in.GetTargetAppID()))
-
-	check := &role.CreateRoleRequest{
-		AppID:       in.TargetAppID,
-		UserID:      in.UserID,
-		RoleName:    in.RoleName,
-		Default:     in.Default,
-		Description: in.Description,
-	}
-	span = tracerrole.TraceCreate(span, check)
-
-	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
-		logger.Sugar().Errorw("CreateAppRole", "TargetAppID", in.GetTargetAppID(), "err", err)
-		return &role.CreateAppRoleResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
-	}
-
-	err = validate(ctx, check)
+func (s *Server) CreateAppRole(ctx context.Context, in *npool.CreateAppRoleRequest) (*npool.CreateAppRoleResponse, error) {
+	handler, err := role1.NewHandler(
+		ctx,
+		role1.WithAppID(in.GetTargetAppID()),
+		role1.WithCreatedBy(&in.UserID),
+		role1.WithRole(&in.RoleName),
+		role1.WithDescription(&in.Description),
+		role1.WithDefault(&in.Default),
+	)
 	if err != nil {
-		logger.Sugar().Errorw("CreateAppRole", "err", err)
-		return &role.CreateAppRoleResponse{}, err
+		logger.Sugar().Errorw(
+			"CreateAppRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.CreateAppRoleResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	span = commontracer.TraceInvoker(span, "role", "manager", "CreateAppRole")
-
-	appRole, err := approlemgrcli.CreateAppRole(ctx, &approle.AppRoleReq{
-		AppID:       &in.TargetAppID,
-		CreatedBy:   &in.UserID,
-		Role:        &in.RoleName,
-		Description: &in.Description,
-		Default:     &in.Default,
-	})
+	info, err := handler.CreateRole(ctx)
 	if err != nil {
-		logger.Sugar().Errorw("CreateAppRole", "err", err)
-		return &role.CreateAppRoleResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw(
+			"CreateAppRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.CreateAppRoleResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	info, err := rolemwcli.GetRole(ctx, appRole.ID)
-	if err != nil {
-		logger.Sugar().Errorw("CreateAppRole", "err", err)
-		return &role.CreateAppRoleResponse{}, status.Error(codes.Internal, err.Error())
-	}
-
-	return &role.CreateAppRoleResponse{
-		Info: info,
-	}, nil
-}
-
-func (s *Server) CreateRoleUser(ctx context.Context, in *role.CreateRoleUserRequest) (*role.CreateRoleUserResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateRoleUser")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	roleUserReq := &approleusermgrpb.AppRoleUserReq{
-		AppID:  &in.AppID,
-		RoleID: &in.RoleID,
-		UserID: &in.TargetUserID,
-	}
-
-	span = tracer.Trace(span, roleUserReq)
-	err = validateRoleUser(ctx, roleUserReq)
-	if err != nil {
-		logger.Sugar().Errorw("CreateRoleUser", "err", err)
-		return nil, err
-	}
-
-	span = commontracer.TraceInvoker(span, "role", "manager", "CreateAppRoleUser")
-
-	roleUser, err := approleusermgrcli.CreateAppRoleUser(ctx, roleUserReq)
-	if err != nil {
-		logger.Sugar().Errorw("CreateRoleUser", "err", err)
-		return &role.CreateRoleUserResponse{}, status.Error(codes.Internal, err.Error())
-	}
-
-	info, err := rolemwcli.GetRoleUser(ctx, roleUser.ID)
-	if err != nil {
-		logger.Sugar().Errorw("CreateRoleUser", "err", err)
-		return &role.CreateRoleUserResponse{}, status.Error(codes.Internal, err.Error())
-	}
-
-	return &role.CreateRoleUserResponse{
-		Info: info,
-	}, nil
-}
-
-func (s *Server) CreateAppRoleUser(ctx context.Context, in *role.CreateAppRoleUserRequest) (*role.CreateAppRoleUserResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateRoleUser")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	roleUserReq := &approleusermgrpb.AppRoleUserReq{
-		AppID:  &in.TargetAppID,
-		RoleID: &in.RoleID,
-		UserID: &in.TargetUserID,
-	}
-
-	span = tracer.Trace(span, roleUserReq)
-
-	err = validateRoleUser(ctx, roleUserReq)
-	if err != nil {
-		logger.Sugar().Errorw("CreateRoleUser", "err", err)
-		return nil, err
-	}
-
-	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
-		logger.Sugar().Errorw("CreateRoleUser", "TargetAppID", in.GetTargetAppID(), "err", err)
-		return &role.CreateAppRoleUserResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
-	}
-
-	if _, err := uuid.Parse(in.GetTargetUserID()); err != nil {
-		logger.Sugar().Errorw("CreateRoleUser", "TargetUserID", in.GetTargetUserID(), "err", err)
-		return &role.CreateAppRoleUserResponse{}, status.Error(codes.InvalidArgument, "TargetUserID is invalid")
-	}
-
-	span = commontracer.TraceInvoker(span, "role", "manager", "CreateAppRoleUser")
-
-	roleUser, err := approleusermgrcli.CreateAppRoleUser(ctx, roleUserReq)
-	if err != nil {
-		logger.Sugar().Errorw("CreateRoleUser", "err", err)
-		return &role.CreateAppRoleUserResponse{}, status.Error(codes.Internal, err.Error())
-	}
-
-	info, err := rolemwcli.GetRoleUser(ctx, roleUser.ID)
-	if err != nil {
-		logger.Sugar().Errorw("CreateRoleUser", "err", err)
-		return &role.CreateAppRoleUserResponse{}, status.Error(codes.Internal, err.Error())
-	}
-
-	return &role.CreateAppRoleUserResponse{
+	return &npool.CreateAppRoleResponse{
 		Info: info,
 	}, nil
 }

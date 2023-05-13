@@ -4,87 +4,70 @@ package role
 import (
 	"context"
 
-	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-	"google.golang.org/grpc/codes"
-
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	approleusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approleuser"
+	role1 "github.com/NpoolPlatform/appuser-gateway/pkg/role"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/role"
-	"github.com/google/uuid"
-	"go.opentelemetry.io/otel"
-	scodes "go.opentelemetry.io/otel/codes"
+	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/role"
+
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) DeleteRoleUser(ctx context.Context, in *role.DeleteRoleUserRequest) (*role.DeleteRoleUserResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteRoleUser")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	commontracer.TraceID(span, in.GetRoleUserID())
-
-	if _, err := uuid.Parse(in.GetAppID()); err != nil {
-		logger.Sugar().Errorw("DeleteRoleUser", "ID", in.GetAppID(), "err", err)
-		return &role.DeleteRoleUserResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
-	}
-	if _, err := uuid.Parse(in.GetRoleUserID()); err != nil {
-		logger.Sugar().Errorw("DeleteRoleUser", "ID", in.GetRoleUserID(), "err", err)
-		return &role.DeleteRoleUserResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
-	}
-
-	span = commontracer.TraceInvoker(span, "role", "manager", "DeleteAppRoleUser")
-
-	info, err := approleusermgrcli.DeleteAppRoleUser(ctx, in.GetRoleUserID())
+func (s *Server) DeleteRole(ctx context.Context, in *npool.DeleteRoleRequest) (*npool.DeleteRoleResponse, error) {
+	handler, err := role1.NewHandler(
+		ctx,
+		role1.WithID(&in.ID),
+		role1.WithAppID(in.GetAppID()),
+	)
 	if err != nil {
-		logger.Sugar().Errorw("DeleteRoleUser", "err", err)
-		return &role.DeleteRoleUserResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw(
+			"DeleteRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.DeleteRoleResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	return &role.DeleteRoleUserResponse{
+	info, err := handler.DeleteRole(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"DeleteRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.DeleteRoleResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.DeleteRoleResponse{
 		Info: info,
 	}, nil
 }
 
-func (s *Server) DeleteAppRoleUser(ctx context.Context, in *role.DeleteAppRoleUserRequest) (*role.DeleteAppRoleUserResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteAppRoleUser")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	commontracer.TraceID(span, in.GetRoleUserID())
-
-	if _, err := uuid.Parse(in.GetTargetAppID()); err != nil {
-		logger.Sugar().Errorw("DeleteAppRoleUser", "ID", in.GetTargetAppID(), "err", err)
-		return &role.DeleteAppRoleUserResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
-	}
-	if _, err := uuid.Parse(in.GetRoleUserID()); err != nil {
-		logger.Sugar().Errorw("DeleteAppRoleUser", "ID", in.GetRoleUserID(), "err", err)
-		return &role.DeleteAppRoleUserResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
-	}
-
-	span = commontracer.TraceInvoker(span, "role", "manager", "DeleteAppRoleUser")
-
-	info, err := approleusermgrcli.DeleteAppRoleUser(ctx, in.GetRoleUserID())
+func (s *Server) DeleteAppRole(ctx context.Context, in *npool.DeleteAppRoleRequest) (*npool.DeleteAppRoleResponse, error) {
+	handler, err := role1.NewHandler(
+		ctx,
+		role1.WithID(&in.ID),
+		role1.WithAppID(in.GetTargetAppID()),
+	)
 	if err != nil {
-		logger.Sugar().Errorw("DeleteAppRoleUser", "err", err)
-		return &role.DeleteAppRoleUserResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw(
+			"DeleteAppRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.DeleteAppRoleResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	return &role.DeleteAppRoleUserResponse{
+	info, err := handler.DeleteRole(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"DeleteAppRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.DeleteAppRoleResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.DeleteAppRoleResponse{
 		Info: info,
 	}, nil
 }

@@ -1,3 +1,4 @@
+//nolint:dupl
 package user
 
 import (
@@ -6,25 +7,20 @@ import (
 
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
-	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
-
-	appusermgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/appuser"
-	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
 
-	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
-	appusermgrpb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/appuser"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
+	regmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
 
 	applangmwcli "github.com/NpoolPlatform/g11n-middleware/pkg/client/applang"
+	regmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	applangmgrpb "github.com/NpoolPlatform/message/npool/g11n/mgr/v1/applang"
 
 	chanmgrpb "github.com/NpoolPlatform/message/npool/notif/mgr/v1/channel"
@@ -35,261 +31,412 @@ import (
 	tmplmwpb "github.com/NpoolPlatform/message/npool/notif/mw/v1/template"
 	tmplmwcli "github.com/NpoolPlatform/notif-middleware/pkg/client/template"
 
-	"go.opentelemetry.io/otel"
-	scodes "go.opentelemetry.io/otel/codes"
-
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*usermwpb.User, error) { //nolint
-	var err error
+type updateHandler struct {
+	*Handler
+}
 
-	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "UpdateUser")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	if in.GetOldPasswordHash() != "" {
-		if _, err := usermwcli.VerifyUser(
-			ctx,
-			in.GetAppID(),
-			in.GetUserID(),
-			in.GetOldPasswordHash(),
-		); err != nil {
-			logger.Sugar().Infow("UpdateUser", "error", err)
-			return nil, status.Error(codes.InvalidArgument, "permission denied")
-		}
+func (h *updateHandler) verifyOldPasswordHash(ctx context.Context) error {
+	if h.OldPasswordHash == nil {
+		return nil
 	}
 
-	user, err := usermwcli.GetUser(ctx, in.GetAppID(), in.GetUserID())
+	if _, err := usermwcli.VerifyUser(
+		ctx,
+		h.AppID,
+		*h.UserID,
+		*h.OldPasswordHash,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *updateHandler) getUser(ctx context.Context) error {
+	info, err := usermwcli.GetUser(ctx, h.AppID, *h.UserID)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	if info == nil {
+		return fmt.Errorf("update: invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
 	}
 
-	if in.NewAccount != nil || in.PasswordHash != nil || in.GetNewAccountType() == basetypes.SignMethod_Google {
-		account := in.GetAccount()
-		if in.GetAccountType() == basetypes.SignMethod_Google {
-			account = user.GoogleSecret
-		}
+	h.User = info
+	return nil
+}
 
-		if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+func (h *updateHandler) shouldVerifyNewCode() bool {
+	if h.NewAccount != nil {
+		return true
+	}
+	if h.NewAccountType != nil && *h.NewAccountType == basetypes.SignMethod_Google {
+		return true
+	}
+	return false
+}
+
+func (h *updateHandler) shouldVerifyOldCode() bool {
+	if h.shouldVerifyNewCode() {
+		return true
+	}
+	if h.PasswordHash != nil {
+		return true
+	}
+	return false
+}
+
+func (h *updateHandler) verifyOldAccountCode(ctx context.Context) error {
+	if !h.shouldVerifyOldCode() {
+		return nil
+	}
+	if h.VerificationCode == nil {
+		return fmt.Errorf("invalid verification code")
+	}
+	if h.AccountType == nil {
+		return fmt.Errorf("invalid account type")
+	}
+	account := ""
+	if *h.AccountType == basetypes.SignMethod_Google {
+		account = h.User.GoogleSecret
+	} else if h.Account != nil {
+		account = *h.Account
+	}
+	return usercodemwcli.VerifyUserCode(
+		ctx,
+		&usercodemwpb.VerifyUserCodeRequest{
 			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-			AppID:       in.GetAppID(),
+			AppID:       h.AppID,
 			Account:     account,
-			AccountType: in.GetAccountType(),
+			AccountType: *h.AccountType,
 			UsedFor:     basetypes.UsedFor_Update,
-			Code:        in.GetVerificationCode(),
-		}); err != nil {
-			return nil, err
-		}
+			Code:        *h.VerificationCode,
+		},
+	)
+}
+
+func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
+	if !h.shouldVerifyNewCode() {
+		return nil
 	}
-
-	if in.NewAccount != nil || in.GetNewAccountType() == basetypes.SignMethod_Google {
-		account := in.GetNewAccount()
-		if in.GetNewAccountType() == basetypes.SignMethod_Google {
-			account = user.GoogleSecret
-		}
-
-		if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+	if h.NewAccountType == nil {
+		return fmt.Errorf("invalid account type")
+	}
+	if h.NewVerificationCode == nil {
+		return fmt.Errorf("invalid new verification code")
+	}
+	account := ""
+	if *h.NewAccountType == basetypes.SignMethod_Google {
+		account = h.User.GoogleSecret
+	} else if h.NewAccount != nil {
+		account = *h.NewAccount
+	}
+	return usercodemwcli.VerifyUserCode(
+		ctx,
+		&usercodemwpb.VerifyUserCodeRequest{
 			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-			AppID:       in.GetAppID(),
+			AppID:       h.AppID,
 			Account:     account,
-			AccountType: in.GetNewAccountType(),
+			AccountType: *h.NewAccountType,
 			UsedFor:     basetypes.UsedFor_Update,
-			Code:        in.GetNewVerificationCode(),
-		}); err != nil {
-			return nil, err
-		}
-	}
+			Code:        *h.NewVerificationCode,
+		},
+	)
+}
 
-	span = commontracer.TraceInvoker(span, "role", "middleware", "UpdateUser")
-
+func (h *updateHandler) updateUser(ctx context.Context) error {
 	req := &usermwpb.UserReq{
-		ID:               &in.UserID,
-		AppID:            &in.AppID,
-		Username:         in.Username,
-		AddressFields:    in.AddressFields,
-		Gender:           in.Gender,
-		PostalCode:       in.PostalCode,
-		Age:              in.Age,
-		Birthday:         in.Birthday,
-		Avatar:           in.Avatar,
-		Organization:     in.Organization,
-		FirstName:        in.FirstName,
-		LastName:         in.LastName,
-		IDNumber:         in.IDNumber,
-		SigninVerifyType: in.SigninVerifyType,
-		PasswordHash:     in.PasswordHash,
-		KolConfirmed:     in.KolConfirmed,
+		ID:                 h.UserID,
+		AppID:              &h.AppID,
+		Username:           h.Username,
+		AddressFields:      h.AddressFields,
+		Gender:             h.Gender,
+		PostalCode:         h.PostalCode,
+		Age:                h.Age,
+		Birthday:           h.Birthday,
+		Avatar:             h.Avatar,
+		Organization:       h.Organization,
+		FirstName:          h.FirstName,
+		LastName:           h.LastName,
+		IDNumber:           h.IDNumber,
+		SigninVerifyType:   h.SigninVerifyType,
+		PasswordHash:       h.PasswordHash,
+		KolConfirmed:       h.KolConfirmed,
+		GoogleSecret:       h.GoogleSecret,
+		GoogleAuthVerified: h.GoogleAuthVerified,
+		Banned:             h.Banned,
+		BanMessage:         h.BanMessage,
 	}
-	switch in.GetNewAccountType() {
-	case basetypes.SignMethod_Google:
-		verified := true
-		req.GoogleAuthVerified = &verified
-	case basetypes.SignMethod_Email:
-		req.EmailAddress = in.NewAccount
-	case basetypes.SignMethod_Mobile:
-		req.PhoneNO = in.NewAccount
+	if h.NewAccountType != nil {
+		if h.NewAccount == nil {
+			return fmt.Errorf("invalid account")
+		}
+		switch *h.NewAccountType {
+		case basetypes.SignMethod_Google:
+			verified := true
+			req.GoogleAuthVerified = &verified
+		case basetypes.SignMethod_Email:
+			req.EmailAddress = h.NewAccount
+		case basetypes.SignMethod_Mobile:
+			req.PhoneNO = h.NewAccount
+		}
 	}
 
 	info, err := usermwcli.UpdateUser(ctx, req)
 	if err != nil {
-		logger.Sugar().Errorw("UpdateUser", "err", err)
+		return err
+	}
+
+	h.User = info
+	return nil
+}
+
+func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
+	handler := &updateHandler{
+		Handler: h,
+	}
+
+	if h.UserID == nil {
+		return nil, fmt.Errorf("invalid userid")
+	}
+
+	if err := handler.verifyOldPasswordHash(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getUser(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.verifyOldAccountCode(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.verifyNewAccountCode(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.updateUser(ctx); err != nil {
 		return nil, err
 	}
 
-	_ = UpdateCache(ctx, info)
-
-	return info, nil
-}
-
-func ResetUser(ctx context.Context, in *npool.ResetUserRequest) error {
-	conds := &appusermgrpb.Conds{
-		AppID: &commonpb.StringVal{Op: cruder.EQ, Value: in.GetAppID()},
+	if !h.ShouldUpdateCache {
+		return h.User, nil
 	}
 
-	switch in.GetAccountType() {
+	if err := h.UpdateCache(ctx); err != nil {
+		return nil, err
+	}
+	meta, err := h.QueryCache(ctx)
+	if err != nil {
+		return nil, err
+	}
+	h.Metadata = meta
+
+	return h.Metadata.User, nil
+}
+
+func (h *updateHandler) getAccountUser(ctx context.Context) error {
+	if h.AccountType == nil || h.Account == nil {
+		return fmt.Errorf("invlaid account")
+	}
+	conds := &usermwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+	}
+	switch *h.AccountType {
 	case basetypes.SignMethod_Email:
-		conds.EmailAddress = &commonpb.StringVal{Op: cruder.EQ, Value: in.GetAccount()}
+		conds.EmailAddress = &basetypes.StringVal{Op: cruder.EQ, Value: *h.Account}
 	case basetypes.SignMethod_Mobile:
-		conds.PhoneNO = &commonpb.StringVal{Op: cruder.EQ, Value: in.GetAccount()}
+		conds.PhoneNO = &basetypes.StringVal{Op: cruder.EQ, Value: *h.Account}
 	default:
 		return fmt.Errorf("invalid account type")
 	}
 
-	auser, err := appusermgrcli.GetAppUserOnly(ctx, conds)
+	info, err := usermwcli.GetUserOnly(ctx, conds)
 	if err != nil {
 		return err
 	}
-	if auser == nil {
-		return fmt.Errorf("invalid user")
+	if info == nil {
+		return fmt.Errorf("invalid user: conds=%v", conds)
 	}
 
-	if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
-		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-		AppID:       in.GetAppID(),
-		Account:     in.GetAccount(),
-		AccountType: in.GetAccountType(),
-		UsedFor:     basetypes.UsedFor_Update,
-		Code:        in.GetVerificationCode(),
-	}); err != nil {
-		return err
-	}
+	h.UserID = &info.ID
+	h.User = info
 
-	_, err = usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
-		ID:           &auser.ID,
-		AppID:        &in.AppID,
-		PasswordHash: in.PasswordHash,
-	})
-
-	return err
+	return nil
 }
 
-func UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolRequest) (*usermwpb.User, error) {
-	var err error
-
-	_, span := otel.Tracer(servicename.ServiceDomain).Start(ctx, "UpdateUserKol")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	app, err := appmwcli.GetApp(ctx, in.GetAppID())
-	if err != nil {
-		return nil, err
+func (h *updateHandler) verifyAccountCode(ctx context.Context) error {
+	if h.Account == nil || h.AccountType == nil {
+		return fmt.Errorf("invalid account")
 	}
-	if app == nil {
-		return nil, fmt.Errorf("invalid app")
+	if h.VerificationCode == nil {
+		return fmt.Errorf("invalid verification code")
 	}
+	return usercodemwcli.VerifyUserCode(
+		ctx,
+		&usercodemwpb.VerifyUserCodeRequest{
+			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+			AppID:       h.AppID,
+			Account:     *h.Account,
+			AccountType: *h.AccountType,
+			UsedFor:     basetypes.UsedFor_Update,
+			Code:        *h.VerificationCode,
+		})
+}
 
-	span = commontracer.TraceInvoker(span, "role", "middleware", "UpdateUserKol")
-
-	req := &usermwpb.UserReq{
-		ID:    &in.TargetUserID,
-		AppID: &in.AppID,
-		Kol:   &in.Kol,
+func (h *Handler) ResetUser(ctx context.Context) error {
+	handler := &updateHandler{
+		Handler: h,
 	}
 
-	info, err := usermwcli.UpdateUser(ctx, req)
-	if err != nil {
-		logger.Sugar().Errorw("UpdateUserKol", "err", err)
-		return nil, err
+	if err := handler.getAccountUser(ctx); err != nil {
+		return err
+	}
+	if err := handler.verifyAccountCode(ctx); err != nil {
+		return err
+	}
+	if _, err := usermwcli.UpdateUser(
+		ctx,
+		&usermwpb.UserReq{
+			ID:           h.UserID,
+			AppID:        &h.AppID,
+			PasswordHash: h.PasswordHash,
+		},
+	); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *updateHandler) verifyRegistrationInvitation(ctx context.Context) error {
+	if h.TargetUserID == nil {
+		return fmt.Errorf("invalid target userid")
 	}
 
-	code, err := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
-		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: in.GetAppID()},
-		UserID: &commonpb.StringVal{Op: cruder.EQ, Value: in.GetTargetUserID()},
+	reg, err := regmwcli.GetRegistrationOnly(ctx, &regmgrpb.Conds{
+		AppID:     &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
+		InviterID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		InviteeID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
 	})
 	if err != nil {
-		logger.Sugar().Errorw("UpdateUserKol", "err", err)
-		return nil, err
+		return nil
 	}
-	if code == nil {
-		code, err = ivcodemwcli.CreateInvitationCode(ctx, &ivcodemwpb.InvitationCodeReq{
+	if reg == nil {
+		return fmt.Errorf("invalid registration invitation")
+	}
+	return nil
+}
+
+func (h *updateHandler) tryCreateInvitationCode(ctx context.Context) error {
+	info, err := ivcodemwcli.GetInvitationCodeOnly(
+		ctx,
+		&ivcodemwpb.Conds{
+			AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
+			UserID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if info != nil {
+		return nil
+	}
+
+	_, err = ivcodemwcli.CreateInvitationCode(
+		ctx,
+		&ivcodemwpb.InvitationCodeReq{
 			AppID:  &info.AppID,
 			UserID: &info.ID,
-		})
-		if err != nil {
+		},
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// TODO: move this to pubsub message
+func (h *updateHandler) sendKolNotification(ctx context.Context) {
+	if !*h.Kol {
+		return
+	}
+
+	lang, err := applangmwcli.GetLangOnly(ctx, &applangmgrpb.Conds{
+		AppID: &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
+		Main:  &commonpb.BoolVal{Op: cruder.EQ, Value: true},
+	})
+	if err != nil {
+		logger.Sugar().Errorw("sendKolNotification", "Error", err)
+		return
+	}
+	if lang == nil {
+		logger.Sugar().Warnw("sendKolNotification", "Error", "Main AppLang not exist")
+		return
+	}
+
+	info, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
+		AppID:     h.AppID,
+		LangID:    lang.LangID,
+		Channel:   chanmgrpb.NotifChannel_ChannelEmail,
+		EventType: basetypes.UsedFor_CreateInvitationCode,
+	})
+	if err != nil {
+		logger.Sugar().Errorw("sendKolNotification", "Error", err)
+		return
+	}
+	if info == nil {
+		logger.Sugar().Warnw("sendKolNotification", "Error", "Cannot generate text")
+		return
+	}
+
+	err = sendmwcli.SendMessage(ctx, &sendmwpb.SendMessageRequest{
+		Subject:     info.Subject,
+		Content:     info.Content,
+		From:        info.From,
+		To:          h.TargetUser.EmailAddress,
+		ToCCs:       info.ToCCs,
+		ReplyTos:    info.ReplyTos,
+		AccountType: basetypes.SignMethod_Email,
+	})
+	if err != nil {
+		logger.Sugar().Errorw("sendKolNotification", "Error", err)
+	}
+}
+
+func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
+	if h.Kol == nil {
+		return nil, fmt.Errorf("invalid kol")
+	}
+
+	handler := &updateHandler{
+		Handler: h,
+	}
+
+	if h.CheckInvitation != nil && *h.CheckInvitation {
+		if h.UserID == nil {
+			return nil, fmt.Errorf("invalid userid")
+		}
+		if err := handler.verifyRegistrationInvitation(ctx); err != nil {
 			return nil, err
 		}
-
-		info.InvitationCode = &code.InvitationCode
+	}
+	req := &usermwpb.UserReq{
+		ID:    h.TargetUserID,
+		AppID: &h.AppID,
+		Kol:   h.Kol,
+	}
+	info, err := usermwcli.UpdateUser(ctx, req)
+	if err != nil {
+		return nil, err
 	}
 
-	if in.GetKol() {
-		lang, err := applangmwcli.GetLangOnly(ctx, &applangmgrpb.Conds{
-			AppID: &commonpb.StringVal{Op: cruder.EQ, Value: info.AppID},
-			Main:  &commonpb.BoolVal{Op: cruder.EQ, Value: true},
-		})
-		if err != nil {
-			logger.Sugar().Errorw("UpdateUserKol", "Error", err)
-			return info, nil
-		}
-		if lang == nil {
-			logger.Sugar().Warnw("UpdateUserKol", "Error", "Main AppLang not exist")
-			return info, nil
-		}
+	h.TargetUser = info
 
-		info1, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
-			AppID:     info.AppID,
-			LangID:    lang.LangID,
-			Channel:   chanmgrpb.NotifChannel_ChannelEmail,
-			EventType: basetypes.UsedFor_CreateInvitationCode,
-		})
-		if err != nil {
-			logger.Sugar().Errorw("UpdateUserKol", "Error", err)
-			return info, nil
-		}
-		if info1 == nil {
-			logger.Sugar().Warnw("UpdateUserKol", "Error", "Cannot generate text")
-			return info, nil
-		}
-
-		err = sendmwcli.SendMessage(ctx, &sendmwpb.SendMessageRequest{
-			Subject:     info1.Subject,
-			Content:     info1.Content,
-			From:        info1.From,
-			To:          info.EmailAddress,
-			ToCCs:       info1.ToCCs,
-			ReplyTos:    info1.ReplyTos,
-			AccountType: basetypes.SignMethod_Email,
-		})
-		if err != nil {
-			logger.Sugar().Errorw("UpdateUserKol", "Error", err)
-			return info, nil
-		}
+	if err := handler.tryCreateInvitationCode(ctx); err != nil {
+		return nil, err
 	}
+
+	handler.sendKolNotification(ctx)
 
 	return info, nil
 }

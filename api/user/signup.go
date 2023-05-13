@@ -15,9 +15,9 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(in.GetAppID()),
-		user1.WithPasswordHash(in.GetPasswordHash()),
+		user1.WithPasswordHash(&in.PasswordHash),
 		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
-		user1.WithVerificationCode(in.GetVerificationCode()),
+		user1.WithVerificationCode(&in.VerificationCode),
 		user1.WithInvitationCode(in.InvitationCode),
 		user1.WithRequestTimeoutSeconds(10), //nolint
 	)
@@ -32,6 +32,11 @@ func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.Sign
 
 	info, err := handler.Signup(ctx)
 	if err != nil {
+		logger.Sugar().Errorw(
+			"Signup",
+			"In", in,
+			"Error", err,
+		)
 		return &user.SignupResponse{}, status.Error(codes.Internal, err.Error())
 	}
 

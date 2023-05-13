@@ -5,11 +5,12 @@ import (
 
 	"github.com/NpoolPlatform/appuser-gateway/api/admin"
 	"github.com/NpoolPlatform/appuser-gateway/api/app"
-	"github.com/NpoolPlatform/appuser-gateway/api/authing"
-	"github.com/NpoolPlatform/appuser-gateway/api/ban"
+	"github.com/NpoolPlatform/appuser-gateway/api/authing/auth"
+	authhistory "github.com/NpoolPlatform/appuser-gateway/api/authing/history"
 	"github.com/NpoolPlatform/appuser-gateway/api/ga"
 	"github.com/NpoolPlatform/appuser-gateway/api/kyc"
 	"github.com/NpoolPlatform/appuser-gateway/api/role"
+	roleuser "github.com/NpoolPlatform/appuser-gateway/api/role/user"
 	"github.com/NpoolPlatform/appuser-gateway/api/subscriber"
 	"github.com/NpoolPlatform/appuser-gateway/api/user"
 
@@ -28,11 +29,12 @@ func Register(server grpc.ServiceRegistrar) {
 	admin.Register(server)
 	app.Register(server)
 	subscriber.Register(server)
-	ban.Register(server)
 	role.Register(server)
+	roleuser.Register(server)
 	user.Register(server)
 	ga.Register(server)
-	authing.Register(server)
+	auth.Register(server)
+	authhistory.Register(server)
 	kyc.Register(server)
 }
 
@@ -49,10 +51,10 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 	if err := subscriber.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
-	if err := ban.RegisterGateway(mux, endpoint, opts); err != nil {
+	if err := role.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
-	if err := role.RegisterGateway(mux, endpoint, opts); err != nil {
+	if err := roleuser.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := user.RegisterGateway(mux, endpoint, opts); err != nil {
@@ -61,7 +63,10 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 	if err := ga.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
-	if err := authing.RegisterGateway(mux, endpoint, opts); err != nil {
+	if err := auth.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := authhistory.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := kyc.RegisterGateway(mux, endpoint, opts); err != nil {

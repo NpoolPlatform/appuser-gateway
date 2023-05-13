@@ -54,8 +54,8 @@ func MetadataFromContext(ctx context.Context) (*Metadata, error) {
 func (meta *Metadata) ToJWTClaims() jwt.MapClaims {
 	claims := jwt.MapClaims{}
 
-	claims["app_id"] = meta.AppID
-	claims["user_id"] = meta.UserID
+	claims["app_id"] = meta.AppID.String()
+	claims["user_id"] = meta.UserID.String()
 	claims["account"] = meta.Account
 	claims["account_type"] = meta.AccountType
 	claims["client_ip"] = meta.ClientIP
@@ -83,7 +83,7 @@ func (meta *Metadata) ValidateJWTClaims(claims jwt.MapClaims) error {
 	}
 	clientIP, ok := claims["client_ip"]
 	if !ok || clientIP.(string) != meta.ClientIP.String() {
-		return fmt.Errorf("invalid client ip")
+		return fmt.Errorf("invalid client ip, ok=%v, client_ip=%v, meta.client_ip=%v", ok, clientIP, meta.ClientIP)
 	}
 	userAgent, ok := claims["user_agent"]
 	if !ok || userAgent.(string) != meta.UserAgent {

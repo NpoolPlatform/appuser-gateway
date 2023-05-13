@@ -40,6 +40,10 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/version
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
@@ -146,6 +150,38 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/ban/app
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/adminapps
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/adminapps
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/genesisroles
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/genesisroles
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/genesisuser
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/genesisusers
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/authorize/genesis
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/get/app/users
             backend:
               serviceName: appuser-gateway
@@ -163,6 +199,10 @@ spec:
               serviceName: appuser-gateway
               servicePort: 50500
           - path: /api/appuser/v1/get/app/user/kycimage
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/authenticate
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -198,7 +238,10 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-
+          - path: /api/appuser/v1/delete/app
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/setup/googleauth
             backend:
               serviceName: appuser-gateway
@@ -236,6 +279,10 @@ spec:
               serviceName: appuser-gateway
               servicePort: 50500
           - path: /api/appuser/v1/update/role
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/delete/role
             backend:
               serviceName: appuser-gateway
               servicePort: 50500

@@ -3,19 +3,15 @@ package user
 import (
 	"context"
 	"fmt"
-	"time"
 
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	loginhispb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/login/history"
-	recaptcha "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/recaptcha"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	loginhispb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user/login/history"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
-	loginhiscli "github.com/NpoolPlatform/appuser-manager/pkg/client/login/history"
-	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
@@ -25,307 +21,297 @@ import (
 
 	commonpb "github.com/NpoolPlatform/message/npool"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-
-	"github.com/go-resty/resty/v2"
 
 	"github.com/google/uuid"
 )
 
-func addHistory(appID, userID, clientIP, userAgent string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second) //nolint
-	defer cancel()
-
-	location := ""
-	histories, _, err := loginhiscli.GetHistories(ctx, &loginhispb.Conds{
-		ClientIP: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: clientIP,
-		},
-		Location: &commonpb.StringVal{
-			Op:    cruder.NEQ,
-			Value: "",
-		},
-	}, 0, 1)
-	if err != nil {
-		return
-	}
-	if len(histories) > 0 {
-		location = histories[0].Location
-	} else {
-		type resp struct {
-			Error   bool   `json:"error"`
-			City    string `json:"city"`
-			Country string `json:"country_name"`
-			IP      string `json:"ip"`
-			Reason  string `json:"reason"`
-		}
-
-		r, err := resty.
-			New().
-			R().
-			SetResult(&resp{}).
-			Get(fmt.Sprintf("https://ipapi.co/%v/json", clientIP))
-		if err == nil {
-			rc, ok := r.Result().(*resp)
-			if ok && !rc.Error {
-				location = fmt.Sprintf("%v, %v", rc.City, rc.Country)
-			}
-		}
-	}
-
-	_, _ = loginhiscli.CreateHistory(
-		ctx,
-		&loginhispb.HistoryReq{
-			AppID:     &appID,
-			UserID:    &userID,
-			ClientIP:  &clientIP,
-			UserAgent: &userAgent,
-			Location:  &location,
-		},
-	)
+type loginHandler struct {
+	*Handler
 }
 
-func Login(
-	ctx context.Context,
-	appID, account, passwordHash string,
-	accountType basetypes.SignMethod,
-	manMachineSpec, envSpec string,
-) (
-	*usermwpb.User, error,
-) {
-	app, err := appmwcli.GetApp(ctx, appID)
-	if err != nil {
-		return nil, err
-	}
-	if app == nil {
-		return nil, fmt.Errorf("invalid app")
-	}
+func (h *loginHandler) notifyLogin(loginType basetypes.LoginType) {
+	clientIP := h.Metadata.ClientIP.String()
 
-	if app.RecaptchaMethod == recaptcha.RecaptchaType_GoogleRecaptchaV3 {
-		err = thirdmwcli.VerifyGoogleRecaptchaV3(ctx, manMachineSpec)
-		if err != nil {
-			return nil, err
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		req := &loginhispb.HistoryReq{
+			AppID:     &h.AppID,
+			UserID:    h.UserID,
+			ClientIP:  &clientIP,
+			UserAgent: &h.Metadata.UserAgent,
+			LoginType: &loginType,
 		}
+		return publisher.Update(
+			basetypes.MsgID_CreateLoginHistoryReq.String(),
+			nil,
+			nil,
+			nil,
+			req,
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"notifyLogin",
+			"AppID", h.AppID,
+			"UserID", h.UserID,
+			"Account", h.Account,
+			"AccountType", h.AccountType,
+			"Error", err,
+		)
 	}
+}
 
-	user, err := usermwcli.VerifyAccount(
+func (h *loginHandler) verifyRecaptcha(ctx context.Context) error {
+	if h.ManMachineSpec == nil {
+		return fmt.Errorf("invalid manmachinespec")
+	}
+	switch h.App.RecaptchaMethod {
+	case basetypes.RecaptchaMethod_GoogleRecaptchaV3:
+		return thirdmwcli.VerifyGoogleRecaptchaV3(ctx, *h.ManMachineSpec)
+	case basetypes.RecaptchaMethod_NoRecaptcha:
+	default:
+	}
+	return nil
+}
+
+func (h *loginHandler) verifyAccount(ctx context.Context) error {
+	if h.Account == nil || h.AccountType == nil || h.PasswordHash == nil {
+		return fmt.Errorf("invalid account or password")
+	}
+	info, err := usermwcli.VerifyAccount(
 		ctx,
-		appID,
-		account,
-		accountType,
-		passwordHash,
+		h.AppID,
+		*h.Account,
+		*h.AccountType,
+		*h.PasswordHash,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if user == nil {
-		return nil, fmt.Errorf("invalid user")
+	if info == nil {
+		return fmt.Errorf("invalid user")
 	}
+	if _, err = uuid.Parse(info.ID); err != nil {
+		return err
+	}
+	h.UserID = &info.ID
+	h.User = info
+	return nil
+}
 
+func (h *loginHandler) prepareMetadata(ctx context.Context) error {
 	meta, err := MetadataFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	meta.AppID = uuid.MustParse(appID)
-	meta.Account = account
-	meta.AccountType = accountType.String()
-	meta.UserID = uuid.MustParse(user.ID)
-
-	token, err := createToken(meta)
-	if err != nil {
-		return nil, err
-	}
-
-	user.Logined = true
-	user.LoginAccount = account
-	user.LoginAccountType = accountType
-	user.LoginToken = token
-	user.LoginClientIP = meta.ClientIP.String()
-	user.LoginClientUserAgent = meta.UserAgent
-
-	code, err := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
-		AppID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: appID,
-		},
-		UserID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: user.ID,
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	if code != nil {
-		user.InvitationCode = &code.InvitationCode
-	}
-
-	if !app.SigninVerifyEnable {
-		user.LoginVerified = true
-	}
-
-	user.GoogleOTPAuth = fmt.Sprintf("otpauth://totp/%s?secret=%s", account, user.GoogleSecret)
-	meta.User = user
-
-	if err := createCache(ctx, meta); err != nil {
-		return nil, err
-	}
-
-	go addHistory(appID, user.ID, meta.ClientIP.String(), meta.UserAgent)
-
-	return user, nil
+	meta.AppID = uuid.MustParse(h.AppID)
+	meta.Account = *h.Account
+	meta.AccountType = h.AccountType.String()
+	meta.UserID = uuid.MustParse(*h.UserID)
+	h.Metadata = meta
+	return nil
 }
 
-//nolint:gocyclo
-func LoginVerify(
-	ctx context.Context,
-	appID, userID, token string,
-	account string,
-	accountType basetypes.SignMethod,
-	code string,
-) (*usermwpb.User, error) {
-	meta, err := queryAppUser(ctx, uuid.MustParse(appID), uuid.MustParse(userID))
+func (h *loginHandler) formalizeUser() {
+	h.User.Logined = true
+	h.User.LoginAccount = *h.Account
+	h.User.LoginAccountType = *h.AccountType
+	h.User.LoginToken = *h.Token
+	h.User.LoginClientIP = h.Metadata.ClientIP.String()
+	h.User.LoginClientUserAgent = h.Metadata.UserAgent
+
+	if !h.App.SigninVerifyEnable {
+		h.User.LoginVerified = true
+	}
+
+	h.User.GoogleOTPAuth = fmt.Sprintf(
+		"otpauth://totp/%s?secret=%s",
+		*h.Account,
+		h.User.GoogleSecret,
+	)
+
+	h.Metadata.User = h.User
+}
+
+func (h *loginHandler) getInvitationCode(ctx context.Context) error {
+	code, err := ivcodemwcli.GetInvitationCodeOnly(
+		ctx,
+		&ivcodemwpb.Conds{
+			AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
+			UserID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if code == nil {
+		return nil
+	}
+
+	h.User.InvitationCode = &code.InvitationCode
+	return nil
+}
+
+func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
+	handler := &loginHandler{
+		Handler: h,
+	}
+
+	if err := handler.verifyRecaptcha(ctx); err != nil {
+		return nil, err
+	}
+
+	if err := handler.verifyAccount(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.prepareMetadata(ctx); err != nil {
+		return nil, err
+	}
+	token, err := createToken(h.Metadata)
 	if err != nil {
 		return nil, err
 	}
-	if meta == nil {
-		return nil, nil
-	}
-
-	if err := verifyToken(meta, token); err != nil {
+	h.Token = &token
+	handler.formalizeUser()
+	if err := handler.getInvitationCode(ctx); err != nil {
 		return nil, err
 	}
-
-	if err := createCache(ctx, meta); err != nil {
+	if err := h.CreateCache(ctx); err != nil {
 		return nil, err
 	}
+	handler.notifyLogin(basetypes.LoginType_FreshLogin)
+	return h.User, nil
+}
 
-	switch accountType {
+func (h *loginHandler) mustQueryMetadata(ctx context.Context) (err error) {
+	h.Metadata, err = h.QueryCache(ctx)
+	if err != nil {
+		return err
+	}
+	if h.Metadata == nil || h.Metadata.User == nil {
+		return fmt.Errorf("metadata not exist")
+	}
+
+	h.User = h.Metadata.User
+
+	return nil
+}
+
+func (h *loginHandler) verifyUserCode(ctx context.Context) error {
+	if h.AccountType == nil {
+		return fmt.Errorf("invalid account type")
+	}
+	if h.VerificationCode == nil {
+		return fmt.Errorf("invalid verification code")
+	}
+
+	switch *h.AccountType {
 	case basetypes.SignMethod_Email:
-		if account != meta.User.EmailAddress {
-			return nil, fmt.Errorf("invalid account")
-		}
+		fallthrough //nolint
 	case basetypes.SignMethod_Mobile:
-		if account != meta.User.PhoneNO {
-			return nil, fmt.Errorf("invalid account")
+		if h.Account == nil {
+			return fmt.Errorf("invalid account")
 		}
 	case basetypes.SignMethod_Google:
 	default:
-		return nil, fmt.Errorf("not supported")
+		return fmt.Errorf("not supported")
 	}
 
-	user, err := usermwcli.GetUser(ctx, appID, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
-		return nil, fmt.Errorf("fail get user ")
-	}
-
-	switch accountType {
-	case basetypes.SignMethod_Mobile:
-		if user.GetPhoneNO() != account {
-			return nil, fmt.Errorf("invalid mobile")
-		}
+	switch *h.AccountType {
 	case basetypes.SignMethod_Email:
-		if user.EmailAddress != account {
-			return nil, fmt.Errorf("invalid email")
+		if *h.Account != h.Metadata.User.EmailAddress {
+			return fmt.Errorf("invalid account")
 		}
+	case basetypes.SignMethod_Mobile:
+		if *h.Account != h.Metadata.User.PhoneNO {
+			return fmt.Errorf("invalid account")
+		}
+	case basetypes.SignMethod_Google:
+		h.Account = &h.Metadata.User.GoogleSecret
 	}
 
-	if accountType == basetypes.SignMethod_Google {
-		account = user.GetGoogleSecret()
-	}
-
-	if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
-		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-		AppID:       appID,
-		Account:     account,
-		AccountType: accountType,
-		UsedFor:     basetypes.UsedFor_Signin,
-		Code:        code,
-	}); err != nil {
-		return nil, err
-	}
-
-	meta.User.LoginVerified = true
-	if err := createCache(ctx, meta); err != nil {
-		return nil, err
-	}
-
-	return meta.User, nil
-}
-
-func Logined(ctx context.Context, appID, userID, token string) (*usermwpb.User, error) {
-	meta, err := queryAppUser(ctx, uuid.MustParse(appID), uuid.MustParse(userID))
-	if err != nil {
-		logger.Sugar().Infow("Logined", "error", err)
-		return nil, nil
-	}
-	if meta == nil || meta.User == nil {
-		return nil, nil
-	}
-	if !meta.User.LoginVerified {
-		return nil, nil
-	}
-
-	if err := verifyToken(meta, token); err != nil {
-		logger.Sugar().Infow("Logined", "error", err)
-		return nil, nil
-	}
-
-	if err := createCache(ctx, meta); err != nil {
-		logger.Sugar().Infow("Logined", "error", err)
-		return nil, nil
-	}
-
-	return meta.User, nil
-}
-
-func Logout(ctx context.Context, appID, userID string) (*usermwpb.User, error) {
-	meta, err := queryAppUser(ctx, uuid.MustParse(appID), uuid.MustParse(userID))
-	if err != nil {
-		return nil, err
-	}
-
-	if err := deleteCache(ctx, meta); err != nil {
-		return nil, err
-	}
-
-	return meta.User, nil
-}
-
-func UpdateCache(ctx context.Context, user *usermwpb.User) error {
-	meta, err := queryAppUser(ctx, uuid.MustParse(user.AppID), uuid.MustParse(user.ID))
-	if err != nil {
-		logger.Sugar().Errorw("UpdateCache", "err", err)
+	if err := usercodemwcli.VerifyUserCode(
+		ctx,
+		&usercodemwpb.VerifyUserCodeRequest{
+			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+			AppID:       h.AppID,
+			Account:     *h.Account,
+			AccountType: *h.AccountType,
+			UsedFor:     basetypes.UsedFor_Signin,
+			Code:        *h.VerificationCode,
+		},
+	); err != nil {
 		return err
 	}
-	if meta == nil || meta.User == nil {
-		return fmt.Errorf("invalid user")
-	}
 
-	user.InvitationCode = meta.User.InvitationCode
-	user.Logined = meta.User.Logined
-	user.LoginAccount = meta.User.LoginAccount
-	user.LoginAccountType = meta.User.LoginAccountType
-	user.LoginToken = meta.User.LoginToken
-	user.LoginClientIP = meta.User.LoginClientIP
-	user.LoginClientUserAgent = meta.User.LoginClientUserAgent
-	user.LoginVerified = meta.User.LoginVerified
-
-	if user.GoogleOTPAuth == "" {
-		user.GoogleOTPAuth = meta.User.GoogleOTPAuth
-	}
-
-	meta.User = user
-	if err := createCache(ctx, meta); err != nil {
-		logger.Sugar().Errorw("UpdateCache", "err", err)
-		return err
-	}
+	h.Metadata.User.LoginVerified = true
 
 	return nil
+}
+
+func (h *Handler) LoginVerify(ctx context.Context) (*usermwpb.User, error) {
+	if h.Token == nil {
+		return nil, fmt.Errorf("invalid token")
+	}
+	handler := &loginHandler{
+		Handler: h,
+	}
+	if err := handler.mustQueryMetadata(ctx); err != nil {
+		return nil, err
+	}
+	if err := verifyToken(h.Metadata, *h.Token); err != nil {
+		return nil, err
+	}
+	if err := handler.verifyUserCode(ctx); err != nil {
+		return nil, err
+	}
+	if err := h.CreateCache(ctx); err != nil {
+		return nil, err
+	}
+	return h.User, nil
+}
+
+func (h *Handler) Logined(ctx context.Context) (*usermwpb.User, error) {
+	if h.Token == nil {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	handler := &loginHandler{
+		Handler: h,
+	}
+
+	if err := handler.mustQueryMetadata(ctx); err != nil {
+		return nil, err
+	}
+	if !h.User.LoginVerified {
+		return nil, nil
+	}
+	if err := verifyToken(h.Metadata, *h.Token); err != nil {
+		return nil, err
+	}
+	if err := h.CreateCache(ctx); err != nil {
+		return nil, err
+	}
+
+	return h.User, nil
+}
+
+func (h *Handler) Logout(ctx context.Context) (*usermwpb.User, error) {
+	if h.Token == nil {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	handler := &loginHandler{
+		Handler: h,
+	}
+
+	if err := handler.mustQueryMetadata(ctx); err != nil {
+		return nil, err
+	}
+
+	if err := h.DeleteCache(ctx); err != nil {
+		return nil, err
+	}
+
+	return h.User, nil
 }

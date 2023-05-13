@@ -1,58 +1,79 @@
+//nolint:dupl
 package role
 
 import (
 	"context"
 
-	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
-
-	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-	tracer "github.com/NpoolPlatform/appuser-manager/pkg/tracer/approle"
-	"google.golang.org/grpc/codes"
-
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	approlemgrcli "github.com/NpoolPlatform/appuser-manager/pkg/client/approle"
+	role1 "github.com/NpoolPlatform/appuser-gateway/pkg/role"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/role"
-	"github.com/google/uuid"
-	"go.opentelemetry.io/otel"
-	scodes "go.opentelemetry.io/otel/codes"
+	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/role"
+
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) UpdateRole(ctx context.Context, in *role.UpdateRoleRequest) (*role.UpdateRoleResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateRole")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	span = tracer.Trace(span, in.GetInfo())
-
-	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
-		logger.Sugar().Errorw("GetAppRoles", "ID", in.GetInfo().GetID(), "err", err)
-		return &role.UpdateRoleResponse{}, status.Error(codes.InvalidArgument, "ID is invalid")
-	}
-
-	span = commontracer.TraceInvoker(span, "role", "manager", "UpdateAppRole")
-
-	appRole, err := approlemgrcli.UpdateAppRole(ctx, in.GetInfo())
+func (s *Server) UpdateRole(ctx context.Context, in *npool.UpdateRoleRequest) (*npool.UpdateRoleResponse, error) {
+	handler, err := role1.NewHandler(
+		ctx,
+		role1.WithID(&in.ID),
+		role1.WithAppID(in.GetAppID()),
+		role1.WithRole(in.RoleName),
+		role1.WithDescription(in.Description),
+		role1.WithDefault(in.Default),
+	)
 	if err != nil {
-		logger.Sugar().Errorw("GetAppRoles", "err", err)
-		return &role.UpdateRoleResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw(
+			"UpdateRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UpdateRoleResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	info, err := rolemwcli.GetRole(ctx, appRole.ID)
+	info, err := handler.UpdateRole(ctx)
 	if err != nil {
-		logger.Sugar().Errorw("CreateRole", "err", err)
-		return &role.UpdateRoleResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw(
+			"UpdateRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UpdateRoleResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &role.UpdateRoleResponse{
+	return &npool.UpdateRoleResponse{
+		Info: info,
+	}, nil
+}
+
+func (s *Server) UpdateAppRole(ctx context.Context, in *npool.UpdateAppRoleRequest) (*npool.UpdateAppRoleResponse, error) {
+	handler, err := role1.NewHandler(
+		ctx,
+		role1.WithID(&in.ID),
+		role1.WithAppID(in.GetTargetAppID()),
+		role1.WithRole(in.RoleName),
+		role1.WithDescription(in.Description),
+		role1.WithDefault(in.Default),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UpdateAppRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UpdateAppRoleResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	info, err := handler.UpdateRole(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UpdateAppRole",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UpdateAppRoleResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.UpdateAppRoleResponse{
 		Info: info,
 	}, nil
 }

@@ -1,308 +1,179 @@
+//nolint:dupl
 package user
 
 import (
 	"context"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-
-	constant "github.com/NpoolPlatform/appuser-gateway/pkg/message/const"
-	commontracer "github.com/NpoolPlatform/appuser-gateway/pkg/tracer"
-
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
-
-	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
-	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
-
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-
-	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
-
-	historycli "github.com/NpoolPlatform/appuser-manager/pkg/client/login/history"
-	historypb "github.com/NpoolPlatform/message/npool/appuser/mgr/v2/login/history"
-
-	"github.com/NpoolPlatform/message/npool"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"go.opentelemetry.io/otel"
-	scodes "go.opentelemetry.io/otel/codes"
-
-	"github.com/google/uuid"
 )
 
-func (s *Server) Login(ctx context.Context, in *user.LoginRequest) (*user.LoginResponse, error) { //nolint
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Login")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	if _, err := uuid.Parse(in.GetAppID()); err != nil {
-		logger.Sugar().Errorw("validate", "AppID", in.GetAppID(), "error", err)
-		return &user.LoginResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
-	}
-
-	if in.GetPasswordHash() == "" {
-		logger.Sugar().Errorw("validate", "PasswordHash", in.GetPasswordHash())
-		return &user.LoginResponse{}, status.Error(codes.InvalidArgument, "PasswordHash is invalid")
-	}
-	if in.GetAccount() == "" {
-		logger.Sugar().Errorw("validate", "Account", in.GetAccount())
-		return &user.LoginResponse{}, status.Error(codes.InvalidArgument, "Account is invalid")
-	}
-
-	switch in.GetAccountType() {
-	case basetypes.SignMethod_Email:
-	case basetypes.SignMethod_Mobile:
-	case basetypes.SignMethod_Twitter:
-	case basetypes.SignMethod_Github:
-	case basetypes.SignMethod_Facebook:
-	case basetypes.SignMethod_Linkedin:
-	case basetypes.SignMethod_Wechat:
-	case basetypes.SignMethod_Google:
-	case basetypes.SignMethod_Username:
-	default:
-		logger.Sugar().Errorw("validate", "AccountType", in.GetAccountType())
-		return &user.LoginResponse{}, status.Error(codes.InvalidArgument, "AccountType is invalid")
-	}
-
-	if in.GetManMachineSpec() == "" {
-		logger.Sugar().Errorw("validate", "ManMachineSpec", in.GetManMachineSpec())
-		return &user.LoginResponse{}, status.Error(codes.InvalidArgument, "ManMachineSpec is invalid")
-	}
-
-	if in.GetEnvironmentSpec() == "" {
-		logger.Sugar().Errorw("validate", "EnvironmentSpec", in.GetEnvironmentSpec())
-		return &user.LoginResponse{}, status.Error(codes.InvalidArgument, "EnvironmentSpec is invalid")
-	}
-
-	span = commontracer.TraceInvoker(span, "user", "middleware", "Login")
-
-	info, err := user1.Login(
+func (s *Server) Login(ctx context.Context, in *npool.LoginRequest) (*npool.LoginResponse, error) {
+	handler, err := user1.NewHandler(
 		ctx,
-		in.GetAppID(),
-		in.GetAccount(),
-		in.GetPasswordHash(),
-		in.GetAccountType(),
-		in.GetManMachineSpec(),
-		in.GetEnvironmentSpec(),
+		user1.WithAppID(in.GetAppID()),
+		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
+		user1.WithPasswordHash(&in.PasswordHash),
+		user1.WithManMachineSpec(in.GetManMachineSpec()),
+		user1.WithEnvironmentSpec(in.GetEnvironmentSpec()),
 	)
 	if err != nil {
-		logger.Sugar().Errorw("Login", "err", err)
-		return &user.LoginResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw(
+			"Login",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.LoginResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
-	return &user.LoginResponse{
+
+	info, err := handler.Login(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"Login",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.LoginResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.LoginResponse{
 		Info: info,
 	}, nil
 }
 
-func (s *Server) LoginVerify(ctx context.Context, in *user.LoginVerifyRequest) (*user.LoginVerifyResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "LoginVerify")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	if _, err := uuid.Parse(in.GetAppID()); err != nil {
-		logger.Sugar().Errorw("validate", "AppID", in.GetAppID(), "error", err)
-		return &user.LoginVerifyResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
-	}
-
-	if _, err := uuid.Parse(in.GetUserID()); err != nil {
-		logger.Sugar().Errorw("validate", "UserID", in.GetUserID(), "error", err)
-		return &user.LoginVerifyResponse{}, status.Error(codes.InvalidArgument, "UserID is invalid")
-	}
-
-	if in.GetToken() == "" {
-		logger.Sugar().Errorw("validate", "Token", in.GetToken())
-		return &user.LoginVerifyResponse{}, status.Error(codes.InvalidArgument, "Token is invalid")
-	}
-
-	if in.GetVerificationCode() == "" {
-		logger.Sugar().Errorw("validate", "VerificationCode", in.GetVerificationCode())
-		return &user.LoginVerifyResponse{}, status.Error(codes.InvalidArgument, "VerificationCode is invalid")
-	}
-
-	span = commontracer.TraceInvoker(span, "user", "middleware", "LoginVerify")
-
-	info, err := user1.LoginVerify(
+func (s *Server) LoginVerify(ctx context.Context, in *npool.LoginVerifyRequest) (*npool.LoginVerifyResponse, error) {
+	handler, err := user1.NewHandler(
 		ctx,
-		in.GetAppID(),
-		in.GetUserID(),
-		in.GetToken(),
-		in.GetAccount(),
-		in.GetAccountType(),
-		in.GetVerificationCode(),
+		user1.WithAppID(in.GetAppID()),
+		user1.WithUserID(&in.UserID),
+		user1.WithAccount(in.GetAccount(), in.GetAccountType()),
+		user1.WithToken(in.GetToken()),
+		user1.WithVerificationCode(&in.VerificationCode),
 	)
 	if err != nil {
-		logger.Sugar().Errorw("LoginVerify", "err", err)
-		return &user.LoginVerifyResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw(
+			"LoginVerify",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.LoginVerifyResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
-	return &user.LoginVerifyResponse{
+
+	info, err := handler.LoginVerify(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"LoginVerify",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.LoginVerifyResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.LoginVerifyResponse{
 		Info: info,
 	}, nil
 }
 
-func (s *Server) Logined(ctx context.Context, in *user.LoginedRequest) (*user.LoginedResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Logined")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	if _, err := uuid.Parse(in.GetAppID()); err != nil {
-		logger.Sugar().Errorw("validate", "AppID", in.GetAppID(), "error", err)
-		return &user.LoginedResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
-	}
-
-	if _, err := uuid.Parse(in.GetUserID()); err != nil {
-		logger.Sugar().Errorw("validate", "UserID", in.GetUserID(), "error", err)
-		return &user.LoginedResponse{}, status.Error(codes.InvalidArgument, "UserID is invalid")
-	}
-
-	if in.GetToken() == "" {
-		logger.Sugar().Errorw("validate", "Token", in.GetToken())
-		return &user.LoginedResponse{}, status.Error(codes.InvalidArgument, "Token is invalid")
-	}
-
-	span = commontracer.TraceInvoker(span, "user", "middleware", "Logined")
-
-	info, err := user1.Logined(
+func (s *Server) Logined(ctx context.Context, in *npool.LoginedRequest) (*npool.LoginedResponse, error) {
+	handler, err := user1.NewHandler(
 		ctx,
-		in.GetAppID(),
-		in.GetUserID(),
-		in.GetToken(),
+		user1.WithAppID(in.GetAppID()),
+		user1.WithUserID(&in.UserID),
+		user1.WithToken(in.GetToken()),
 	)
 	if err != nil {
-		logger.Sugar().Errorw("Logined", "error", err)
-		return &user.LoginedResponse{}, status.Error(codes.Internal, err.Error())
-	}
-	if info == nil {
-		return &user.LoginedResponse{}, nil
+		logger.Sugar().Errorw(
+			"Logined",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.LoginedResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	code, err := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
-		AppID: &npool.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetAppID(),
-		},
-		UserID: &npool.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetUserID(),
-		},
-	})
+	info, err := handler.Logined(ctx)
 	if err != nil {
-		logger.Sugar().Errorw("UpdateCache", "error", err)
-		return &user.LoginedResponse{}, status.Error(codes.Internal, err.Error())
-	}
-	if code != nil {
-		info.InvitationCode = &code.InvitationCode
+		logger.Sugar().Errorw(
+			"Logined",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.LoginedResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	_ = user1.UpdateCache(ctx, info)
-
-	return &user.LoginedResponse{
+	return &npool.LoginedResponse{
 		Info: info,
 	}, nil
 }
 
-func (s *Server) Logout(ctx context.Context, in *user.LogoutRequest) (*user.LogoutResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Logout")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	if _, err := uuid.Parse(in.GetAppID()); err != nil {
-		logger.Sugar().Errorw("validate", "AppID", in.GetAppID(), "error", err)
-		return &user.LogoutResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
-	}
-
-	if _, err := uuid.Parse(in.GetUserID()); err != nil {
-		logger.Sugar().Errorw("validate", "UserID", in.GetUserID(), "error", err)
-		return &user.LogoutResponse{}, status.Error(codes.InvalidArgument, "UserID is invalid")
-	}
-
-	if in.GetToken() == "" {
-		logger.Sugar().Errorw("validate", "Token", in.GetToken())
-		return &user.LogoutResponse{}, status.Error(codes.InvalidArgument, "Token is invalid")
-	}
-
-	span = commontracer.TraceInvoker(span, "user", "middleware", "Logout")
-
-	info, err := user1.Logout(
+func (s *Server) Logout(ctx context.Context, in *npool.LogoutRequest) (*npool.LogoutResponse, error) {
+	handler, err := user1.NewHandler(
 		ctx,
-		in.GetAppID(),
-		in.GetUserID(),
+		user1.WithAppID(in.GetAppID()),
+		user1.WithUserID(&in.UserID),
+		user1.WithToken(in.GetToken()),
 	)
 	if err != nil {
-		logger.Sugar().Errorw("Logout", "err", err)
-		return &user.LogoutResponse{}, status.Error(codes.Internal, err.Error())
+		logger.Sugar().Errorw(
+			"Logout",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.LogoutResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
-	return &user.LogoutResponse{
+
+	info, err := handler.Logout(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"Logout",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.LogoutResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.LogoutResponse{
 		Info: info,
 	}, nil
 }
 
-func (s *Server) GetLoginHistories(ctx context.Context, in *user.GetLoginHistoriesRequest) (*user.GetLoginHistoriesResponse, error) {
-	var err error
-
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Logout")
-	defer span.End()
-	defer func() {
-		if err != nil {
-			span.SetStatus(scodes.Error, err.Error())
-			span.RecordError(err)
-		}
-	}()
-
-	if _, err := uuid.Parse(in.GetAppID()); err != nil {
-		logger.Sugar().Errorw("validate", "AppID", in.GetAppID(), "error", err)
-		return &user.GetLoginHistoriesResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
-	}
-
-	if _, err := uuid.Parse(in.GetUserID()); err != nil {
-		logger.Sugar().Errorw("validate", "UserID", in.GetUserID(), "error", err)
-		return &user.GetLoginHistoriesResponse{}, status.Error(codes.InvalidArgument, "UserID is invalid")
-	}
-
-	infos, total, err := historycli.GetHistories(ctx, &historypb.Conds{
-		AppID: &npool.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetAppID(),
-		},
-		UserID: &npool.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetUserID(),
-		},
-	}, in.GetOffset(), in.GetLimit())
+func (s *Server) GetLoginHistories(
+	ctx context.Context,
+	in *npool.GetLoginHistoriesRequest,
+) (
+	*npool.GetLoginHistoriesResponse,
+	error,
+) {
+	handler, err := user1.NewHandler(
+		ctx,
+		user1.WithAppID(in.GetAppID()),
+		user1.WithUserID(&in.UserID),
+		user1.WithOffset(in.GetOffset()),
+		user1.WithLimit(in.GetLimit()),
+	)
 	if err != nil {
-		return nil, err
+		logger.Sugar().Errorw(
+			"GetLoginHistories",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.GetLoginHistoriesResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	return &user.GetLoginHistoriesResponse{
+	infos, total, err := handler.GetLoginHistories(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetLoginHistories",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.GetLoginHistoriesResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.GetLoginHistoriesResponse{
 		Infos: infos,
 		Total: total,
 	}, nil
