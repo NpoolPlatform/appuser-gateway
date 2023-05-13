@@ -21,6 +21,7 @@ type createGenesisAuthHandler struct {
 	*Handler
 	auths []*authmwpb.Auth
 	urls  []*genesisURL
+	total uint32
 }
 
 func (h *createGenesisAuthHandler) getGenesisUrls() error {
@@ -56,43 +57,44 @@ func (h *createGenesisAuthHandler) createGenesisAuths(ctx context.Context) error
 	}
 
 	h.auths = auths
+	h.total = uint32(len(auths))
 
 	return nil
 }
 
-func (h *Handler) AuthorizeGenesis(ctx context.Context) (infos []*authmwpb.Auth, err error) {
+func (h *Handler) AuthorizeGenesis(ctx context.Context) (infos []*authmwpb.Auth, total uint32, err error) {
 	_apps, err := h.GetGenesisApps(ctx)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if len(_apps) == 0 {
-		return nil, fmt.Errorf("genesis app not created")
+		return nil, 0, fmt.Errorf("genesis app not created")
 	}
 
 	handler := &createGenesisAuthHandler{
 		Handler: h,
 	}
 	if err := handler.getGenesisUrls(); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	_roleusers, err := h.GetGenesisRoleUsers(ctx)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	h.GenesisRoleUsers = _roleusers
 
 	_users, err := h.GetGenesisUsers(ctx)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	if len(_users) == 0 {
-		return nil, fmt.Errorf("genesis user not created")
+		return nil, 0, fmt.Errorf("genesis user not created")
 	}
 	h.GenesisUsers = _users
 
 	if err := handler.createGenesisAuths(ctx); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return handler.auths, nil
+	return handler.auths, handler.total, nil
 }

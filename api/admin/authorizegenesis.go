@@ -22,7 +22,7 @@ func (s *Server) AuthorizeGenesis(ctx context.Context, in *npool.AuthorizeGenesi
 		)
 		return &npool.AuthorizeGenesisResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
-	infos, err := handler.AuthorizeGenesis(ctx)
+	infos, total, err := handler.AuthorizeGenesis(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
 			"AuthorizeGenesis",
@@ -34,5 +34,6 @@ func (s *Server) AuthorizeGenesis(ctx context.Context, in *npool.AuthorizeGenesi
 
 	return &npool.AuthorizeGenesisResponse{
 		Infos: infos,
+		Total: total,
 	}, nil
 }
