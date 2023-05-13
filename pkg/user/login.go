@@ -155,9 +155,11 @@ func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 	handler := &loginHandler{
 		Handler: h,
 	}
+
 	if err := handler.verifyRecaptcha(ctx); err != nil {
 		return nil, err
 	}
+
 	if err := handler.verifyAccount(ctx); err != nil {
 		return nil, err
 	}

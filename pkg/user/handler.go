@@ -22,6 +22,7 @@ type Handler struct {
 	User                  *usermwpb.User
 	TargetUserID          *string
 	TargetUser            *usermwpb.User
+	CheckInvitation       *bool
 	Account               *string
 	NewAccount            *string
 	PasswordHash          *string
@@ -346,6 +347,13 @@ func WithTargetUserID(id *string) func(context.Context, *Handler) error {
 			return err
 		}
 		h.TargetUserID = id
+		return nil
+	}
+}
+
+func WithCheckInvitation(check bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.CheckInvitation = &check
 		return nil
 	}
 }

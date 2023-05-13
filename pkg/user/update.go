@@ -400,18 +400,19 @@ func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 	if h.Kol == nil {
 		return nil, fmt.Errorf("invalid kol")
 	}
-	if h.UserID == nil {
-		return nil, fmt.Errorf("invalid userid")
-	}
 
 	handler := &updateHandler{
 		Handler: h,
 	}
 
-	if err := handler.verifyRegistrationInvitation(ctx); err != nil {
-		return nil, err
+	if h.CheckInvitation != nil && *h.CheckInvitation {
+		if h.UserID == nil {
+			return nil, fmt.Errorf("invalid userid")
+		}
+		if err := handler.verifyRegistrationInvitation(ctx); err != nil {
+			return nil, err
+		}
 	}
-
 	req := &usermwpb.UserReq{
 		ID:    h.TargetUserID,
 		AppID: &h.AppID,

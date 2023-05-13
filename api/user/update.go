@@ -85,6 +85,7 @@ func (s *Server) UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolReque
 		user1.WithAppID(in.GetAppID()),
 		user1.WithUserID(&in.UserID),
 		user1.WithTargetUserID(&in.TargetUserID),
+		user1.WithCheckInvitation(true),
 		user1.WithKol(&in.Kol),
 	)
 	if err != nil {
