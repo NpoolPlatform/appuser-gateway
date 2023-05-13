@@ -108,10 +108,12 @@ func WithSignupMethods(methods []basetypes.SignMethod) func(context.Context, *Ha
 	return func(ctx context.Context, h *Handler) error {
 		for _, method := range methods {
 			switch method {
+			case basetypes.SignMethod_Username:
+				return fmt.Errorf("username signup not implemented")
 			case basetypes.SignMethod_Mobile:
 			case basetypes.SignMethod_Email:
 			default:
-				return fmt.Errorf("invalid signup method")
+				return fmt.Errorf("signup method %v invalid", method)
 			}
 		}
 		h.SignupMethods = methods
@@ -125,10 +127,18 @@ func WithExtSigninMethods(methods []basetypes.SignMethod) func(context.Context, 
 			switch method {
 			case basetypes.SignMethod_Twitter:
 				fallthrough //nolint
+			case basetypes.SignMethod_Github:
+				fallthrough //nolint
+			case basetypes.SignMethod_Facebook:
+				fallthrough //nolint
+			case basetypes.SignMethod_Linkedin:
+				fallthrough //nolint
 			case basetypes.SignMethod_Wechat:
 				fallthrough //nolint
+			case basetypes.SignMethod_Google:
+				return fmt.Errorf("%v signin not implemented", method)
 			default:
-				return fmt.Errorf("invalid ext signin method")
+				return fmt.Errorf("ext signin method %v invalid", method)
 			}
 		}
 		h.ExtSigninMethods = methods
