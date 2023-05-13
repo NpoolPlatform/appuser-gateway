@@ -68,6 +68,7 @@ func (h *loginHandler) verifyRecaptcha(ctx context.Context) error {
 	switch h.App.RecaptchaMethod {
 	case basetypes.RecaptchaMethod_GoogleRecaptchaV3:
 		return thirdmwcli.VerifyGoogleRecaptchaV3(ctx, *h.ManMachineSpec)
+	case basetypes.RecaptchaMethod_NoRecaptcha:
 	default:
 	}
 	return nil
