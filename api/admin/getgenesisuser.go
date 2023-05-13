@@ -12,13 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) GetGenesisUsers(
-	ctx context.Context,
-	in *npool.GetGenesisUsersRequest,
-) (
-	*npool.GetGenesisUsersResponse,
-	error,
-) {
+func (s *Server) GetGenesisUsers(ctx context.Context, in *npool.GetGenesisUsersRequest) (*npool.GetGenesisUsersResponse, error) {
 	handler, err := admin1.NewHandler(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -41,5 +35,6 @@ func (s *Server) GetGenesisUsers(
 
 	return &npool.GetGenesisUsersResponse{
 		Infos: infos,
+		Total: uint32(len(infos)),
 	}, nil
 }

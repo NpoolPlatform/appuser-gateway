@@ -35,5 +35,6 @@ func (s *Server) GetGenesisRoles(ctx context.Context, in *npool.GetGenesisRolesR
 
 	return &npool.GetGenesisRolesResponse{
 		Infos: infos,
+		Total: uint32(len(infos)),
 	}, nil
 }
