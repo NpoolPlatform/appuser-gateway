@@ -82,6 +82,14 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 
 	_logined, err := handler.logined(ctx)
 	if err != nil {
+		logger.Sugar().Warnw(
+			"Authenticate",
+			"AppID", h.AppID,
+			"UserID", h.UserID,
+			"Resource", h.Resource,
+			"Method", h.Method,
+			"Error", err,
+		)
 		return false, err
 	}
 	if !_logined {
@@ -97,7 +105,25 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 
 	_allowed, err = authmwcli.ExistAuth(ctx, h.AppID, h.UserID, h.Resource, h.Method)
 	if err != nil {
+		logger.Sugar().Warnw(
+			"Authenticate",
+			"AppID", h.AppID,
+			"UserID", h.UserID,
+			"Resource", h.Resource,
+			"Method", h.Method,
+			"Error", err,
+		)
 		return false, err
+	}
+	if !_allowed {
+		logger.Sugar().Warnw(
+			"Authenticate",
+			"AppID", h.AppID,
+			"UserID", h.UserID,
+			"Resource", h.Resource,
+			"Method", h.Method,
+			"Allowed", _allowed,
+		)
 	}
 
 	return _allowed, nil
