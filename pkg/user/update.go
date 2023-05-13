@@ -134,7 +134,7 @@ func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
 	} else if h.NewAccount != nil {
 		account = *h.NewAccount
 	}
-	return usercodemwcli.VerifyUserCode(
+	if err := usercodemwcli.VerifyUserCode(
 		ctx,
 		&usercodemwpb.VerifyUserCodeRequest{
 			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
@@ -144,7 +144,14 @@ func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
 			UsedFor:     basetypes.UsedFor_Update,
 			Code:        *h.NewVerificationCode,
 		},
-	)
+	); err != nil {
+		return err
+	}
+	if *h.NewAccountType == basetypes.SignMethod_Google {
+		verified := true
+		h.GoogleAuthVerified = &verified
+	}
+	return nil
 }
 
 func (h *updateHandler) updateUser(ctx context.Context) error {
