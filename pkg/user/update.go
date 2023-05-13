@@ -353,8 +353,8 @@ func (h *updateHandler) tryCreateInvitationCode(ctx context.Context) error {
 	_, err = ivcodemwcli.CreateInvitationCode(
 		ctx,
 		&ivcodemwpb.InvitationCodeReq{
-			AppID:  &info.AppID,
-			UserID: &info.ID,
+			AppID:  &h.AppID,
+			UserID: h.UserID,
 		},
 	)
 	if err != nil {
