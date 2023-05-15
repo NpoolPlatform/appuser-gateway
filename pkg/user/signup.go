@@ -7,7 +7,6 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
-	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 
 	appusersvcname "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
 	inspiremwsvcname "github.com/NpoolPlatform/inspire-middleware/pkg/servicename"
@@ -118,27 +117,6 @@ func (h *signupHandler) getDefaultRole(ctx context.Context) error {
 	return nil
 }
 
-func (h *signupHandler) checkUser(ctx context.Context) error {
-	conds := &usermwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-	}
-	if h.EmailAddress != nil {
-		conds.EmailAddress = &basetypes.StringVal{Op: cruder.EQ, Value: *h.EmailAddress}
-	}
-	if h.PhoneNO != nil {
-		conds.PhoneNO = &basetypes.StringVal{Op: cruder.EQ, Value: *h.PhoneNO}
-	}
-
-	exist, err := usermwcli.ExistUserConds(ctx, conds)
-	if err != nil {
-		return err
-	}
-	if exist {
-		return fmt.Errorf("user already exist")
-	}
-	return nil
-}
-
 func (h *signupHandler) rewardSignup() {
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
 		req := &eventmwpb.RewardEventRequest{
@@ -190,7 +168,7 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 		_ = redis2.Unlock(key)
 	}()
 
-	if err := signupHandler.checkUser(ctx); err != nil {
+	if err := signupHandler.CheckUser(ctx); err != nil {
 		return nil, err
 	}
 
