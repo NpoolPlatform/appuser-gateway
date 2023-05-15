@@ -219,7 +219,6 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 	signupHandler.withCreateUser(sagaDispose)
 	signupHandler.withCreateRegistrationInvitation(sagaDispose)
 
-	logger.Sugar().Infow("1", "SagaDispose", sagaDispose)
 
 	if err := dtmcli.WithSaga(ctx, sagaDispose); err != nil {
 		return nil, err
