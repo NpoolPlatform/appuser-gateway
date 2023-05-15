@@ -3,6 +3,7 @@ package kyc
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
@@ -80,6 +81,11 @@ func (h *Handler) GetKycs(ctx context.Context) ([]*kycmwpb.Kyc, uint32, error) {
 	if err != nil {
 		return nil, 0, err
 	}
+
+	// TODO: here we should only get the last one reviews of different state
+	sort.Slice(rinfos, func(i, j int) bool {
+		return rinfos[i].CreatedAt >= rinfos[j].CreatedAt
+	})
 
 	for _, rinfo := range rinfos {
 		for _, info := range infos {
