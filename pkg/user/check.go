@@ -38,17 +38,14 @@ func (h *Handler) CheckNewAccount(ctx context.Context) error {
 	if h.NewAccountType == nil {
 		return nil
 	}
+	if h.NewAccount == nil {
+		return fmt.Errorf("invalid new account")
+	}
 	switch *h.NewAccountType {
 	case basetypes.SignMethod_Email:
-		if h.EmailAddress == nil {
-			return fmt.Errorf("invalid email address")
-		}
-		conds.EmailAddress = &basetypes.StringVal{Op: cruder.EQ, Value: *h.EmailAddress}
+		conds.EmailAddress = &basetypes.StringVal{Op: cruder.EQ, Value: *h.NewAccount}
 	case basetypes.SignMethod_Mobile:
-		if h.PhoneNO == nil {
-			return fmt.Errorf("invalid phone no")
-		}
-		conds.PhoneNO = &basetypes.StringVal{Op: cruder.EQ, Value: *h.PhoneNO}
+		conds.PhoneNO = &basetypes.StringVal{Op: cruder.EQ, Value: *h.NewAccount}
 	default:
 		return fmt.Errorf("invalid account type")
 	}
@@ -58,7 +55,7 @@ func (h *Handler) CheckNewAccount(ctx context.Context) error {
 		return err
 	}
 	if exist {
-		return fmt.Errorf("user already exist")
+		return fmt.Errorf("account already exist")
 	}
 	return nil
 }
