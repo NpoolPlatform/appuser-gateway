@@ -38,8 +38,17 @@ func (h *Handler) CheckNewAccount(ctx context.Context) error {
 	if h.NewAccountType == nil {
 		return nil
 	}
-	if h.NewAccount == nil {
-		return fmt.Errorf("invalid new account")
+	switch *h.NewAccountType {
+	case basetypes.SignMethod_Email:
+		fallthrough //nolint
+	case basetypes.SignMethod_Mobile:
+		if h.NewAccount == nil {
+			return fmt.Errorf("invalid new account")
+		}
+	case basetypes.SignMethod_Google:
+		return nil
+	default:
+		return fmt.Errorf("invalid account type")
 	}
 	switch *h.NewAccountType {
 	case basetypes.SignMethod_Email:
