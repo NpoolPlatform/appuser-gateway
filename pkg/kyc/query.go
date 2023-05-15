@@ -74,7 +74,7 @@ func (h *Handler) GetKycs(ctx context.Context) ([]*kycmwpb.Kyc, uint32, error) {
 	rinfos, err := reviewmwcli.GetObjectReviews(
 		ctx,
 		infos[0].AppID,
-		servicename.ServiceName,
+		servicename.ServiceDomain,
 		ids,
 		reviewmgrpb.ReviewObjectType_ObjectKyc,
 	)
