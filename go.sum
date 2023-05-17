@@ -50,8 +50,8 @@ github.com/DATA-DOG/go-sqlmock v1.5.0 h1:Shsta01QNfFxHCfpW6YH2STWB0MudeXXEWMr20O
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20230513100509-b19f356ebd4b h1:YmlmVjzJLebnrNl9dtFiJ6bfgqoH++uFe91esScPanE=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20230513100509-b19f356ebd4b/go.mod h1:BzT48sEK4KSO6Gy8VJQa5rOuO5JpXib/cmLGHWt4Aqc=
-github.com/NpoolPlatform/basal-middleware v0.0.0-20230517042359-cf290be1d5e9 h1:Iun2bdZlQANm+BESm+/iL1CZ45OpoFn8NoBhGxTNVqc=
-github.com/NpoolPlatform/basal-middleware v0.0.0-20230517042359-cf290be1d5e9/go.mod h1:9/bNFPXCR5ECyL7il2hKJjOIZUqb0dKollXadvoMx6A=
+github.com/NpoolPlatform/basal-middleware v0.0.0-20230517093757-3e3d4b6e480d h1:MEBC7aVHsA5EpMB4O3GvwlySm2GKe4gb4euY1mSMDXc=
+github.com/NpoolPlatform/basal-middleware v0.0.0-20230517093757-3e3d4b6e480d/go.mod h1:9/bNFPXCR5ECyL7il2hKJjOIZUqb0dKollXadvoMx6A=
 github.com/NpoolPlatform/dtm-cluster v0.0.0-20230517042516-1a82c1948ad0 h1:lc3RAZgCGkNVgtMLEutnFVQnFOHmU+YLy+dnai56lI0=
 github.com/NpoolPlatform/dtm-cluster v0.0.0-20230517042516-1a82c1948ad0/go.mod h1:XJEfAYxioDptBhVhFr2XtbVn0I2ry54hkf/hQSBjZTE=
 github.com/NpoolPlatform/g11n-manager v0.0.0-20230210192822-999a11e167c8 h1:7+HShGTyGFW3mIWMM0i7g7n4yaC40Uf++iBbjaWBX+Q=
