@@ -15,6 +15,10 @@ import (
 )
 
 func (h *Handler) CreateUser(ctx context.Context) (*usermwpb.User, error) {
+	if err := h.CheckUser(ctx); err != nil {
+		return nil, err
+	}
+
 	id := uuid.NewString()
 	if h.UserID == nil {
 		h.UserID = &id
