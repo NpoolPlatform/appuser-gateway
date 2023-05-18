@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230513100509-b19f356ebd4b
-	github.com/NpoolPlatform/basal-middleware v0.0.0-20230517042359-cf290be1d5e9
-	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230517042516-1a82c1948ad0
+	github.com/NpoolPlatform/basal-middleware v0.0.0-20230517094854-35503bc8201d
+	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230517101036-187b8e52b442
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230509081417-267df92cab6d
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
