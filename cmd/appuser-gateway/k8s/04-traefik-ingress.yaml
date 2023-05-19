@@ -77,7 +77,6 @@ metadata:
     kubernetes.io/ingress.class: "traefik-internet"
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     traefik.ingress.kubernetes.io/router.middlewares:
-      kube-system-oplog@kubernetescrd,
       kube-system-strip-appuser-gateway-prefix@kubernetescrd,
       kube-system-http-redirect-https@kubernetescrd,
       kube-system-common-headers@kubernetescrd,
@@ -131,7 +130,6 @@ metadata:
     kubernetes.io/ingress.class: "traefik-internet"
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     traefik.ingress.kubernetes.io/router.middlewares:
-      kube-system-oplog@kubernetescrd,
       kube-system-strip-appuser-gateway-prefix@kubernetescrd,
       kube-system-http-redirect-https@kubernetescrd,
       kube-system-common-headers@kubernetescrd,
@@ -161,141 +159,11 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/create/genesisroles
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/create/genesisuser
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/authorize/genesis
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/authenticate
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/create/app/auth
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/delete/app/auth
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/delete/app
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/setup/googleauth
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/verify/googleauth
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/create/role
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/update/role
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/delete/role
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/create/app/role
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/create/roleuser
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/delete/roleuser
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/delete/app/roleuser
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/create/app/roleuser
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/create/user
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/update/userkol
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/update/user
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/delete/user
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/logout
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-          - path: /api/appuser/v1/logined
-            backend:
-              serviceName: appuser-gateway
-              servicePort: 50500
-    - host: api.procyon.vip
-      http: *http_rules
-    - host: api.xpool.top
-      http: *http_rules
-    - host: api.ohhash.com
-      http: *http_rules
-    - host: api.development.npool.top
-      http: *http_rules
-    - host: api.procyon.xpool.top
-      http: *http_rules
-    - host: api.jh-testing.npool.top
-      http: *http_rules
-    - host: api.japan-procyon-production.npool.top
-      http: *http_rules
-    - host: api.lpsecretbase.com
-      http: *http_rules
-    - host: api.ohhash-production.npool.top
-      http: *http_rules
-apiVersion: networking.k8s.io/v1beta1
-kind: Ingress
-metadata:
-  name: appuser-gateway-traefik-app-user-ingress
-  namespace: kube-system
-  annotations:
-    k8s.kuboard.cn/displayName: appuser-gateway-traefik-app-user-get
-    k8s.kuboard.cn/workload: appuser-gateway-traefik-app-user-get
-    kubernetes.io/ingress.class: "traefik-internet"
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.middlewares:
-      kube-system-strip-appuser-gateway-prefix@kubernetescrd,
-      kube-system-http-redirect-https@kubernetescrd,
-      kube-system-common-headers@kubernetescrd,
-      kube-system-headers-appid-to-body@kubernetescrd,
-      kube-system-headers-userid-to-body@kubernetescrd,
-      kube-system-headers-app-login-token-to-body@kubernetescrd,
-      kube-system-app-user-role-rbac-auth@kubernetescrd
-
-spec:
-  rules:
-    - host: api.npool.top
-      http: &http_rules
-        paths:
           - path: /api/appuser/v1/get/adminapps
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/genesisroles
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -303,7 +171,15 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/create/genesisuser
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/get/genesisusers
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/authorize/genesis
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -324,6 +200,10 @@ spec:
               serviceName: appuser-gateway
               servicePort: 50500
           - path: /api/appuser/v1/get/app/user/kycimage
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/authenticate
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -351,6 +231,26 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/create/app/auth
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/delete/app/auth
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/delete/app
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/setup/googleauth
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/verify/googleauth
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/create/kyc
             backend:
               serviceName: appuser-gateway
@@ -371,7 +271,27 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/create/role
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/get/roles
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/update/role
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/delete/role
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/app/role
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/roleuser
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -379,11 +299,47 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/delete/roleuser
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/delete/app/roleuser
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/app/roleuser
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/create/user
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/update/userkol
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/update/user
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/get/users
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
+          - path: /api/appuser/v1/delete/user
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/get/loginhistories
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/logout
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/logined
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
