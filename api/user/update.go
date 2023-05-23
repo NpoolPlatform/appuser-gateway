@@ -60,3 +60,35 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		Info: info,
 	}, nil
 }
+
+func (s *Server) UpdateAppUser(ctx context.Context, in *npool.UpdateAppUserRequest) (*npool.UpdateAppUserResponse, error) {
+	handler, err := user1.NewHandler(
+		ctx,
+		user1.WithAppID(in.GetAppID()),
+		user1.WithUserID(&in.TargetUserID),
+		user1.WithKol(in.Kol),
+		user1.WithEmailAddress(in.EmailAddress),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UpdateAppUser",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UpdateAppUserResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	info, err := handler.UpdateUser(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UpdateAppUser",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UpdateAppUserResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.UpdateAppUserResponse{
+		Info: info,
+	}, nil
+}

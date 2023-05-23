@@ -43,34 +43,3 @@ func (s *Server) UpdateUserKol(ctx context.Context, in *npool.UpdateUserKolReque
 		Info: info,
 	}, nil
 }
-
-func (s *Server) UpdateAppUserKol(ctx context.Context, in *npool.UpdateAppUserKolRequest) (*npool.UpdateAppUserKolResponse, error) {
-	handler, err := user1.NewHandler(
-		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithTargetUserID(&in.TargetUserID),
-		user1.WithKol(&in.Kol),
-	)
-	if err != nil {
-		logger.Sugar().Errorw(
-			"UpdateAppUserKol",
-			"In", in,
-			"Error", err,
-		)
-		return &npool.UpdateAppUserKolResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	info, err := handler.UpdateUserKol(ctx)
-	if err != nil {
-		logger.Sugar().Errorw(
-			"UpdateAppUserKol",
-			"In", in,
-			"Error", err,
-		)
-		return &npool.UpdateAppUserKolResponse{}, status.Error(codes.Internal, err.Error())
-	}
-
-	return &npool.UpdateAppUserKolResponse{
-		Info: info,
-	}, nil
-}

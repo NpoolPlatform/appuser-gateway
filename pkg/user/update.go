@@ -177,6 +177,8 @@ func (h *updateHandler) updateUser(ctx context.Context) error {
 		GoogleAuthVerified: h.GoogleAuthVerified,
 		Banned:             h.Banned,
 		BanMessage:         h.BanMessage,
+		Kol:                h.Kol,
+		EmailAddress:       h.EmailAddress,
 	}
 	fmt.Printf("new_account_type=%v, new_account=%v\n", h.NewAccountType, h.NewAccount)
 	if h.NewAccountType != nil {
