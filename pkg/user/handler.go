@@ -52,6 +52,7 @@ type Handler struct {
 	IDNumber              *string
 	SigninVerifyType      *basetypes.SignMethod
 	KolConfirmed          *bool
+	SelectedLangID        *string
 	Kol                   *bool
 	GoogleSecret          *string
 	GoogleAuthVerified    *bool
@@ -532,6 +533,19 @@ func WithSigninVerifyType(verifyType *basetypes.SignMethod) func(context.Context
 func WithKolConfirmed(confirmed *bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.KolConfirmed = confirmed
+		return nil
+	}
+}
+
+func WithSelectedLangID(id *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.SelectedLangID = id
 		return nil
 	}
 }

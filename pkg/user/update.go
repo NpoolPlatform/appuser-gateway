@@ -172,6 +172,7 @@ func (h *updateHandler) updateUser(ctx context.Context) error {
 		SigninVerifyType:   h.SigninVerifyType,
 		PasswordHash:       h.PasswordHash,
 		KolConfirmed:       h.KolConfirmed,
+		SelectedLangID:     h.SelectedLangID,
 		GoogleSecret:       h.GoogleSecret,
 		GoogleAuthVerified: h.GoogleAuthVerified,
 		Banned:             h.Banned,

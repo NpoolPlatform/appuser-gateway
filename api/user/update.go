@@ -35,6 +35,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		user1.WithIDNumber(in.IDNumber),
 		user1.WithSigninVerifyType(in.SigninVerifyType),
 		user1.WithKolConfirmed(in.KolConfirmed),
+		user1.WithSelectedLangID(in.SelectedLangID),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
