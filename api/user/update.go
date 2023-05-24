@@ -68,6 +68,7 @@ func (s *Server) UpdateAppUser(ctx context.Context, in *npool.UpdateAppUserReque
 		user1.WithUserID(&in.TargetUserID),
 		user1.WithKol(in.Kol),
 		user1.WithEmailAddress(in.EmailAddress),
+		user1.WithShouldUpdateCache(false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
