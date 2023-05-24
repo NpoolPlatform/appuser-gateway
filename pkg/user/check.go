@@ -11,6 +11,10 @@ import (
 )
 
 func (h *Handler) CheckUser(ctx context.Context) error {
+	if h.EmailAddress == nil && h.PhoneNO == nil {
+		return nil
+	}
+
 	conds := &usermwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 	}
