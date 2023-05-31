@@ -214,9 +214,6 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 		return nil, fmt.Errorf("invalid userid")
 	}
 
-	if err := handler.CheckUser(ctx); err != nil {
-		return nil, err
-	}
 	if err := handler.CheckNewAccount(ctx); err != nil {
 		return nil, err
 	}
