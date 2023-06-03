@@ -14,6 +14,13 @@ func (h *Handler) CreateKycReview(ctx context.Context) {
 	serviceName := servicename.ServiceDomain
 	objectType := reviewmgrpb.ReviewObjectType_ObjectKyc
 
+	logger.Sugar().Errorw(
+		"CreateKycReview",
+		"AppID", h.AppID,
+		"UserID", h.UserID,
+		"ObjectID", *h.ID,
+	)
+
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
 		req := &reviewmgrpb.ReviewReq{
 			ID:         h.ReviewID,
@@ -31,7 +38,7 @@ func (h *Handler) CreateKycReview(ctx context.Context) {
 		)
 	}); err != nil {
 		logger.Sugar().Errorw(
-			"createReview",
+			"CreateKycReview",
 			"AppID", h.AppID,
 			"UserID", h.UserID,
 			"ObjectID", *h.ID,
