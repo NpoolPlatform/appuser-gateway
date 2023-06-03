@@ -14,7 +14,7 @@ func (h *Handler) CreateKycReview(ctx context.Context) {
 	serviceName := servicename.ServiceDomain
 	objectType := reviewmgrpb.ReviewObjectType_ObjectKyc
 
-	logger.Sugar().Errorw(
+	logger.Sugar().Infow(
 		"CreateKycReview",
 		"AppID", h.AppID,
 		"UserID", h.UserID,
