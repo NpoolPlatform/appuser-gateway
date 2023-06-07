@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	kyccli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
 	appusermwsvcname "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/dtm-labs/dtm/client/dtmcli/dtmimp"
@@ -56,6 +58,22 @@ func (h *Handler) CreateKyc(ctx context.Context) (*npool.Kyc, error) {
 	}
 	if h.FrontImg == nil || h.SelfieImg == nil {
 		return nil, fmt.Errorf("invalid image")
+	}
+	infos, _, err := kyccli.GetKycs(ctx, &npool.Conds{
+		AppID: &basetypes.StringVal{
+			Op:    cruder.EQ,
+			Value: handler.AppID,
+		},
+		UserID: &basetypes.StringVal{
+			Op:    cruder.EQ,
+			Value: *handler.UserID,
+		},
+	}, 0, 10)
+	if err != nil {
+		return nil, err
+	}
+	if len(infos) > 0 {
+		return nil, fmt.Errorf("kyc exist")
 	}
 
 	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{
