@@ -7,7 +7,7 @@ import (
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	appusersvcname "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
+	appusermwsvcname "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
 	"github.com/dtm-labs/dtm/client/dtmcli/dtmimp"
 	"github.com/google/uuid"
 )
@@ -41,8 +41,8 @@ func (h *createHandler) withCreateKyc(dispose *dtmcli.SagaDispose) {
 		State:        &state,
 	}
 	dispose.Add(
-		appusersvcname.ServiceDomain,
-		"appuser.middleware.kyc.v1.Middleware.CreateKyc",
+		appusermwsvcname.ServiceDomain,
+		"appuser.middleware.kyc.v1.Middleware/CreateKyc",
 		"appuser.middleware.kyc.v1.Middleware.DeleteKyc",
 		&npool.CreateKycRequest{
 			Info: req,
