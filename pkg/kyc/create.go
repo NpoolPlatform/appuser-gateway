@@ -66,5 +66,9 @@ func (h *Handler) CreateKyc(ctx context.Context) (*npool.Kyc, error) {
 	handler.withCreateKyc(sagaDispose)
 	h.WithCreateKycReview(sagaDispose)
 
+	if err := dtmcli.WithSaga(ctx, sagaDispose); err != nil {
+		return nil, err
+	}
+
 	return handler.GetKyc(ctx)
 }
