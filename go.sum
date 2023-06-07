@@ -67,8 +67,8 @@ github.com/NpoolPlatform/message v0.0.0-20230606033353-c216c541e63d h1:nZ/MxRkTe
 github.com/NpoolPlatform/message v0.0.0-20230606033353-c216c541e63d/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687 h1:EYQPrDW4UESGuEP49IV+Xwft4JUC16gb1DZQnH9YFu0=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687/go.mod h1:leYq+Scn4WZ72AQtq4bZKlmeMsxTXUpTgWOPZK7Eb34=
-github.com/NpoolPlatform/review-middleware v0.0.0-20230606065721-99dc85d32ed0 h1:nf7yK5wGXW8Vwn9mlGK2m/mI6HGBzOtqRpbuyQD1oi0=
-github.com/NpoolPlatform/review-middleware v0.0.0-20230606065721-99dc85d32ed0/go.mod h1:/wqocMADa84q4Tr7VNYwFTd8u+os/rh+JvSuEIjhd6Q=
+github.com/NpoolPlatform/review-middleware v0.0.0-20230607023926-e881536811d6 h1:+rjNdkaS4d+fQKAR3rETbKEBKRD3ybxAUU2uZ6aQsaY=
+github.com/NpoolPlatform/review-middleware v0.0.0-20230607023926-e881536811d6/go.mod h1:/wqocMADa84q4Tr7VNYwFTd8u+os/rh+JvSuEIjhd6Q=
 github.com/NpoolPlatform/third-middleware v0.0.0-20230221094357-40a170d76e2b h1:vBbTy+slFAX2cIRT3jJIAgTFrvBkiH4CareE6Dgwn1g=
 github.com/NpoolPlatform/third-middleware v0.0.0-20230221094357-40a170d76e2b/go.mod h1:v/mnXKwuF+CgHRDQtpKxfEWVHgh/f4VHMziTErpvWBQ=
 github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE=

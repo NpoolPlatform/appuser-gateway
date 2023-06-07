@@ -4,19 +4,54 @@ import (
 	"context"
 	"fmt"
 
-	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
+	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
+	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-
+	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mw/v2/review"
+	reviewsvcname "github.com/NpoolPlatform/review-middleware/pkg/servicename"
+	"github.com/dtm-labs/dtm/client/dtmcli/dtmimp"
 	"github.com/google/uuid"
 )
 
 type createHandler struct {
 	*Handler
-	info *npool.Kyc
 }
 
-func (h *createHandler) createKyc(ctx context.Context) error {
+func (h *createHandler) withCreateKycReview(dispose *dtmcli.SagaDispose) {
+	serviceDomain := servicename.ServiceDomain
+	objectType := reviewmgrpb.ReviewObjectType_ObjectKyc
+
+	logger.Sugar().Infow(
+		"withCreateKycReview",
+		"ReviewID", *h.ReviewID,
+		"AppID", h.AppID,
+		"ObjectID", *h.ID,
+		"ServiceDomain", serviceDomain,
+		"ObjectType", objectType,
+		"ObjectID", *h.ID,
+	)
+
+	req := &reviewmgrpb.ReviewReq{
+		ID:         h.ReviewID,
+		AppID:      &h.AppID,
+		ObjectID:   h.ID,
+		Domain:     &serviceDomain,
+		ObjectType: &objectType,
+	}
+
+	dispose.Add(
+		reviewsvcname.ServiceDomain,
+		"review.middleware.review.v2.Middleware.CreateReview",
+		"review.middleware.review.v2.Middleware.DeleteReview",
+		&reviewmgrpb.CreateReviewRequest{
+			Info: req,
+		},
+	)
+}
+
+func (h *createHandler) withCreateKyc(dispose *dtmcli.SagaDispose) {
 	reviewID := uuid.NewString()
 	if h.ReviewID == nil {
 		h.ReviewID = &reviewID
@@ -27,11 +62,7 @@ func (h *createHandler) createKyc(ctx context.Context) error {
 	}
 	state := basetypes.KycState_Reviewing
 
-	if h.FrontImg == nil || h.SelfieImg == nil {
-		return fmt.Errorf("invalid image")
-	}
-
-	info, err := kycmwcli.CreateKyc(ctx, &npool.KycReq{
+	req := &npool.KycReq{
 		ID:           h.ID,
 		AppID:        &h.AppID,
 		UserID:       h.UserID,
@@ -43,22 +74,32 @@ func (h *createHandler) createKyc(ctx context.Context) error {
 		EntityType:   h.EntityType,
 		ReviewID:     h.ReviewID,
 		State:        &state,
-	})
-	if err != nil {
-		return err
 	}
-
-	h.info = info
-	return nil
+	dispose.Add(
+		reviewsvcname.ServiceDomain,
+		"appuser.middleware.kyc.v1.Middleware.CreateKyc",
+		"appuser.middleware.kyc.v1.Middleware.DeleteKyc",
+		&npool.CreateKycRequest{
+			Info: req,
+		},
+	)
 }
 
 func (h *Handler) CreateKyc(ctx context.Context) (*npool.Kyc, error) {
 	handler := &createHandler{
 		Handler: h,
 	}
-	if err := handler.createKyc(ctx); err != nil {
-		return nil, err
+	if h.FrontImg == nil || h.SelfieImg == nil {
+		return nil, fmt.Errorf("invalid image")
 	}
-	h.CreateKycReview(ctx)
-	return handler.info, nil
+
+	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{
+		WaitResult:     true,
+		RequestTimeout: handler.RequestTimeoutSeconds,
+	})
+
+	handler.withCreateKyc(sagaDispose)
+	handler.withCreateKycReview(sagaDispose)
+
+	return handler.GetKyc(ctx)
 }
