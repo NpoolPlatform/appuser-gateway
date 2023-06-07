@@ -28,6 +28,7 @@ func (s *Server) UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (res
 		kyc1.WithImage(&backImg, in.BackImg),
 		kyc1.WithImage(&selfieImg, in.SelfieImg),
 		kyc1.WithEntityType(in.EntityType),
+		kyc1.WithRequestTimeoutSeconds(10), //nolint
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

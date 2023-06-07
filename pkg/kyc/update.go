@@ -5,11 +5,14 @@ import (
 	"fmt"
 
 	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
-	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
+	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	kycmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
+	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mw/v2/review"
 	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
+	reviewsvcname "github.com/NpoolPlatform/review-middleware/pkg/servicename"
+	"github.com/dtm-labs/dtm/client/dtmcli/dtmimp"
 
 	"github.com/google/uuid"
 )
@@ -45,9 +48,9 @@ func (h *updateHandler) checkReview(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (h *updateHandler) updateKyc(ctx context.Context) error {
+func (h *updateHandler) withUpdateKyc(dispose *dtmcli.SagaDispose) {
 	state := basetypes.KycState_Reviewing
-	info, err := kycmwcli.UpdateKyc(ctx, &kycmwpb.KycReq{
+	req := &kycmwpb.KycReq{
 		ID:           h.ID,
 		AppID:        &h.info.AppID,
 		UserID:       &h.info.UserID,
@@ -59,12 +62,16 @@ func (h *updateHandler) updateKyc(ctx context.Context) error {
 		EntityType:   h.EntityType,
 		ReviewID:     h.ReviewID,
 		State:        &state,
-	})
-	if err != nil {
-		return err
 	}
-	h.info = info
-	return nil
+
+	dispose.Add(
+		reviewsvcname.ServiceDomain,
+		"appuser.middleware.kyc.v1.Middleware.UpdateKyc",
+		"appuser.middleware.kyc.v1.Middleware.DeleteKyc",
+		&npool.UpdateKycRequest{
+			Info: req,
+		},
+	)
 }
 
 func (h *Handler) UpdateKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
@@ -92,11 +99,19 @@ func (h *Handler) UpdateKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
 		h.ReviewID = &id
 	}
 
-	if err := handler.updateKyc(ctx); err != nil {
+	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{
+		WaitResult:     true,
+		RequestTimeout: handler.RequestTimeoutSeconds,
+	})
+
+	handler.withUpdateKyc(sagaDispose)
+	if newReview {
+		h.WithCreateKycReview(sagaDispose)
+	}
+
+	if err := dtmcli.WithSaga(ctx, sagaDispose); err != nil {
 		return nil, err
 	}
-	if newReview {
-		h.CreateKycReview(ctx)
-	}
-	return handler.info, nil
+
+	return h.GetKyc(ctx)
 }
