@@ -3,7 +3,7 @@ module github.com/NpoolPlatform/appuser-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230525034759-16acf7af0e28
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230607102457-98ae92dfbae0
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230518061816-62bd589c0f63
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230607090513-6311802030e4
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
