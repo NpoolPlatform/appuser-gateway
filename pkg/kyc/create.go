@@ -30,7 +30,6 @@ func (h *createHandler) withCreateKycReview(dispose *dtmcli.SagaDispose) {
 		"ObjectID", *h.ID,
 		"ServiceDomain", serviceDomain,
 		"ObjectType", objectType,
-		"ObjectID", *h.ID,
 	)
 
 	req := &reviewmgrpb.ReviewReq{
