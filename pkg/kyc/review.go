@@ -31,8 +31,8 @@ func (h *Handler) WithCreateKycReview(dispose *dtmcli.SagaDispose) {
 
 	dispose.Add(
 		reviewsvcname.ServiceDomain,
-		"review.middleware.review.v2.Middleware.CreateReview",
-		"review.middleware.review.v2.Middleware.DeleteReview",
+		"review.middleware.review.v2.Middleware/CreateReview",
+		"review.middleware.review.v2.Middleware/DeleteReview",
 		&reviewmgrpb.CreateReviewRequest{
 			Info: req,
 		},
