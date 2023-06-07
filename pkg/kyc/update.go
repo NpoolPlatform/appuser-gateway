@@ -6,7 +6,6 @@ import (
 
 	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
-	kycmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mw/v2/review"
@@ -19,7 +18,7 @@ import (
 
 type updateHandler struct {
 	*Handler
-	info *kycmwpb.Kyc
+	info *npool.Kyc
 }
 
 func (h *updateHandler) checkReview(ctx context.Context) (bool, error) {
@@ -50,7 +49,7 @@ func (h *updateHandler) checkReview(ctx context.Context) (bool, error) {
 
 func (h *updateHandler) withUpdateKyc(dispose *dtmcli.SagaDispose) {
 	state := basetypes.KycState_Reviewing
-	req := &kycmwpb.KycReq{
+	req := &npool.KycReq{
 		ID:           h.ID,
 		AppID:        &h.info.AppID,
 		UserID:       &h.info.UserID,
@@ -74,7 +73,7 @@ func (h *updateHandler) withUpdateKyc(dispose *dtmcli.SagaDispose) {
 	)
 }
 
-func (h *Handler) UpdateKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
+func (h *Handler) UpdateKyc(ctx context.Context) (*npool.Kyc, error) {
 	if h.ID == nil {
 		return nil, fmt.Errorf("invalid id")
 	}
