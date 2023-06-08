@@ -65,8 +65,8 @@ func (h *updateHandler) withUpdateKyc(dispose *dtmcli.SagaDispose) {
 
 	dispose.Add(
 		appusermwsvcname.ServiceDomain,
-		"appuser.middleware.kyc.v1.Middleware.UpdateKyc",
-		"appuser.middleware.kyc.v1.Middleware.DeleteKyc",
+		"appuser.middleware.kyc.v1.Middleware/UpdateKyc",
+		"appuser.middleware.kyc.v1.Middleware/DeleteKyc",
 		&npool.UpdateKycRequest{
 			Info: req,
 		},
