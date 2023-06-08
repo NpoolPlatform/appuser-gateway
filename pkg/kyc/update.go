@@ -5,12 +5,12 @@ import (
 	"fmt"
 
 	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
+	appusermwsvcname "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mw/v2/review"
 	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
-	reviewsvcname "github.com/NpoolPlatform/review-middleware/pkg/servicename"
 	"github.com/dtm-labs/dtm/client/dtmcli/dtmimp"
 
 	"github.com/google/uuid"
@@ -64,7 +64,7 @@ func (h *updateHandler) withUpdateKyc(dispose *dtmcli.SagaDispose) {
 	}
 
 	dispose.Add(
-		reviewsvcname.ServiceDomain,
+		appusermwsvcname.ServiceDomain,
 		"appuser.middleware.kyc.v1.Middleware.UpdateKyc",
 		"appuser.middleware.kyc.v1.Middleware.DeleteKyc",
 		&npool.UpdateKycRequest{
