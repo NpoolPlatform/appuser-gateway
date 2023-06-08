@@ -21,7 +21,7 @@ import (
 
 	applangmwcli "github.com/NpoolPlatform/g11n-middleware/pkg/client/applang"
 	regmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
-	applangmgrpb "github.com/NpoolPlatform/message/npool/g11n/mgr/v1/applang"
+	applangmwpb "github.com/NpoolPlatform/message/npool/g11n/mw/v1/applang"
 
 	chanmgrpb "github.com/NpoolPlatform/message/npool/notif/mgr/v1/channel"
 
@@ -375,9 +375,9 @@ func (h *updateHandler) sendKolNotification(ctx context.Context) {
 		return
 	}
 
-	lang, err := applangmwcli.GetLangOnly(ctx, &applangmgrpb.Conds{
-		AppID: &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
-		Main:  &commonpb.BoolVal{Op: cruder.EQ, Value: true},
+	lang, err := applangmwcli.GetLangOnly(ctx, &applangmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		Main:  &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 	})
 	if err != nil {
 		logger.Sugar().Errorw("sendKolNotification", "Error", err)

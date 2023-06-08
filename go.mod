@@ -5,11 +5,11 @@ go 1.17
 require (
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230609030803-0b26c1f95713
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230518061816-62bd589c0f63
-	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230607092455-7839b11d0c9f
-	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
+	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230518062456-3e53bebe90da
+	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230612040018-ebf131b1acf1
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230602083207-1c0e6203556b
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230609022557-928f8f5a1bbe
+	github.com/NpoolPlatform/message v0.0.0-20230612034622-cd9631151064
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687
 	github.com/NpoolPlatform/review-middleware v0.0.0-20230609030924-eca1f51482e9
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230221094357-40a170d76e2b
@@ -18,7 +18,7 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.3
 	github.com/urfave/cli/v2 v2.16.3
 	go.opentelemetry.io/otel v1.10.0
 	go.opentelemetry.io/otel/trace v1.10.0
