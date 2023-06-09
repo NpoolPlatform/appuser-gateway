@@ -4,19 +4,19 @@ import (
 	"context"
 	"fmt"
 
-	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
+	appusermwsvcname "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
+	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-
+	"github.com/dtm-labs/dtm/client/dtmcli/dtmimp"
 	"github.com/google/uuid"
 )
 
 type createHandler struct {
 	*Handler
-	info *npool.Kyc
 }
 
-func (h *createHandler) createKyc(ctx context.Context) error {
+func (h *createHandler) withCreateKyc(dispose *dtmcli.SagaDispose) {
 	reviewID := uuid.NewString()
 	if h.ReviewID == nil {
 		h.ReviewID = &reviewID
@@ -27,11 +27,7 @@ func (h *createHandler) createKyc(ctx context.Context) error {
 	}
 	state := basetypes.KycState_Reviewing
 
-	if h.FrontImg == nil || h.SelfieImg == nil {
-		return fmt.Errorf("invalid image")
-	}
-
-	info, err := kycmwcli.CreateKyc(ctx, &npool.KycReq{
+	req := &npool.KycReq{
 		ID:           h.ID,
 		AppID:        &h.AppID,
 		UserID:       h.UserID,
@@ -43,22 +39,36 @@ func (h *createHandler) createKyc(ctx context.Context) error {
 		EntityType:   h.EntityType,
 		ReviewID:     h.ReviewID,
 		State:        &state,
-	})
-	if err != nil {
-		return err
 	}
-
-	h.info = info
-	return nil
+	dispose.Add(
+		appusermwsvcname.ServiceDomain,
+		"appuser.middleware.kyc.v1.Middleware/CreateKyc",
+		"appuser.middleware.kyc.v1.Middleware/DeleteKyc",
+		&npool.CreateKycRequest{
+			Info: req,
+		},
+	)
 }
 
 func (h *Handler) CreateKyc(ctx context.Context) (*npool.Kyc, error) {
 	handler := &createHandler{
 		Handler: h,
 	}
-	if err := handler.createKyc(ctx); err != nil {
+	if h.FrontImg == nil || h.SelfieImg == nil {
+		return nil, fmt.Errorf("invalid image")
+	}
+
+	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{
+		WaitResult:     true,
+		RequestTimeout: handler.RequestTimeoutSeconds,
+	})
+
+	handler.withCreateKyc(sagaDispose)
+	h.WithCreateKycReview(sagaDispose)
+
+	if err := dtmcli.WithSaga(ctx, sagaDispose); err != nil {
 		return nil, err
 	}
-	h.CreateKycReview(ctx)
-	return handler.info, nil
+
+	return handler.GetKyc(ctx)
 }

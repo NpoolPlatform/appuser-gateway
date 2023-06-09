@@ -10,7 +10,7 @@ import (
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	kycmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mgr/v2"
+	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mw/v2/review"
 	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
 )
 

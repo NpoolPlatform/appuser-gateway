@@ -12,20 +12,21 @@ import (
 )
 
 type Handler struct {
-	ID           *string
-	AppID        string
-	UserID       *string
-	DocumentType *basetypes.KycDocumentType
-	IDNumber     *string
-	FrontImg     *string
-	BackImg      *string
-	SelfieImg    *string
-	EntityType   *basetypes.KycEntityType
-	ReviewID     *string
-	State        *basetypes.KycState
-	ImageType    *basetypes.KycImageType
-	Offset       int32
-	Limit        int32
+	ID                    *string
+	AppID                 string
+	UserID                *string
+	DocumentType          *basetypes.KycDocumentType
+	IDNumber              *string
+	FrontImg              *string
+	BackImg               *string
+	SelfieImg             *string
+	EntityType            *basetypes.KycEntityType
+	ReviewID              *string
+	State                 *basetypes.KycState
+	ImageType             *basetypes.KycImageType
+	RequestTimeoutSeconds int64
+	Offset                int32
+	Limit                 int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -189,6 +190,13 @@ func WithState(state *basetypes.KycState) func(context.Context, *Handler) error 
 			return fmt.Errorf("invalid state")
 		}
 		h.State = state
+		return nil
+	}
+}
+
+func WithRequestTimeoutSeconds(seconds int64) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.RequestTimeoutSeconds = seconds
 		return nil
 	}
 }
