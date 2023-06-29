@@ -23,8 +23,6 @@ import (
 	regmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	applangmwpb "github.com/NpoolPlatform/message/npool/g11n/mw/v1/applang"
 
-	chanmgrpb "github.com/NpoolPlatform/message/npool/notif/mgr/v1/channel"
-
 	sendmwpb "github.com/NpoolPlatform/message/npool/third/mw/v1/send"
 	sendmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/send"
 
@@ -391,7 +389,7 @@ func (h *updateHandler) sendKolNotification(ctx context.Context) {
 	info, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
 		AppID:     h.AppID,
 		LangID:    lang.LangID,
-		Channel:   chanmgrpb.NotifChannel_ChannelEmail,
+		Channel:   basetypes.NotifChannel_ChannelEmail,
 		EventType: basetypes.UsedFor_CreateInvitationCode,
 	})
 	if err != nil {
