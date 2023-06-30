@@ -87,9 +87,9 @@ func (h *Handler) GetKycs(ctx context.Context) ([]*kycmwpb.Kyc, uint32, error) {
 		return rinfos[i].CreatedAt >= rinfos[j].CreatedAt
 	})
 
-	for _, rinfo := range rinfos {
-		for _, info := range infos {
-			if info.ID == rinfo.ObjectID && rinfo.State == reviewmgrpb.ReviewState_Rejected {
+	for _, info := range infos {
+		for _, rinfo := range rinfos {
+			if info.ID == rinfo.ObjectID {
 				info.ReviewMessage = rinfo.Message
 				break
 			}
