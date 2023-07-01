@@ -16,6 +16,7 @@ func (s *Server) CreateSubscriber(ctx context.Context, in *npool.CreateSubscribe
 	handler, err := subscriber1.NewHandler(
 		ctx,
 		subscriber1.WithAppID(in.GetAppID()),
+		subscriber1.WithSubscribeAppID(in.SubscribeAppID),
 		subscriber1.WithEmailAddress(in.GetEmailAddress()),
 	)
 	if err != nil {
