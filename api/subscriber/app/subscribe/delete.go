@@ -15,7 +15,7 @@ func (s *Server) DeleteAppSubscribe(ctx context.Context, in *npool.DeleteAppSubs
 	handler, err := appsubscribe1.NewHandler(
 		ctx,
 		appsubscribe1.WithID(&in.ID),
-		appsubscribe1.WithAppID(in.GetAppID()),
+		appsubscribe1.WithAppID(in.GetTargetAppID()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
