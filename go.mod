@@ -3,13 +3,13 @@ module github.com/NpoolPlatform/appuser-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230609030803-0b26c1f95713
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230703102840-ff52e5b374e7
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230518061816-62bd589c0f63
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230518062456-3e53bebe90da
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230629111059-d8280578df85
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20230602083207-1c0e6203556b
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20230630110040-60a65709d9fb
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230629094452-eb2668619b3e
+	github.com/NpoolPlatform/message v0.0.0-20230703032725-c5148c041c9d
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230629102531-6aa588cd8391
 	github.com/NpoolPlatform/review-middleware v0.0.0-20230609030924-eca1f51482e9
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230221094357-40a170d76e2b

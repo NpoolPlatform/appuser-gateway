@@ -1,9 +1,8 @@
-package subscriber
+package appsubscribe
 
 import (
 	"context"
 	"fmt"
-	"net/mail"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
@@ -14,8 +13,7 @@ import (
 type Handler struct {
 	ID             *string
 	AppID          string
-	SubscribeAppID *string
-	EmailAddress   string
+	SubscribeAppID string
 	Offset         int32
 	Limit          int32
 }
@@ -57,29 +55,16 @@ func WithAppID(id string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithSubscribeAppID(id *string) func(context.Context, *Handler) error {
+func WithSubscribeAppID(id string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			return nil
-		}
-		exist, err := appmwcli.ExistApp(ctx, *id)
+		exist, err := appmwcli.ExistApp(ctx, id)
 		if err != nil {
 			return err
 		}
 		if !exist {
-			return fmt.Errorf("subscribe app not exist")
+			return fmt.Errorf("app not exist")
 		}
 		h.SubscribeAppID = id
-		return nil
-	}
-}
-
-func WithEmailAddress(emailAddress string) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if _, err := mail.ParseAddress(emailAddress); err != nil {
-			return err
-		}
-		h.EmailAddress = emailAddress
 		return nil
 	}
 }
