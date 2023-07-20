@@ -15,6 +15,7 @@ import (
 type genesisURL struct {
 	Path   string
 	Method string
+	Target string
 }
 
 type createGenesisAuthHandler struct {
@@ -42,13 +43,16 @@ func (h *createGenesisAuthHandler) createGenesisAuths(ctx context.Context) error
 	reqs := []*authmwpb.AuthReq{}
 	for _, _user := range h.GenesisRoleUsers {
 		for _, _url := range h.urls {
-			reqs = append(reqs, &authmwpb.AuthReq{
+			req := &authmwpb.AuthReq{
 				AppID:    &_user.AppID,
 				Resource: &_url.Path,
 				Method:   &_url.Method,
-				UserID:   &_user.UserID,
-				RoleID:   &_user.RoleID,
-			})
+			}
+			if _url.Target != "App" {
+				req.UserID = &_user.UserID
+				req.RoleID = &_user.RoleID
+			}
+			reqs = append(reqs, req)
 		}
 	}
 	auths, err := authmwcli.CreateAuths(ctx, reqs)
