@@ -211,6 +211,33 @@ func (h *Handler) ThirdLogin(ctx context.Context) (info *usermwpb.User, err erro
 	return h.User, nil
 }
 
+func (h *Handler) ThirdLogin(ctx context.Context) (info *usermwpb.User, err error) {
+	handler := &loginHandler{
+		Handler: h,
+	}
+
+	if err := handler.verifyAccount(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.prepareMetadata(ctx); err != nil {
+		return nil, err
+	}
+	token, err := createToken(h.Metadata)
+	if err != nil {
+		return nil, err
+	}
+	h.Token = &token
+	handler.formalizeUser()
+	if err := handler.getInvitationCode(ctx); err != nil {
+		return nil, err
+	}
+	if err := h.CreateCache(ctx); err != nil {
+		return nil, err
+	}
+	handler.notifyLogin(basetypes.LoginType_FreshLogin)
+	return h.User, nil
+}
+
 func (h *loginHandler) mustQueryMetadata(ctx context.Context) (err error) {
 	h.Metadata, err = h.QueryCache(ctx)
 	if err != nil {
