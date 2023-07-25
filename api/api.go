@@ -46,6 +46,7 @@ func Register(server grpc.ServiceRegistrar) {
 	appoauththirdparty.Register(server)
 }
 
+//nolint:gocyclo
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
 	if err := appusergw.RegisterGatewayHandlerFromEndpoint(context.Background(), mux, endpoint, opts); err != nil {
 		return err
@@ -81,6 +82,15 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := kyc.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := oauth.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := oauththirdparty.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := appoauththirdparty.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 
