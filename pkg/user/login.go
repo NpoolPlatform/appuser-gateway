@@ -13,11 +13,11 @@ import (
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
-	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
-
+	hismwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user/login/history"
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
+	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
+	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
 
@@ -152,6 +152,27 @@ func (h *loginHandler) getInvitationCode(ctx context.Context) error {
 	return nil
 }
 
+func (h *loginHandler) newDeviceNotif(ctx context.Context) error {
+	histories, _, err := hismwcli.GetHistories(ctx, &loginhispb.Conds{
+		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		UserID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		ClientIP:  &basetypes.StringVal{Op: cruder.EQ, Value: h.Metadata.ClientIP.String()},
+		UserAgent: &basetypes.StringVal{Op: cruder.EQ, Value: h.Metadata.UserAgent},
+	}, 0, 1)
+	if err != nil {
+		logger.Sugar().Errorf("get histories failed, err %v", err)
+	}
+
+	if len(histories) == 0 {
+		notif1 := &notifHandler{}
+		notif1.UsedFor = basetypes.UsedFor_NewDeviceDetected
+		notif1.AppID = h.AppID
+		notif1.UserID = h.UserID
+		notif1.GenerateNotif(ctx)
+	}
+
+	return nil
+}
 func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 	handler := &loginHandler{
 		Handler: h,
@@ -179,7 +200,11 @@ func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 	if err := h.CreateCache(ctx); err != nil {
 		return nil, err
 	}
-	handler.notifyLogin(basetypes.LoginType_FreshLogin)
+
+	if err := handler.newDeviceNotif(ctx); err != nil {
+		handler.notifyLogin(basetypes.LoginType_FreshLogin)
+	}
+
 	return h.User, nil
 }
 
