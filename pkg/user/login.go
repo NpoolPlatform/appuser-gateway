@@ -168,6 +168,7 @@ func (h *loginHandler) newDeviceNotif(ctx context.Context) error { // nolint
 		notif1.UsedFor = basetypes.UsedFor_NewDeviceDetected
 		notif1.AppID = h.AppID
 		notif1.UserID = h.UserID
+		notif1.Metadata = h.Metadata
 		notif1.GenerateNotif(ctx)
 	}
 

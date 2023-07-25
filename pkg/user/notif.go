@@ -12,7 +12,8 @@ import (
 
 type notifHandler struct {
 	*Handler
-	UsedFor basetypes.UsedFor
+	UsedFor  basetypes.UsedFor
+	Metadata *Metadata
 }
 
 func (h *notifHandler) GetUsedFor() {
@@ -44,14 +45,27 @@ func (h *notifHandler) GenerateNotif(ctx context.Context) {
 		return
 	}
 
+	templateVars := &template.TemplateVars{}
+	if h.UsedFor == basetypes.UsedFor_NewDeviceDetected {
+		clientIP := h.Metadata.ClientIP.String()
+		location := h.Metadata.UserAgent
+		templateVars.IP = &clientIP
+		templateVars.Location = &location
+	}
+
 	_, err := notifmwcli.GenerateNotifs(ctx, &notif.GenerateNotifsRequest{
 		AppID:     h.AppID,
 		UserID:    *h.UserID,
 		EventType: h.UsedFor,
-		Vars:      &template.TemplateVars{},
+		Vars:      templateVars,
 		NotifType: basetypes.NotifType_NotifUnicast,
 	})
 	if err != nil {
-		logger.Sugar().Errorf("send notif error %v", err)
+		logger.Sugar().Errorf(
+			"send notif error %v", err,
+			"AppID", h.AppID,
+			"UserID", h.UserID,
+			"Vars", templateVars,
+		)
 	}
 }
