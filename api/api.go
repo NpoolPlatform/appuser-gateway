@@ -15,6 +15,9 @@ import (
 	appsubscribe "github.com/NpoolPlatform/appuser-gateway/api/subscriber/app/subscribe"
 	"github.com/NpoolPlatform/appuser-gateway/api/user"
 
+	"github.com/NpoolPlatform/appuser-gateway/api/authing/oauth"
+	"github.com/NpoolPlatform/appuser-gateway/api/authing/oauth/appoauththirdparty"
+	"github.com/NpoolPlatform/appuser-gateway/api/authing/oauth/oauththirdparty"
 	appusergw "github.com/NpoolPlatform/message/npool/appuser/gw/v1"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -38,6 +41,9 @@ func Register(server grpc.ServiceRegistrar) {
 	auth.Register(server)
 	authhistory.Register(server)
 	kyc.Register(server)
+	oauth.Register(server)
+	oauththirdparty.Register(server)
+	appoauththirdparty.Register(server)
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
