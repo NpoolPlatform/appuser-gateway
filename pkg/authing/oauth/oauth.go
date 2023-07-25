@@ -112,7 +112,7 @@ func (h *oauthHandler) validate(ctx context.Context) error {
 }
 
 func (h *oauthHandler) getThirdPartyConf(ctx context.Context) error {
-	info, err := oauthmwcli.GetOAuthThirdPartyOnly(
+	info, err := oauthmwcli.GetOAuthThirdPartyDecryptOnly(
 		ctx,
 		&oauthmwpb.Conds{
 			ClientName: &basetypes.Int32Val{Op: cruder.EQ, Value: int32(*h.ClientName)},
@@ -209,7 +209,7 @@ func (h *oauthHandler) createUserInfo(ctx context.Context) (*usermwpb.User, erro
 		return nil, fmt.Errorf("invalid default role")
 	}
 
-	return usermwcli.CreateUser(
+	return usermwcli.CreateThirdUser(
 		ctx,
 		&usermwpb.UserReq{
 			ID:                 handler.UserID,
