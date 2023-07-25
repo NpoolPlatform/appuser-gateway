@@ -1,7 +1,13 @@
 package user
 
 import (
+	"context"
+
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	"github.com/NpoolPlatform/message/npool/notif/mw/v1/notif"
+	"github.com/NpoolPlatform/message/npool/notif/mw/v1/template"
+	notifmwcli "github.com/NpoolPlatform/notif-middleware/pkg/client/notif"
 )
 
 type notifHandler struct {
@@ -32,8 +38,20 @@ func (h *notifHandler) GetUsedFor() {
 	}
 }
 
-func (h *notifHandler) GenerateNotif() {
+func (h *notifHandler) GenerateNotif(ctx context.Context) {
 	if h.UsedFor == basetypes.UsedFor_DefaultUsedFor {
+		logger.Sugar().Errorf("no notif situation matched")
 		return
+	}
+
+	_, err := notifmwcli.GenerateNotifs(ctx, &notif.GenerateNotifsRequest{
+		AppID:     h.AppID,
+		UserID:    *h.UserID,
+		EventType: h.UsedFor,
+		Vars:      &template.TemplateVars{},
+		NotifType: basetypes.NotifType_NotifUnicast,
+	})
+	if err != nil {
+		logger.Sugar().Errorf("send notif error %v", err)
 	}
 }
