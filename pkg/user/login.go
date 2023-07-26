@@ -163,7 +163,14 @@ func (h *loginHandler) newDeviceNotif(ctx context.Context) error { // nolint
 		logger.Sugar().Errorf("get histories failed, err %v", err)
 	}
 
+	logger.Sugar().Errorf("History", histories)
 	if len(histories) == 0 {
+		logger.Sugar().Errorf(
+			"new device detected!",
+			"AppID", h.AppID,
+			"UserID", h.UserID,
+			"Meta", h.Metadata,
+		)
 		notif1 := &notifHandler{}
 		notif1.UsedFor = basetypes.UsedFor_NewDeviceDetected
 		notif1.AppID = h.AppID
