@@ -12,8 +12,7 @@ import (
 
 type notifHandler struct {
 	*Handler
-	UsedFor  basetypes.UsedFor
-	Metadata *Metadata
+	UsedFor basetypes.UsedFor
 }
 
 func (h *notifHandler) GetUsedFor() {
