@@ -13,7 +13,6 @@ import (
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	hismwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user/login/history"
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
@@ -152,39 +151,6 @@ func (h *loginHandler) getInvitationCode(ctx context.Context) error {
 	return nil
 }
 
-func (h *loginHandler) newDeviceNotif(ctx context.Context) error { // nolint
-	histories, _, err := hismwcli.GetHistories(ctx, &loginhispb.Conds{
-		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-		UserID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
-		ClientIP:  &basetypes.StringVal{Op: cruder.EQ, Value: h.Metadata.ClientIP.String()},
-		UserAgent: &basetypes.StringVal{Op: cruder.EQ, Value: h.Metadata.UserAgent},
-	}, 0, 1)
-	if err != nil {
-		logger.Sugar().Errorf("get histories failed, err %v", err)
-	}
-
-	logger.Sugar().Errorf("History", histories)
-	if len(histories) == 0 {
-		logger.Sugar().Errorf(
-			"new device detected!",
-			"AppID", h.AppID,
-			"UserID", h.UserID,
-			"Meta", h.Metadata,
-		)
-
-		notif1 := &notifHandler{
-			Handler: &Handler{
-				AppID:    h.AppID,
-				UserID:   h.UserID,
-				Metadata: h.Metadata,
-			},
-			UsedFor: basetypes.UsedFor_NewDeviceDetected,
-		}
-		notif1.GenerateNotif(ctx)
-	}
-
-	return nil
-}
 func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 	handler := &loginHandler{
 		Handler: h,
@@ -213,9 +179,7 @@ func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 		return nil, err
 	}
 
-	if err := handler.newDeviceNotif(ctx); err != nil {
-		handler.notifyLogin(basetypes.LoginType_FreshLogin)
-	}
+	handler.notifyLogin(basetypes.LoginType_FreshLogin)
 
 	return h.User, nil
 }
