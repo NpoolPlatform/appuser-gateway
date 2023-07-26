@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -51,13 +52,16 @@ func (h *notifHandler) GenerateNotif(ctx context.Context) {
 		location := h.Metadata.UserAgent
 		templateVars.IP = &clientIP
 		templateVars.Location = &location
+		now := uint32(time.Now().Unix())
+		templateVars.Timestamp = &now
 	}
 
 	logger.Sugar().Infof(
 		"generate notif",
 		"AppID", h.AppID,
-		"UserID", h.UserID,
+		"UserID", *h.UserID,
 		"EventType", h.UsedFor,
+		"UserAgent", h.Metadata.UserAgent,
 	)
 	_, err := notifmwcli.GenerateNotifs(ctx, &notif.GenerateNotifsRequest{
 		AppID:     h.AppID,
