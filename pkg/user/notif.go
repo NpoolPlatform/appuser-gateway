@@ -39,6 +39,7 @@ func (h *notifHandler) GetUsedFor() {
 }
 
 func (h *notifHandler) GenerateNotif(ctx context.Context) {
+	logger.Sugar().Infof("generate notifs start")
 	if h.UsedFor == basetypes.UsedFor_DefaultUsedFor {
 		logger.Sugar().Errorf("no notif situation matched")
 		return
@@ -52,6 +53,12 @@ func (h *notifHandler) GenerateNotif(ctx context.Context) {
 		templateVars.Location = &location
 	}
 
+	logger.Sugar().Infof(
+		"generate notif",
+		"AppID", h.AppID,
+		"UserID", h.UserID,
+		"EventType", h.UsedFor,
+	)
 	_, err := notifmwcli.GenerateNotifs(ctx, &notif.GenerateNotifsRequest{
 		AppID:     h.AppID,
 		UserID:    *h.UserID,
