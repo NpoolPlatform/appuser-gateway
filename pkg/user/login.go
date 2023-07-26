@@ -153,6 +153,11 @@ func (h *loginHandler) getInvitationCode(ctx context.Context) error {
 }
 
 func (h *loginHandler) newDeviceNotif(ctx context.Context) error { // nolint
+	logger.Sugar().Errorf(
+		"AppID", h.AppID,
+		"UserID", h.UserID,
+		"Meta", h.Metadata,
+	)
 	histories, _, err := hismwcli.GetHistories(ctx, &loginhispb.Conds{
 		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 		UserID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
