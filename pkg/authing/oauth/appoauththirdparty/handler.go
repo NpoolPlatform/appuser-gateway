@@ -6,6 +6,7 @@ import (
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
+	oauththirdpartymwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/authing/oauth/oauththirdparty"
 
 	"github.com/google/uuid"
 )
@@ -66,8 +67,16 @@ func WithThirdPartyID(id *string) func(context.Context, *Handler) error {
 		if id == nil {
 			return nil
 		}
-		if _, err := uuid.Parse(*id); err != nil {
+		_id, err := uuid.Parse(*id)
+		if err != nil {
 			return err
+		}
+		exist, err := oauththirdpartymwcli.ExistOAuthThirdParty(ctx, _id.String())
+		if err != nil {
+			return err
+		}
+		if !exist {
+			return fmt.Errorf("oauththirdparty not exist")
 		}
 		h.ThirdPartyID = id
 		return nil

@@ -38,7 +38,7 @@ func (s *Server) GetOAuthLoginList(ctx context.Context, in *npool.GetOAuthLoginL
 	}, nil
 }
 
-func (s *Server) GetOAuthURL(ctx context.Context, in *npool.GetOAuthLoginURLRequest) (*npool.GetOAuthLoginURLResponse, error) {
+func (s *Server) GetOAuthLoginURL(ctx context.Context, in *npool.GetOAuthLoginURLRequest) (*npool.GetOAuthLoginURLResponse, error) {
 	handler, err := oauth1.NewHandler(
 		ctx,
 		oauth1.WithAppID(in.AppID),

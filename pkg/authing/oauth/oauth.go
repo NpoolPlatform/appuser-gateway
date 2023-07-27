@@ -70,10 +70,6 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// authURI := "https://github.com/login/oauth/authorize"
-	// clientID := "25881c93d384676c0473"
-	// responseType := "code"
-	// redirectURI := "http://localhost:8080/oauth/callback"
 	state := uuid.NewString()
 	const expireTime = 1 * 60
 	cli, err := redis2.GetClient()
