@@ -325,6 +325,13 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	); err != nil {
 		return err
 	}
+
+	notif1 := &notifHandler{
+		Handler: h,
+		UsedFor: basetypes.UsedFor_UpdatePassword,
+	}
+	notif1.GenerateNotif(ctx)
+
 	return nil
 }
 

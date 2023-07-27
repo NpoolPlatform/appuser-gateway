@@ -10,7 +10,7 @@ require (
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230630110040-60a65709d9fb
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
 	github.com/NpoolPlatform/message v0.0.0-20230727065940-215e1a1f6d5c
-	github.com/NpoolPlatform/notif-middleware v0.0.0-20230726043319-223c96876a87
+	github.com/NpoolPlatform/notif-middleware v0.0.0-20230727070340-1bae8e78e5ed
 	github.com/NpoolPlatform/review-middleware v0.0.0-20230609030924-eca1f51482e9
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230704082227-6d9cd6cef31f
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
