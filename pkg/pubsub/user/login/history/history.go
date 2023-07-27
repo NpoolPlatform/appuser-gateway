@@ -36,6 +36,7 @@ func Apply(ctx context.Context, req interface{}) error {
 		Vars: &template.TemplateVars{
 			IP:        in.ClientIP,
 			Location:  in.Location,
+			UserAgent: in.UserAgent,
 			Timestamp: &now,
 		},
 		NotifType: basetypes.NotifType_NotifUnicast,
@@ -49,6 +50,7 @@ func Apply(ctx context.Context, req interface{}) error {
 			"EventType", basetypes.UsedFor_NewDeviceDetected,
 			"ClientIP", in.ClientIP,
 			"Location", in.Location,
+			"UserAgent", in.UserAgent,
 		)
 	}
 
