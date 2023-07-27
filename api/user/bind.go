@@ -18,7 +18,6 @@ func (s *Server) BindUser(ctx context.Context, in *npool.BindUserRequest) (*npoo
 		user1.WithUserID(&in.UserID),
 		user1.WithAccount(in.Account, in.AccountType),
 		user1.WithNewAccount(in.NewAccount, in.NewAccountType),
-		user1.WithVerificationCode(in.VerificationCode),
 		user1.WithNewVerificationCode(in.NewVerificationCode),
 	)
 	if err != nil {
