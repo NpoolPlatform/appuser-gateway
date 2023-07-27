@@ -70,6 +70,32 @@ func (h *bindHandler) getUser(ctx context.Context) error {
 	return nil
 }
 
+func (h *bindHandler) getThirdUserInfo(ctx context.Context) (*usermwpb.User, error) {
+	const maxlimit = 2
+	infos, _, err := usermwcli.GetThirdUsers(
+		ctx,
+		&usermwpb.Conds{
+			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Account},
+		},
+		0,
+		maxlimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if infos == nil {
+		return nil, nil
+	}
+	if len(infos) == 0 {
+		return nil, fmt.Errorf("appuserthirdparty is empty")
+	}
+	if len(infos) > 1 {
+		return nil, fmt.Errorf("oauth user too many")
+	}
+
+	return infos[0], nil
+}
+
 func (h *bindHandler) verifyNewAccountCode(ctx context.Context) error {
 	if h.NewAccountType == nil {
 		return fmt.Errorf("invalid account type")
@@ -78,9 +104,7 @@ func (h *bindHandler) verifyNewAccountCode(ctx context.Context) error {
 		return fmt.Errorf("invalid new verification code")
 	}
 	account := ""
-	if *h.NewAccountType == basetypes.SignMethod_Google {
-		account = h.User.GoogleSecret
-	} else if h.NewAccount != nil {
+	if h.NewAccount != nil {
 		account = *h.NewAccount
 	}
 	return usercodemwcli.VerifyUserCode(
@@ -97,11 +121,17 @@ func (h *bindHandler) verifyNewAccountCode(ctx context.Context) error {
 }
 
 func (h *bindHandler) updateUser(ctx context.Context) error {
+	thirdUserInfo, err := h.getThirdUserInfo(ctx)
+	if err != nil {
+		return err
+	}
 	req := &usermwpb.UserReq{
-		ID:           h.UserID,
-		AppID:        &h.AppID,
-		Username:     h.Username,
-		EmailAddress: h.EmailAddress,
+		ID:               h.UserID,
+		AppID:            &h.AppID,
+		EmailAddress:     h.EmailAddress,
+		PhoneNO:          h.PhoneNO,
+		ThirdPartyID:     thirdUserInfo.ThirdPartyID,
+		ThirdPartyUserID: thirdUserInfo.ThirdPartyUserID,
 	}
 	fmt.Printf("new_account_type=%v, new_account=%v\n", h.NewAccountType, h.NewAccount)
 	if h.NewAccountType != nil {
@@ -109,9 +139,6 @@ func (h *bindHandler) updateUser(ctx context.Context) error {
 			return fmt.Errorf("invalid account")
 		}
 		switch *h.NewAccountType {
-		case basetypes.SignMethod_Google:
-			verified := true
-			req.GoogleAuthVerified = &verified
 		case basetypes.SignMethod_Email:
 			req.EmailAddress = h.NewAccount
 		case basetypes.SignMethod_Mobile:
