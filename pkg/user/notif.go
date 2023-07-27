@@ -2,12 +2,10 @@ package user
 
 import (
 	"context"
-	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/NpoolPlatform/message/npool/notif/mw/v1/notif"
-	"github.com/NpoolPlatform/message/npool/notif/mw/v1/template"
 	notifmwcli "github.com/NpoolPlatform/notif-middleware/pkg/client/notif"
 )
 
@@ -46,27 +44,17 @@ func (h *notifHandler) GenerateNotif(ctx context.Context) {
 		return
 	}
 
-	templateVars := &template.TemplateVars{}
-	if h.UsedFor == basetypes.UsedFor_NewDeviceDetected {
-		clientIP := h.Metadata.ClientIP.String()
-		location := h.Metadata.UserAgent
-		templateVars.IP = &clientIP
-		templateVars.Location = &location
-		now := uint32(time.Now().Unix())
-		templateVars.Timestamp = &now
-	}
-
 	logger.Sugar().Infof(
 		"generate notif",
 		"AppID", h.AppID,
 		"UserID", *h.UserID,
 		"EventType", h.UsedFor,
 	)
+
 	_, err := notifmwcli.GenerateNotifs(ctx, &notif.GenerateNotifsRequest{
 		AppID:     h.AppID,
 		UserID:    *h.UserID,
 		EventType: h.UsedFor,
-		Vars:      templateVars,
 		NotifType: basetypes.NotifType_NotifUnicast,
 	})
 	if err != nil {
@@ -74,7 +62,6 @@ func (h *notifHandler) GenerateNotif(ctx context.Context) {
 			"send notif error %v", err,
 			"AppID", h.AppID,
 			"UserID", h.UserID,
-			"Vars", templateVars,
 		)
 	}
 }
