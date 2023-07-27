@@ -46,7 +46,7 @@ func finish(ctx context.Context, msg *pubsub.Msg, err error) error {
 
 func prepare(mid, body string) (req interface{}, err error) {
 	switch mid {
-	case basetypes.MsgID_NewDeviceNotifReq.String():
+	case basetypes.MsgID_CreateNewDeviceNotifReq.String():
 		req, err = user.Prepare(body)
 	default:
 		return nil, nil
@@ -106,7 +106,7 @@ func statReq(ctx context.Context, mid string, uid uuid.UUID) (bool, error) {
 //   error   error message
 func statMsg(ctx context.Context, mid string, uid uuid.UUID, rid *uuid.UUID) (bool, error) { //nolint
 	switch mid {
-	case basetypes.MsgID_NewDeviceNotifReq.String():
+	case basetypes.MsgID_CreateNewDeviceNotifReq.String():
 		return statReq(ctx, mid, uid)
 	default:
 		return false, fmt.Errorf("invalid message")
@@ -138,7 +138,7 @@ func process(ctx context.Context, mid string, uid uuid.UUID, req interface{}) (e
 	}()
 
 	switch mid {
-	case basetypes.MsgID_NewDeviceNotifReq.String():
+	case basetypes.MsgID_CreateNewDeviceNotifReq.String():
 		err = user.Apply(ctx, req)
 	default:
 		return nil
