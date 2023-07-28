@@ -13,11 +13,10 @@ import (
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
-	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
-
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
+	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
+	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
 	commonpb "github.com/NpoolPlatform/message/npool"
 
@@ -179,7 +178,9 @@ func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 	if err := h.CreateCache(ctx); err != nil {
 		return nil, err
 	}
+
 	handler.notifyLogin(basetypes.LoginType_FreshLogin)
+
 	return h.User, nil
 }
 

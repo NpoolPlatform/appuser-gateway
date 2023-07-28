@@ -212,6 +212,11 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 		return nil, fmt.Errorf("invalid userid")
 	}
 
+	notif1 := &notifHandler{
+		Handler: h,
+	}
+	notif1.getUsedFor()
+
 	if err := handler.CheckNewAccount(ctx); err != nil {
 		return nil, err
 	}
@@ -230,6 +235,9 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	if err := handler.updateUser(ctx); err != nil {
 		return nil, err
 	}
+
+	// Generate Notif
+	notif1.generateNotif(ctx)
 
 	if !h.ShouldUpdateCache {
 		return h.User, nil
@@ -317,6 +325,13 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	); err != nil {
 		return err
 	}
+
+	notif1 := &notifHandler{
+		Handler: h,
+		UsedFor: basetypes.UsedFor_UpdatePassword,
+	}
+	notif1.generateNotif(ctx)
+
 	return nil
 }
 
