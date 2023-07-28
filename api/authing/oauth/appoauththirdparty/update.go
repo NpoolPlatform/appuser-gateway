@@ -14,6 +14,7 @@ import (
 func (s *Server) UpdateOAuthThirdParty(ctx context.Context, in *npool.UpdateOAuthThirdPartyRequest) (*npool.UpdateOAuthThirdPartyResponse, error) {
 	handler, err := oauth1.NewHandler(
 		ctx,
+		oauth1.WithID(&in.ID),
 		oauth1.WithAppID(in.GetAppID()),
 		oauth1.WithClientID(in.ClientID),
 		oauth1.WithClientSecret(in.ClientSecret),
