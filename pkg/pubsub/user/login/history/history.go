@@ -53,9 +53,7 @@ func Apply(ctx context.Context, req interface{}) error {
 			"AppID", *in.AppID,
 			"UserID", *in.UserID,
 			"EventType", basetypes.UsedFor_NewLogin,
-			"ClientIP", in.ClientIP,
-			"Location", in.Location,
-			"UserAgent", in.UserAgent,
+			"TemplateVars", *templateVars,
 		)
 	}
 
