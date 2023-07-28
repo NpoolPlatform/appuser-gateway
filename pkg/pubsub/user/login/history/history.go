@@ -42,7 +42,7 @@ func Apply(ctx context.Context, req interface{}) error {
 	_, err := notifmwcli.GenerateNotifs(ctx, &notif.GenerateNotifsRequest{
 		AppID:     *in.AppID,
 		UserID:    *in.UserID,
-		EventType: basetypes.UsedFor_NewDeviceDetected,
+		EventType: basetypes.UsedFor_NewLogin,
 		Vars:      templateVars,
 		NotifType: basetypes.NotifType_NotifUnicast,
 	})
@@ -52,7 +52,7 @@ func Apply(ctx context.Context, req interface{}) error {
 			"send notif error %v", err,
 			"AppID", *in.AppID,
 			"UserID", *in.UserID,
-			"EventType", basetypes.UsedFor_NewDeviceDetected,
+			"EventType", basetypes.UsedFor_NewLogin,
 			"ClientIP", in.ClientIP,
 			"Location", in.Location,
 			"UserAgent", in.UserAgent,
