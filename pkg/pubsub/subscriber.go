@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	user "github.com/NpoolPlatform/appuser-gateway/pkg/pubsub/user/login/history"
+	loginhistory "github.com/NpoolPlatform/appuser-gateway/pkg/pubsub/user/login/history"
 	"github.com/NpoolPlatform/appuser-middleware/pkg/db"
 	"github.com/NpoolPlatform/appuser-middleware/pkg/db/ent"
 	entpubsubmsg "github.com/NpoolPlatform/appuser-middleware/pkg/db/ent/pubsubmessage"
@@ -47,7 +47,7 @@ func finish(ctx context.Context, msg *pubsub.Msg, err error) error {
 func prepare(mid, body string) (req interface{}, err error) {
 	switch mid {
 	case basetypes.MsgID_CreateNewLoginReq.String():
-		req, err = user.Prepare(body)
+		req, err = loginhistory.Prepare(body)
 	default:
 		return nil, nil
 	}
@@ -139,7 +139,7 @@ func process(ctx context.Context, mid string, uid uuid.UUID, req interface{}) (e
 
 	switch mid {
 	case basetypes.MsgID_CreateNewLoginReq.String():
-		err = user.Apply(ctx, req)
+		err = loginhistory.Apply(ctx, req)
 	default:
 		return nil
 	}
