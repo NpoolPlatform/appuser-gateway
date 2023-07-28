@@ -29,16 +29,21 @@ func Apply(ctx context.Context, req interface{}) error {
 	}
 
 	now := uint32(time.Now().Unix())
+	templateVars := &template.TemplateVars{
+		IP:        in.ClientIP,
+		Location:  nil,
+		UserAgent: in.UserAgent,
+		Timestamp: &now,
+	}
+	if in.Location != nil {
+		templateVars.Location = in.Location
+	}
+
 	_, err := notifmwcli.GenerateNotifs(ctx, &notif.GenerateNotifsRequest{
 		AppID:     *in.AppID,
 		UserID:    *in.UserID,
 		EventType: basetypes.UsedFor_NewDeviceDetected,
-		Vars: &template.TemplateVars{
-			IP:        in.ClientIP,
-			Location:  in.Location,
-			UserAgent: in.UserAgent,
-			Timestamp: &now,
-		},
+		Vars:      templateVars,
 		NotifType: basetypes.NotifType_NotifUnicast,
 	})
 
