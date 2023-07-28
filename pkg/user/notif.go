@@ -14,7 +14,7 @@ type notifHandler struct {
 	UsedFor basetypes.UsedFor
 }
 
-func (h *notifHandler) GetUsedFor() {
+func (h *notifHandler) getUsedFor() {
 	h.UsedFor = basetypes.UsedFor_DefaultUsedFor
 
 	if h.NewAccountType != nil {
@@ -37,7 +37,7 @@ func (h *notifHandler) GetUsedFor() {
 	}
 }
 
-func (h *notifHandler) GenerateNotif(ctx context.Context) {
+func (h *notifHandler) generateNotif(ctx context.Context) {
 	logger.Sugar().Infof("generate notifs start")
 	if h.UsedFor == basetypes.UsedFor_DefaultUsedFor {
 		logger.Sugar().Errorf("no notif situation matched")

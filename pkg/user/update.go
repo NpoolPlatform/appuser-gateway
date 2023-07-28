@@ -215,7 +215,7 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	notif1 := &notifHandler{
 		Handler: h,
 	}
-	notif1.GetUsedFor()
+	notif1.getUsedFor()
 
 	if err := handler.CheckNewAccount(ctx); err != nil {
 		return nil, err
@@ -237,7 +237,7 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	}
 
 	// Generate Notif
-	notif1.GenerateNotif(ctx)
+	notif1.generateNotif(ctx)
 
 	if !h.ShouldUpdateCache {
 		return h.User, nil
