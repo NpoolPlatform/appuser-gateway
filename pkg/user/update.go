@@ -330,7 +330,7 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 		Handler: h,
 		UsedFor: basetypes.UsedFor_UpdatePassword,
 	}
-	notif1.GenerateNotif(ctx)
+	notif1.generateNotif(ctx)
 
 	return nil
 }
