@@ -12,7 +12,7 @@ require (
 	github.com/NpoolPlatform/message v0.0.0-20230727115355-e20a4bb97894
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230629102531-6aa588cd8391
 	github.com/NpoolPlatform/review-middleware v0.0.0-20230609030924-eca1f51482e9
-	github.com/NpoolPlatform/third-middleware v0.0.0-20230726071603-67857c471ef4
+	github.com/NpoolPlatform/third-middleware v0.0.0-20230729082403-acc04fdbea26
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0

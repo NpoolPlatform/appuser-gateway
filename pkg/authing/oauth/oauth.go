@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"time"
 
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
 	oauthmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/authing/oauth/appoauththirdparty"
@@ -18,6 +19,7 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	thirdmwpb "github.com/NpoolPlatform/message/npool/third/mw/v1/oauth"
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/oauth"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 )
 
@@ -71,16 +73,31 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 		return "", err
 	}
 	state := uuid.NewString()
-	const expireTime = 1 * 60
+	const expireTime = 10 * time.Minute
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return "", err
 	}
-	cli.Set(ctx, state, *h.ClientName, expireTime)
+	clientNameStr := h.ClientName.String()
+	err = cli.Set(ctx, state, clientNameStr, expireTime).Err()
+	if err != nil {
+		fmt.Println("set redis err: ", err)
+		return "", err
+	}
+	fmt.Println("state: ", state, "=ClientName: ", *h.ClientName, "=expireTime: ", expireTime)
 	redirectURL := fmt.Sprintf(
 		"%s?client_id=%s&redirect_uri=%s&response_type=%s&state=%s",
 		info.ClientOAuthURL, info.ClientID, info.CallbackURL, info.ResponseType, state,
 	)
+	fmt.Println("redirectURL: ", redirectURL)
+	val, err := cli.Get(ctx, state).Result()
+	if err == redis.Nil {
+		return "", nil
+	} else if err != nil {
+		return "", err
+	}
+
+	fmt.Println("val:== ", val)
 
 	return redirectURL, nil
 }
@@ -96,13 +113,14 @@ func (h *oauthHandler) validate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("state: ", *h.State)
 	clientNameStr, err := cli.Get(ctx, *h.State).Result()
 	if err != nil {
+		fmt.Println("invalid state, err: ", err)
 		return fmt.Errorf("invalid state")
 	}
 	clientName := basetypes.SignMethod(basetypes.SignMethod_value[clientNameStr])
 	h.ClientName = &clientName
-	cli.Del(ctx, *h.State)
 
 	return nil
 }
@@ -111,7 +129,8 @@ func (h *oauthHandler) getThirdPartyConf(ctx context.Context) error {
 	info, err := oauthmwcli.GetOAuthThirdPartyOnly(
 		ctx,
 		&oauthmwpb.Conds{
-			ClientName: &basetypes.Int32Val{Op: cruder.EQ, Value: int32(*h.ClientName)},
+			ClientName:    &basetypes.Int32Val{Op: cruder.EQ, Value: int32(*h.ClientName)},
+			DecryptSecret: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 		},
 	)
 	if err != nil {
@@ -126,19 +145,23 @@ func (h *oauthHandler) getThirdPartyConf(ctx context.Context) error {
 }
 
 func (h *oauthHandler) getAccessToken(ctx context.Context) error {
+	fmt.Println("*h.ClientName= ", *h.ClientName, "; h.oauthConf.ClientID= ", h.oauthConf.ClientID, "; h.oauthConf.ClientSecret= ", h.oauthConf.ClientSecret, "; *h.Code= ", *h.Code)
 	accessToken, err := thirdmwcli.GetOAuthAccessToken(ctx, *h.ClientName, h.oauthConf.ClientID, h.oauthConf.ClientSecret, *h.Code)
 	if err != nil {
 		return err
 	}
+	fmt.Println("accessToken:= ", accessToken)
 	h.accessToken = accessToken
 	return nil
 }
 
 func (h *oauthHandler) getThirdUserInfo(ctx context.Context) error {
+	fmt.Println("*h.ClientName= ", *h.ClientName, "; h.accessToken= ", h.accessToken)
 	thirdUserInfo, err := thirdmwcli.GetOAuthUserInfo(ctx, *h.ClientName, h.accessToken)
 	if err != nil {
 		return err
 	}
+	fmt.Println("thirdUserInfo:= ")
 
 	h.thirdUserInfo = thirdUserInfo
 	return nil
