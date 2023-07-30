@@ -66,6 +66,7 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 	info, err := oauthmwcli.GetOAuthThirdPartyOnly(
 		ctx,
 		&oauthmwpb.Conds{
+			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 			ClientName: &basetypes.Int32Val{Op: cruder.EQ, Value: int32(*h.ClientName)},
 		},
 	)
@@ -129,6 +130,7 @@ func (h *oauthHandler) getThirdPartyConf(ctx context.Context) error {
 	info, err := oauthmwcli.GetOAuthThirdPartyOnly(
 		ctx,
 		&oauthmwpb.Conds{
+			AppID:         &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 			ClientName:    &basetypes.Int32Val{Op: cruder.EQ, Value: int32(*h.ClientName)},
 			DecryptSecret: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 		},
@@ -172,6 +174,7 @@ func (h *oauthHandler) getUserInfo(ctx context.Context) (*usermwpb.User, error) 
 	infos, _, err := usermwcli.GetThirdUsers(
 		ctx,
 		&usermwpb.Conds{
+			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: h.thirdUserInfo.ID},
 		},
 		0,
