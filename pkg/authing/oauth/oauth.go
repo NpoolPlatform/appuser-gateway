@@ -33,9 +33,9 @@ type ThirdUserInfo struct {
 
 type oauthHandler struct {
 	*Handler
-	accessToken   string
-	oauthConf     *oauthmwpb.OAuthThirdParty
-	thirdUserInfo *thirdmwpb.ThirdUserInfo
+	accessTokenInfo *thirdmwpb.AccessTokenInfo
+	oauthConf       *oauthmwpb.OAuthThirdParty
+	thirdUserInfo   *thirdmwpb.ThirdUserInfo
 }
 
 func (h *Handler) GetOAuthLoginList(ctx context.Context) ([]*oauthmwpb.OAuthThirdParty, error) {
@@ -148,22 +148,22 @@ func (h *oauthHandler) getThirdPartyConf(ctx context.Context) error {
 
 func (h *oauthHandler) getAccessToken(ctx context.Context) error {
 	fmt.Println("*h.ClientName= ", *h.ClientName, "; h.oauthConf.ClientID= ", h.oauthConf.ClientID, "; h.oauthConf.ClientSecret= ", h.oauthConf.ClientSecret, "; *h.Code= ", *h.Code)
-	accessToken, err := thirdmwcli.GetOAuthAccessToken(ctx, *h.ClientName, h.oauthConf.ClientID, h.oauthConf.ClientSecret, *h.Code)
+	accessTokenInfo, err := thirdmwcli.GetOAuthAccessToken(ctx, *h.ClientName, h.oauthConf.ClientID, h.oauthConf.ClientSecret, *h.Code)
 	if err != nil {
 		return err
 	}
-	fmt.Println("accessToken:= ", accessToken)
-	h.accessToken = accessToken
+	fmt.Println("accessToken:= ", accessTokenInfo)
+	h.accessTokenInfo = accessTokenInfo
 	return nil
 }
 
 func (h *oauthHandler) getThirdUserInfo(ctx context.Context) error {
-	fmt.Println("*h.ClientName= ", *h.ClientName, "; h.accessToken= ", h.accessToken)
-	thirdUserInfo, err := thirdmwcli.GetOAuthUserInfo(ctx, *h.ClientName, h.accessToken)
+	fmt.Println("*h.ClientName= ", *h.ClientName, "; h.accessToken= ", h.accessTokenInfo.AccessToken)
+	thirdUserInfo, err := thirdmwcli.GetOAuthUserInfo(ctx, *h.ClientName, h.accessTokenInfo.AccessToken)
 	if err != nil {
 		return err
 	}
-	fmt.Println("thirdUserInfo:= ")
+	fmt.Println("thirdUserInfo:= ", thirdUserInfo)
 
 	h.thirdUserInfo = thirdUserInfo
 	return nil
