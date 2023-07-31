@@ -184,14 +184,27 @@ func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 	return h.User, nil
 }
 
+func (h *loginHandler) getThirdUser(ctx context.Context) error {
+	info, err := usermwcli.GetUser(ctx, h.AppID,*h.UserID)
+	if err != nil {
+		return err
+	}
+	if info == nil {
+		return fmt.Errorf("user not exist")
+	}
+	h.User = info
+	return nil
+}
+
 func (h *Handler) ThirdLogin(ctx context.Context) (info *usermwpb.User, err error) {
 	handler := &loginHandler{
 		Handler: h,
 	}
 
-	if err := handler.verifyAccount(ctx); err != nil {
+	if err := handler.getThirdUser(ctx); err != nil {
 		return nil, err
 	}
+
 	if err := handler.prepareMetadata(ctx); err != nil {
 		return nil, err
 	}

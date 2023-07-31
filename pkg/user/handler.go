@@ -152,6 +152,12 @@ func WithAccount(account *string, accountType *basetypes.SignMethod) func(contex
 		case basetypes.SignMethod_Mobile:
 			fallthrough //nolint
 		case basetypes.SignMethod_Email:
+			fallthrough //nolint
+		case basetypes.SignMethod_Github:
+			fallthrough //nolint
+		case basetypes.SignMethod_Google:
+			fallthrough //nolint
+		case basetypes.SignMethod_Facebook:
 			if account == nil {
 				return fmt.Errorf("invalid account")
 			}
@@ -166,7 +172,9 @@ func WithAccount(account *string, accountType *basetypes.SignMethod) func(contex
 		case basetypes.SignMethod_Email:
 			h.EmailAddress = account
 			err = validateEmailAddress(*account)
+		case basetypes.SignMethod_Github:
 		case basetypes.SignMethod_Google:
+		case basetypes.SignMethod_Facebook:
 		default:
 			return fmt.Errorf("invalid account type")
 		}

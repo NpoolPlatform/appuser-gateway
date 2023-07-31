@@ -36,6 +36,7 @@ type oauthHandler struct {
 	accessTokenInfo *thirdmwpb.AccessTokenInfo
 	oauthConf       *oauthmwpb.OAuthThirdParty
 	thirdUserInfo   *thirdmwpb.ThirdUserInfo
+	userInfo        *usermwpb.User
 }
 
 func (h *Handler) GetOAuthLoginList(ctx context.Context) ([]*oauthmwpb.OAuthThirdParty, error) {
@@ -53,8 +54,9 @@ func (h *Handler) GetOAuthLoginList(ctx context.Context) ([]*oauthmwpb.OAuthThir
 	lists := []*oauthmwpb.OAuthThirdParty{}
 	for _, info := range infos {
 		thirdPartyInfo := &oauthmwpb.OAuthThirdParty{
-			ClientName: info.ClientName,
-			ClientTag:  info.ClientTag,
+			ClientName:    info.ClientName,
+			ClientTag:     info.ClientTag,
+			ClientLogoURL: info.ClientLogoURL,
 		}
 		lists = append(lists, thirdPartyInfo)
 	}
@@ -72,6 +74,9 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 	)
 	if err != nil {
 		return "", err
+	}
+	if info == nil {
+		return "", fmt.Errorf("unsupport oauth")
 	}
 	state := uuid.NewString()
 	const expireTime = 10 * time.Minute
@@ -141,6 +146,7 @@ func (h *oauthHandler) getThirdPartyConf(ctx context.Context) error {
 	if info == nil {
 		return fmt.Errorf("invalid oauth method")
 	}
+	fmt.Println("h.oauthConf==", info)
 	h.oauthConf = info
 
 	return nil
@@ -189,7 +195,8 @@ func (h *oauthHandler) getUserInfo(ctx context.Context) (*usermwpb.User, error) 
 	if len(infos) > 1 {
 		return nil, fmt.Errorf("oauth user too many")
 	}
-
+	fmt.Println("infos: ", infos)
+	h.userInfo = infos[0]
 	return infos[0], nil
 }
 
@@ -231,25 +238,32 @@ func (h *oauthHandler) createUserInfo(ctx context.Context) (*usermwpb.User, erro
 		return nil, fmt.Errorf("invalid default role")
 	}
 
-	return usermwcli.CreateThirdUser(
+	info, err := usermwcli.CreateThirdUser(
 		ctx,
 		&usermwpb.UserReq{
 			ID:                 handler.UserID,
 			AppID:              &h.AppID,
 			PasswordHash:       handler.PasswordHash,
 			RoleIDs:            []string{role.ID},
-			ThirdPartyID:       &h.oauthConf.ID,
+			ThirdPartyID:       &h.oauthConf.ThirdPartyID,
 			ThirdPartyUserID:   &h.thirdUserInfo.ID,
 			ThirdPartyUsername: &h.thirdUserInfo.Login,
 			ThirdPartyAvatar:   &h.thirdUserInfo.AvatarURL,
 		},
 	)
+	if err != nil {
+		return nil, err
+	}
+	h.userInfo = info
+	return info, nil
 }
 
 func (h *oauthHandler) login(ctx context.Context) (info *usermwpb.User, err error) {
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(h.AppID),
+		user1.WithUserID(&h.userInfo.ID),
+		user1.WithAccount(&h.thirdUserInfo.ID, h.ClientName),
 	)
 	if err != nil {
 		return nil, err
