@@ -1,3 +1,4 @@
+//nolint:dupl
 package appoauththirdparty
 
 import (
@@ -14,7 +15,7 @@ import (
 func (s *Server) GetOAuthThirdParties(ctx context.Context, in *npool.GetOAuthThirdPartiesRequest) (resp *npool.GetOAuthThirdPartiesResponse, err error) {
 	handler, err := oauth1.NewHandler(
 		ctx,
-		oauth1.WithAppID(in.AppID),
+		oauth1.WithAppID(in.GetAppID()),
 		oauth1.WithOffset(in.GetOffset()),
 		oauth1.WithLimit(in.GetLimit()),
 	)
