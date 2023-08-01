@@ -18,6 +18,48 @@ type bindHandler struct {
 	oldUserInfo *usermwpb.User
 }
 
+//nolint:gocyclo
+func (h *bindHandler) validate() error {
+	if h.UserID == nil {
+		return fmt.Errorf("invalid userid")
+	}
+	if h.AppID == "" {
+		return fmt.Errorf("invalid appid")
+	}
+	if h.Account == nil {
+		return fmt.Errorf("invalid account")
+	}
+	if h.AccountType == nil {
+		return fmt.Errorf("invalid accounttype")
+	}
+	switch *h.AccountType {
+	case basetypes.SignMethod_Github:
+	case basetypes.SignMethod_Google:
+	case basetypes.SignMethod_Facebook:
+	case basetypes.SignMethod_Twitter:
+	case basetypes.SignMethod_Linkedin:
+	case basetypes.SignMethod_Wechat:
+	default:
+		return fmt.Errorf("invalid accounttype")
+	}
+	if h.NewAccount == nil {
+		return fmt.Errorf("invalid newaccount")
+	}
+	if h.NewAccountType == nil {
+		return fmt.Errorf("invalid newaccounttype")
+	}
+	switch *h.NewAccountType {
+	case basetypes.SignMethod_Email:
+	case basetypes.SignMethod_Mobile:
+	default:
+		return fmt.Errorf("invalid newaccounttype")
+	}
+	if h.NewVerificationCode == nil {
+		return fmt.Errorf("invalid newverificationcode")
+	}
+	return nil
+}
+
 func (h *bindHandler) checkThirdNewAccount(ctx context.Context) error {
 	conds := &usermwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
@@ -160,8 +202,8 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 		Handler: h,
 	}
 
-	if h.UserID == nil {
-		return nil, fmt.Errorf("invalid userid")
+	if err := handler.validate(); err != nil {
+		return nil, err
 	}
 
 	if err := handler.checkThirdNewAccount(ctx); err != nil {
