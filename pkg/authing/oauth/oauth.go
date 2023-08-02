@@ -87,23 +87,18 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 	clientNameStr := h.ClientName.String()
 	err = cli.Set(ctx, state, clientNameStr, expireTime).Err()
 	if err != nil {
-		fmt.Println("set redis err: ", err)
 		return "", err
 	}
-	fmt.Println("state: ", state, "=ClientName: ", *h.ClientName, "=expireTime: ", expireTime)
 	redirectURL := fmt.Sprintf(
 		"%s?client_id=%s&redirect_uri=%s&response_type=%s&state=%s",
 		info.ClientOAuthURL, info.ClientID, info.CallbackURL, info.ResponseType, state,
 	)
-	fmt.Println("redirectURL: ", redirectURL)
-	val, err := cli.Get(ctx, state).Result()
+	_, err = cli.Get(ctx, state).Result()
 	if err == redis.Nil {
 		return "", nil
 	} else if err != nil {
 		return "", err
 	}
-
-	fmt.Println("val:== ", val)
 
 	return redirectURL, nil
 }
@@ -119,10 +114,8 @@ func (h *oauthHandler) validate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("state: ", *h.State)
 	clientNameStr, err := cli.Get(ctx, *h.State).Result()
 	if err != nil {
-		fmt.Println("invalid state, err: ", err)
 		return fmt.Errorf("invalid state")
 	}
 	clientName := basetypes.SignMethod(basetypes.SignMethod_value[clientNameStr])
@@ -146,30 +139,25 @@ func (h *oauthHandler) getThirdPartyConf(ctx context.Context) error {
 	if info == nil {
 		return fmt.Errorf("invalid oauth method")
 	}
-	fmt.Println("h.oauthConf==", info)
 	h.oauthConf = info
 
 	return nil
 }
 
 func (h *oauthHandler) getAccessToken(ctx context.Context) error {
-	fmt.Println("*h.ClientName= ", *h.ClientName, "; h.oauthConf.ClientID= ", h.oauthConf.ClientID, "; h.oauthConf.ClientSecret= ", h.oauthConf.ClientSecret, "; *h.Code= ", *h.Code)
-	accessTokenInfo, err := thirdmwcli.GetOAuthAccessToken(ctx, *h.ClientName, h.oauthConf.ClientID, h.oauthConf.ClientSecret, *h.Code)
+	accessTokenInfo, err := thirdmwcli.GetOAuthAccessToken(ctx, *h.ClientName, h.oauthConf.ClientID, h.oauthConf.ClientSecret, *h.Code, h.oauthConf.CallbackURL)
 	if err != nil {
 		return err
 	}
-	fmt.Println("accessToken:= ", accessTokenInfo)
 	h.accessTokenInfo = accessTokenInfo
 	return nil
 }
 
 func (h *oauthHandler) getThirdUserInfo(ctx context.Context) error {
-	fmt.Println("*h.ClientName= ", *h.ClientName, "; h.accessToken= ", h.accessTokenInfo.AccessToken)
 	thirdUserInfo, err := thirdmwcli.GetOAuthUserInfo(ctx, *h.ClientName, h.accessTokenInfo.AccessToken)
 	if err != nil {
 		return err
 	}
-	fmt.Println("thirdUserInfo:= ", thirdUserInfo)
 
 	h.thirdUserInfo = thirdUserInfo
 	return nil
@@ -195,7 +183,6 @@ func (h *oauthHandler) getUserInfo(ctx context.Context) (*usermwpb.User, error) 
 	if len(infos) > 1 {
 		return nil, fmt.Errorf("oauth user too many")
 	}
-	fmt.Println("infos: ", infos)
 	h.userInfo = infos[0]
 	return infos[0], nil
 }
