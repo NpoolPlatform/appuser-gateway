@@ -192,7 +192,8 @@ func (h *bindHandler) updateCache(ctx context.Context) error {
 			return err
 		}
 	} else {
-		if err := h.UpdateCache(ctx); err != nil {
+		err := h.UpdateCache(ctx)
+		if err != nil {
 			return err
 		}
 	}
