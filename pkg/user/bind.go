@@ -15,7 +15,8 @@ import (
 
 type bindHandler struct {
 	*Handler
-	oldUserInfo *usermwpb.User
+	oldUserInfo   *usermwpb.User
+	thirdUserInfo *usermwpb.User
 }
 
 //nolint:gocyclo
@@ -60,42 +61,6 @@ func (h *bindHandler) validate() error {
 	return nil
 }
 
-func (h *bindHandler) checkThirdNewAccount(ctx context.Context) error {
-	conds := &usermwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-	}
-	if h.NewAccountType == nil {
-		return nil
-	}
-	switch *h.NewAccountType {
-	case basetypes.SignMethod_Email:
-		fallthrough //nolint
-	case basetypes.SignMethod_Mobile:
-		if h.NewAccount == nil {
-			return fmt.Errorf("invalid new account")
-		}
-	default:
-		return fmt.Errorf("invalid account type")
-	}
-	switch *h.NewAccountType {
-	case basetypes.SignMethod_Email:
-		conds.EmailAddress = &basetypes.StringVal{Op: cruder.EQ, Value: *h.NewAccount}
-	case basetypes.SignMethod_Mobile:
-		conds.PhoneNO = &basetypes.StringVal{Op: cruder.EQ, Value: *h.NewAccount}
-	default:
-		return fmt.Errorf("invalid account type")
-	}
-
-	info, err := usermwcli.GetUserOnly(ctx, conds)
-	if err != nil {
-		return err
-	}
-	if info != nil {
-		h.oldUserInfo = info
-	}
-	return nil
-}
-
 func (h *bindHandler) getUser(ctx context.Context) error {
 	info, err := usermwcli.GetUser(ctx, h.AppID, *h.UserID)
 	if err != nil {
@@ -109,10 +74,11 @@ func (h *bindHandler) getUser(ctx context.Context) error {
 	}
 
 	h.User = info
+	h.oldUserInfo = info
 	return nil
 }
 
-func (h *bindHandler) getThirdUserInfo(ctx context.Context) (*usermwpb.User, error) {
+func (h *bindHandler) getThirdUserInfo(ctx context.Context) error {
 	const maxlimit = 2
 	infos, _, err := usermwcli.GetThirdUsers(
 		ctx,
@@ -123,19 +89,20 @@ func (h *bindHandler) getThirdUserInfo(ctx context.Context) (*usermwpb.User, err
 		maxlimit,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if infos == nil {
-		return nil, nil
+		return fmt.Errorf("appuserthirdparty is empty")
 	}
 	if len(infos) == 0 {
-		return nil, fmt.Errorf("appuserthirdparty is empty")
+		return fmt.Errorf("appuserthirdparty is empty")
 	}
 	if len(infos) > 1 {
-		return nil, fmt.Errorf("oauth user too many")
+		return fmt.Errorf("oauth user too many")
 	}
+	h.thirdUserInfo = infos[0]
 
-	return infos[0], nil
+	return nil
 }
 
 func (h *bindHandler) verifyNewAccountCode(ctx context.Context) error {
@@ -163,17 +130,13 @@ func (h *bindHandler) verifyNewAccountCode(ctx context.Context) error {
 }
 
 func (h *bindHandler) updateUser(ctx context.Context) error {
-	thirdUserInfo, err := h.getThirdUserInfo(ctx)
-	if err != nil {
-		return err
-	}
 	req := &usermwpb.UserReq{
 		ID:               h.UserID,
 		AppID:            &h.AppID,
 		EmailAddress:     h.EmailAddress,
 		PhoneNO:          h.PhoneNO,
-		ThirdPartyID:     thirdUserInfo.ThirdPartyID,
-		ThirdPartyUserID: thirdUserInfo.ThirdPartyUserID,
+		ThirdPartyID:     h.thirdUserInfo.ThirdPartyID,
+		ThirdPartyUserID: h.thirdUserInfo.ThirdPartyUserID,
 	}
 	fmt.Printf("new_account_type=%v, new_account=%v\n", h.NewAccountType, h.NewAccount)
 	if h.NewAccountType != nil {
@@ -197,6 +160,30 @@ func (h *bindHandler) updateUser(ctx context.Context) error {
 	return nil
 }
 
+func (h *bindHandler) updateCache(ctx context.Context) error {
+	if h.oldUserInfo.ID != h.User.ID {
+		h.UserID = &h.oldUserInfo.ID
+		if err := h.DeleteCache(ctx); err != nil {
+			return err
+		}
+		h.UserID = &h.User.ID
+		if err := h.CreateCache(ctx); err != nil {
+			return err
+		}
+	} else {
+		if err := h.UpdateCache(ctx); err != nil {
+			return err
+		}
+	}
+	meta, err := h.QueryCache(ctx)
+	if err != nil {
+		return err
+	}
+	h.Metadata = meta
+
+	return nil
+}
+
 func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 	handler := &bindHandler{
 		Handler: h,
@@ -206,15 +193,19 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 		return nil, err
 	}
 
-	if err := handler.checkThirdNewAccount(ctx); err != nil {
+	if err := handler.verifyNewAccountCode(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.getUser(ctx); err != nil {
 		return nil, err
 	}
-	if err := handler.verifyNewAccountCode(ctx); err != nil {
+	if err := handler.getThirdUserInfo(ctx); err != nil {
 		return nil, err
 	}
+	if handler.thirdUserInfo.ID != handler.User.ID {
+		return nil, fmt.Errorf("invalid userid")
+	}
+
 	if err := handler.updateUser(ctx); err != nil {
 		return nil, err
 	}
@@ -223,14 +214,9 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 		return h.User, nil
 	}
 
-	if err := h.UpdateCache(ctx); err != nil {
+	if err := handler.updateCache(ctx); err != nil {
 		return nil, err
 	}
-	meta, err := h.QueryCache(ctx)
-	if err != nil {
-		return nil, err
-	}
-	h.Metadata = meta
 
 	return h.Metadata.User, nil
 }
