@@ -90,8 +90,8 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 		return "", err
 	}
 	redirectURL := fmt.Sprintf(
-		"%s?client_id=%s&redirect_uri=%s&response_type=%s&state=%s",
-		info.ClientOAuthURL, info.ClientID, info.CallbackURL, info.ResponseType, state,
+		"%s?client_id=%s&scope=%s&redirect_uri=%s&response_type=%s&state=%s",
+		info.ClientOAuthURL, info.ClientID, info.Scope, info.CallbackURL, info.ResponseType, state,
 	)
 	_, err = cli.Get(ctx, state).Result()
 	if err == redis.Nil {
