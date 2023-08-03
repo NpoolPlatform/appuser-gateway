@@ -142,6 +142,7 @@ func validatePhoneNO(phoneNO string) error {
 	return nil
 }
 
+//nolint:gocyclo
 func WithAccount(account *string, accountType *basetypes.SignMethod) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if accountType == nil {
@@ -152,6 +153,18 @@ func WithAccount(account *string, accountType *basetypes.SignMethod) func(contex
 		case basetypes.SignMethod_Mobile:
 			fallthrough //nolint
 		case basetypes.SignMethod_Email:
+			fallthrough //nolint
+		case basetypes.SignMethod_Github:
+			fallthrough //nolint
+		case basetypes.SignMethod_Google:
+			fallthrough //nolint
+		case basetypes.SignMethod_Facebook:
+			fallthrough //nolint
+		case basetypes.SignMethod_Twitter:
+			fallthrough //nolint
+		case basetypes.SignMethod_Linkedin:
+			fallthrough //nolint
+		case basetypes.SignMethod_Wechat:
 			if account == nil {
 				return fmt.Errorf("invalid account")
 			}
@@ -166,7 +179,12 @@ func WithAccount(account *string, accountType *basetypes.SignMethod) func(contex
 		case basetypes.SignMethod_Email:
 			h.EmailAddress = account
 			err = validateEmailAddress(*account)
+		case basetypes.SignMethod_Github:
 		case basetypes.SignMethod_Google:
+		case basetypes.SignMethod_Facebook:
+		case basetypes.SignMethod_Twitter:
+		case basetypes.SignMethod_Linkedin:
+		case basetypes.SignMethod_Wechat:
 		default:
 			return fmt.Errorf("invalid account type")
 		}
