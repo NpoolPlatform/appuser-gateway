@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
-
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
-	commonpb "github.com/NpoolPlatform/message/npool"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/invitationcode"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 )
@@ -24,7 +23,7 @@ func (h *Handler) CheckInvitationCode(ctx context.Context) (*string, error) {
 	}
 
 	ivc, err := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
-		InvitationCode: &commonpb.StringVal{Op: cruder.EQ, Value: *h.InvitationCode},
+		InvitationCode: &basetypes.StringVal{Op: cruder.EQ, Value: *h.InvitationCode},
 	})
 	if err != nil {
 		return nil, err

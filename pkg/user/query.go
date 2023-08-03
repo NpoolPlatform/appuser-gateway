@@ -6,12 +6,11 @@ import (
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
-	ivcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
+	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/invitationcode"
 
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 )
 
@@ -26,19 +25,14 @@ func (h *queryHandler) getInvitationCodes(ctx context.Context) error {
 	for _, info := range h.infos {
 		ids = append(ids, info.ID)
 	}
-	codes, _, err := ivcodemwcli.GetInvitationCodes(
-		ctx,
-		&ivcodemgrpb.Conds{
-			AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
-			UserIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: ids},
-		},
-		int32(0),
-		int32(len(ids)),
-	)
+	codes, _, err := ivcodemwcli.GetInvitationCodes(ctx, &ivcodemwpb.Conds{
+		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+	}, int32(0), int32(len(ids)))
 	if err != nil {
 		return err
 	}
-	userCode := map[string]*ivcodemgrpb.InvitationCode{}
+	userCode := map[string]*ivcodemwpb.InvitationCode{}
 	for _, code := range codes {
 		userCode[code.UserID] = code
 	}
@@ -85,9 +79,9 @@ func (h *Handler) GetUser(ctx context.Context) (*usermwpb.User, error) {
 	if info == nil {
 		return nil, fmt.Errorf("query: invalid user app_id=%v, user_id=%v", h.AppID, *h.UserID)
 	}
-	code, _ := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemgrpb.Conds{
-		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
-		UserID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.UserID},
+	code, _ := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
 	})
 	if code != nil {
 		info.InvitationCode = &code.InvitationCode
