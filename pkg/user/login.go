@@ -4,21 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-
-	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-	loginhispb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user/login/history"
-	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
+	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	loginhispb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user/login/history"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/invitationcode"
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
-
-	commonpb "github.com/NpoolPlatform/message/npool"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -136,8 +132,8 @@ func (h *loginHandler) getInvitationCode(ctx context.Context) error {
 	code, err := ivcodemwcli.GetInvitationCodeOnly(
 		ctx,
 		&ivcodemwpb.Conds{
-			AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
-			UserID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.UserID},
+			AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
 		},
 	)
 	if err != nil {

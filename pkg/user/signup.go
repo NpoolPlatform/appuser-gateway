@@ -13,8 +13,6 @@ import (
 
 	rolemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-	ivcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
-	registrationmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
 	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/invitationcode"
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
@@ -43,7 +41,7 @@ func (h *signupHandler) withCreateInvitationCode(dispose *dtmcli.SagaDispose) {
 	}
 
 	id := uuid.NewString()
-	req := &ivcodemgrpb.InvitationCodeReq{
+	req := &ivcodemwpb.InvitationCodeReq{
 		ID:     &id,
 		AppID:  &h.AppID,
 		UserID: h.UserID,
@@ -85,7 +83,7 @@ func (h *signupHandler) withCreateRegistrationInvitation(dispose *dtmcli.SagaDis
 	}
 
 	id := uuid.NewString()
-	req := &registrationmgrpb.RegistrationReq{
+	req := &registrationmwpb.RegistrationReq{
 		ID:        &id,
 		AppID:     &h.AppID,
 		InviterID: h.inviterID,
