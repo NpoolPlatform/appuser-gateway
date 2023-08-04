@@ -53,22 +53,25 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 	if info == nil {
 		return "", fmt.Errorf("unsupport oauth")
 	}
+
 	state := uuid.NewString()
-	const expireTime = 10 * time.Minute
+	stateKey := fmt.Sprintf("%v:%v", h.AppID, state)
+	const expireTime = 5 * time.Minute
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return "", err
 	}
 	clientNameStr := h.ClientName.String()
-	err = cli.Set(ctx, state, clientNameStr, expireTime).Err()
+	err = cli.Set(ctx, stateKey, clientNameStr, expireTime).Err()
 	if err != nil {
 		return "", err
 	}
+
 	redirectURL := fmt.Sprintf(
 		"%s?client_id=%s&scope=%s&redirect_uri=%s&response_type=%s&state=%s",
 		info.ClientOAuthURL, info.ClientID, info.Scope, info.CallbackURL, info.ResponseType, state,
 	)
-	_, err = cli.Get(ctx, state).Result()
+	_, err = cli.Get(ctx, stateKey).Result()
 	if err == redis.Nil {
 		return "", nil
 	} else if err != nil {
@@ -89,7 +92,8 @@ func (h *oauthHandler) validate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	clientNameStr, err := cli.Get(ctx, *h.State).Result()
+	stateKey := fmt.Sprintf("%v:%v", h.AppID, *h.State)
+	clientNameStr, err := cli.Get(ctx, stateKey).Result()
 	if err != nil {
 		return fmt.Errorf("invalid state")
 	}
