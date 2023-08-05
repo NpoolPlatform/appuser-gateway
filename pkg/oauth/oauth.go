@@ -54,14 +54,14 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("unsupport oauth")
 	}
 
-	state := uuid.NewString()
+	clientNameStr := h.ClientName.String()
+	state := fmt.Sprintf("%v-%v", clientNameStr, uuid.NewString())
 	stateKey := fmt.Sprintf("%v:%v", h.AppID, state)
 	const expireTime = 5 * time.Minute
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return "", err
 	}
-	clientNameStr := h.ClientName.String()
 	err = cli.Set(ctx, stateKey, clientNameStr, expireTime).Err()
 	if err != nil {
 		return "", err
