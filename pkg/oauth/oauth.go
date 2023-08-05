@@ -56,7 +56,7 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 
 	clientNameStr := h.ClientName.String()
 	state := fmt.Sprintf("%v-%v", clientNameStr, uuid.NewString())
-	stateKey := fmt.Sprintf("%v:%v", h.AppID, state)
+	stateKey := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixOAuthLogin, h.AppID, state)
 	const expireTime = 5 * time.Minute
 	cli, err := redis2.GetClient()
 	if err != nil {
@@ -92,7 +92,7 @@ func (h *oauthHandler) validate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	stateKey := fmt.Sprintf("%v:%v", h.AppID, *h.State)
+	stateKey := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixOAuthLogin, h.AppID, *h.State)
 	clientNameStr, err := cli.Get(ctx, stateKey).Result()
 	if err != nil {
 		return fmt.Errorf("invalid state")
