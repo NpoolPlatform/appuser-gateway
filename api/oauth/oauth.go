@@ -25,7 +25,7 @@ func (s *Server) GetOAuthLoginURL(ctx context.Context, in *npool.GetOAuthLoginUR
 		return &npool.GetOAuthLoginURLResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	oauthLoginURL, err := handler.GetOAuthURL(ctx)
+	info, err := handler.GetOAuthURL(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
 			"GetOAuthLoginList",
@@ -36,7 +36,7 @@ func (s *Server) GetOAuthLoginURL(ctx context.Context, in *npool.GetOAuthLoginUR
 	}
 
 	return &npool.GetOAuthLoginURLResponse{
-		OAuthLoginURL: oauthLoginURL,
+		Info: info,
 	}, nil
 }
 
