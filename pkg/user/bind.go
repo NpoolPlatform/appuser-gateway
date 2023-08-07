@@ -79,28 +79,21 @@ func (h *bindHandler) getUser(ctx context.Context) error {
 }
 
 func (h *bindHandler) getThirdUserInfo(ctx context.Context) error {
-	const maxlimit = 2
-	infos, _, err := usermwcli.GetThirdUsers(
+	info, err := usermwcli.GetThirdUserOnly(
 		ctx,
 		&usermwpb.Conds{
+			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Account},
 		},
-		0,
-		maxlimit,
 	)
 	if err != nil {
 		return err
 	}
-	if infos == nil {
+	if info == nil {
 		return fmt.Errorf("appuserthirdparty is empty")
 	}
-	if len(infos) == 0 {
-		return fmt.Errorf("appuserthirdparty is empty")
-	}
-	if len(infos) > 1 {
-		return fmt.Errorf("oauth user too many")
-	}
-	h.thirdUserInfo = infos[0]
+
+	h.thirdUserInfo = info
 
 	return nil
 }

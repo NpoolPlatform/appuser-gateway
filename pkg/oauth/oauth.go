@@ -143,27 +143,21 @@ func (h *oauthHandler) getThirdUserInfo(ctx context.Context) error {
 }
 
 func (h *oauthHandler) getUserInfo(ctx context.Context) (*usermwpb.User, error) {
-	const maxlimit = 2
-	infos, _, err := usermwcli.GetThirdUsers(
+	info, err := usermwcli.GetThirdUserOnly(
 		ctx,
 		&usermwpb.Conds{
 			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: h.thirdUserInfo.ID},
 		},
-		0,
-		maxlimit,
 	)
 	if err != nil {
 		return nil, err
 	}
-	if infos == nil {
+	if info == nil {
 		return nil, nil
 	}
-	if len(infos) > 1 {
-		return nil, fmt.Errorf("oauth user too many")
-	}
-	h.userInfo = infos[0]
-	return infos[0], nil
+	h.userInfo = info
+	return info, nil
 }
 
 func encryptPassword(pwd string) string {
