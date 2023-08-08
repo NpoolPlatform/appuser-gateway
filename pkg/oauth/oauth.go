@@ -148,6 +148,7 @@ func (h *oauthHandler) getUserInfo(ctx context.Context) (*usermwpb.User, error) 
 		&usermwpb.Conds{
 			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: h.thirdUserInfo.ID},
+			ThirdPartyID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.oauthConf.ThirdPartyID},
 		},
 	)
 	if err != nil {
@@ -224,6 +225,7 @@ func (h *oauthHandler) login(ctx context.Context) (info *usermwpb.User, err erro
 		user1.WithAppID(h.AppID),
 		user1.WithUserID(&h.userInfo.ID),
 		user1.WithAccount(&h.thirdUserInfo.ID, h.ClientName),
+		user1.WithThirdPartyID(&h.oauthConf.ThirdPartyID),
 	)
 	if err != nil {
 		return nil, err

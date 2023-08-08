@@ -60,6 +60,7 @@ type Handler struct {
 	BanMessage            *string
 	RecoveryCode          *string
 	ShouldUpdateCache     bool
+	ThirdPartyID          *string
 	Offset                int32
 	Limit                 int32
 }
@@ -585,6 +586,19 @@ func WithBanMessage(message *string) func(context.Context, *Handler) error {
 func WithShouldUpdateCache(update bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ShouldUpdateCache = update
+		return nil
+	}
+}
+
+func WithThirdPartyID(id *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.ThirdPartyID = id
 		return nil
 	}
 }

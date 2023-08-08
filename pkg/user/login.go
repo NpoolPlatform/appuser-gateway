@@ -190,6 +190,7 @@ func (h *loginHandler) getThirdUser(ctx context.Context) error {
 		&usermwpb.Conds{
 			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Account},
+			ThirdPartyID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.ThirdPartyID},
 		},
 	)
 	if err != nil {
