@@ -49,7 +49,7 @@ func (s *Server) UnBindOAuth(ctx context.Context, in *npool.UnBindOAuthRequest) 
 		ctx,
 		user1.WithAppID(in.GetAppID()),
 		user1.WithUserID(&in.UserID),
-		user1.WithAccount(in.Account, in.AccountType),
+		user1.WithAccount(&in.Account, &in.AccountType),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -64,6 +64,32 @@ func (h *bindHandler) validate() error {
 	return nil
 }
 
+func (h *bindHandler) validUnBindOAuth() error {
+	if h.UserID == nil {
+		return fmt.Errorf("invalid userid")
+	}
+	if h.AppID == "" {
+		return fmt.Errorf("invalid appid")
+	}
+	if h.Account == nil {
+		return fmt.Errorf("invalid account")
+	}
+	if h.AccountType == nil {
+		return fmt.Errorf("invalid accounttype")
+	}
+	switch *h.AccountType {
+	case basetypes.SignMethod_Github:
+	case basetypes.SignMethod_Google:
+	case basetypes.SignMethod_Facebook:
+	case basetypes.SignMethod_Twitter:
+	case basetypes.SignMethod_Linkedin:
+	case basetypes.SignMethod_Wechat:
+	default:
+		return fmt.Errorf("invalid accounttype")
+	}
+	return nil
+}
+
 func (h *bindHandler) getUser(ctx context.Context) error {
 	info, err := usermwcli.GetUser(ctx, h.AppID, *h.UserID)
 	if err != nil {
@@ -310,6 +336,9 @@ func (h *Handler) UnBindOAuth(ctx context.Context) error {
 		Handler: h,
 	}
 
+	if err := handler.validUnBindOAuth(); err != nil {
+		return err
+	}
 	if err := handler.getThirdPartyConf(ctx); err != nil {
 		return err
 	}
