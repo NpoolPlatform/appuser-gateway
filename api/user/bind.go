@@ -44,7 +44,7 @@ func (s *Server) BindUser(ctx context.Context, in *npool.BindUserRequest) (*npoo
 	}, nil
 }
 
-func (s *Server) UnBindOAuth(ctx context.Context, in *npool.UnBindOAuthRequest) (*npool.UnBindOAuthResponse, error) {
+func (s *Server) UnbindOAuth(ctx context.Context, in *npool.UnbindOAuthRequest) (*npool.UnbindOAuthResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(in.GetAppID()),
@@ -53,22 +53,22 @@ func (s *Server) UnBindOAuth(ctx context.Context, in *npool.UnBindOAuthRequest) 
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UnBindOAuth",
+			"UnbindOAuth",
 			"In", in,
 			"Error", err,
 		)
-		return &npool.UnBindOAuthResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.UnbindOAuthResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = handler.UnBindOAuth(ctx)
+	err = handler.UnbindOAuth(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UnBindOAuth",
+			"UnbindOAuth",
 			"In", in,
 			"Error", err,
 		)
-		return &npool.UnBindOAuthResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.UnbindOAuthResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.UnBindOAuthResponse{}, nil
+	return &npool.UnbindOAuthResponse{}, nil
 }

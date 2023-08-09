@@ -64,7 +64,7 @@ func (h *bindHandler) validate() error {
 	return nil
 }
 
-func (h *bindHandler) validUnBindOAuth() error {
+func (h *bindHandler) validUnbindOAuth() error {
 	if h.UserID == nil {
 		return fmt.Errorf("invalid userid")
 	}
@@ -331,12 +331,12 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 	return h.Metadata.User, nil
 }
 
-func (h *Handler) UnBindOAuth(ctx context.Context) error {
+func (h *Handler) UnbindOAuth(ctx context.Context) error {
 	handler := &bindHandler{
 		Handler: h,
 	}
 
-	if err := handler.validUnBindOAuth(); err != nil {
+	if err := handler.validUnbindOAuth(); err != nil {
 		return err
 	}
 	if err := handler.getThirdPartyConf(ctx); err != nil {
