@@ -9,7 +9,9 @@ import (
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
+	oauthmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/oauth/appoauththirdparty"
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
+	oauthmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/oauth/appoauththirdparty"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
 )
 
@@ -17,6 +19,7 @@ type bindHandler struct {
 	*Handler
 	oldUserInfo   *usermwpb.User
 	thirdUserInfo *usermwpb.User
+	oauthConf     *oauthmwpb.OAuthThirdParty
 }
 
 //nolint:gocyclo
@@ -61,6 +64,32 @@ func (h *bindHandler) validate() error {
 	return nil
 }
 
+func (h *bindHandler) validUnbindOAuth() error {
+	if h.UserID == nil {
+		return fmt.Errorf("invalid userid")
+	}
+	if h.AppID == "" {
+		return fmt.Errorf("invalid appid")
+	}
+	if h.Account == nil {
+		return fmt.Errorf("invalid account")
+	}
+	if h.AccountType == nil {
+		return fmt.Errorf("invalid accounttype")
+	}
+	switch *h.AccountType {
+	case basetypes.SignMethod_Github:
+	case basetypes.SignMethod_Google:
+	case basetypes.SignMethod_Facebook:
+	case basetypes.SignMethod_Twitter:
+	case basetypes.SignMethod_Linkedin:
+	case basetypes.SignMethod_Wechat:
+	default:
+		return fmt.Errorf("invalid accounttype")
+	}
+	return nil
+}
+
 func (h *bindHandler) getUser(ctx context.Context) error {
 	info, err := usermwcli.GetUser(ctx, h.AppID, *h.UserID)
 	if err != nil {
@@ -69,9 +98,6 @@ func (h *bindHandler) getUser(ctx context.Context) error {
 	if info == nil {
 		return fmt.Errorf("bind: invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
 	}
-	if info.EmailAddress != "" || info.PhoneNO != "" {
-		return fmt.Errorf("bind: invalid user: account has been bound")
-	}
 
 	h.User = info
 	h.oldUserInfo = info
@@ -79,28 +105,41 @@ func (h *bindHandler) getUser(ctx context.Context) error {
 }
 
 func (h *bindHandler) getThirdUserInfo(ctx context.Context) error {
-	const maxlimit = 2
-	infos, _, err := usermwcli.GetThirdUsers(
+	info, err := usermwcli.GetUserOnly(
 		ctx,
 		&usermwpb.Conds{
+			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Account},
+			ThirdPartyID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.oauthConf.ThirdPartyID},
 		},
-		0,
-		maxlimit,
 	)
 	if err != nil {
 		return err
 	}
-	if infos == nil {
+	if info == nil {
 		return fmt.Errorf("appuserthirdparty is empty")
 	}
-	if len(infos) == 0 {
-		return fmt.Errorf("appuserthirdparty is empty")
+
+	h.thirdUserInfo = info
+
+	return nil
+}
+
+func (h *bindHandler) getThirdPartyConf(ctx context.Context) error {
+	info, err := oauthmwcli.GetOAuthThirdPartyOnly(
+		ctx,
+		&oauthmwpb.Conds{
+			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			ClientName: &basetypes.Int32Val{Op: cruder.EQ, Value: int32(*h.AccountType)},
+		},
+	)
+	if err != nil {
+		return err
 	}
-	if len(infos) > 1 {
-		return fmt.Errorf("oauth user too many")
+	if info == nil {
+		return fmt.Errorf("invalid accounttype")
 	}
-	h.thirdUserInfo = infos[0]
+	h.oauthConf = info
 
 	return nil
 }
@@ -151,12 +190,16 @@ func (h *bindHandler) updateUser(ctx context.Context) error {
 		}
 	}
 
-	info, err := usermwcli.UpdateUser(ctx, req)
+	_, err := usermwcli.UpdateUser(ctx, req)
 	if err != nil {
 		return err
 	}
 
-	h.User = info
+	if err := h.getThirdUserInfo(ctx); err != nil {
+		return err
+	}
+
+	h.User = h.thirdUserInfo
 	return nil
 }
 
@@ -206,6 +249,45 @@ func (h *bindHandler) updateCache(ctx context.Context) error {
 	return nil
 }
 
+func (h *bindHandler) deleteCache(ctx context.Context) error {
+	meta, err := h.QueryCache(ctx)
+	if err != nil {
+		return err
+	}
+	if meta == nil || meta.User == nil {
+		return fmt.Errorf("cache: invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
+	}
+	h.Metadata = meta
+	if err := h.DeleteCache(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *bindHandler) deleteThirdUserInfo(ctx context.Context) error {
+	_, err := usermwcli.DeleteThirdUser(ctx, h.AppID, *h.UserID, h.oauthConf.ThirdPartyID, *h.Account)
+	if err != nil {
+		return nil
+	}
+	if err := h.deleteCache(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *bindHandler) deleteUser(ctx context.Context) error {
+	_, err := usermwcli.DeleteUser(ctx, h.AppID, *h.UserID)
+	if err != nil {
+		return nil
+	}
+	if err := h.deleteCache(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 	handler := &bindHandler{
 		Handler: h,
@@ -218,8 +300,14 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 	if err := handler.verifyNewAccountCode(ctx); err != nil {
 		return nil, err
 	}
+	if err := handler.getThirdPartyConf(ctx); err != nil {
+		return nil, err
+	}
 	if err := handler.getUser(ctx); err != nil {
 		return nil, err
+	}
+	if h.User.EmailAddress != "" || h.User.PhoneNO != "" {
+		return nil, fmt.Errorf("bind: invalid user: account has been bound")
 	}
 	if err := handler.getThirdUserInfo(ctx); err != nil {
 		return nil, err
@@ -241,4 +329,39 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 	}
 
 	return h.Metadata.User, nil
+}
+
+func (h *Handler) UnbindOAuth(ctx context.Context) error {
+	handler := &bindHandler{
+		Handler: h,
+	}
+
+	if err := handler.validUnbindOAuth(); err != nil {
+		return err
+	}
+	if err := handler.getThirdPartyConf(ctx); err != nil {
+		return err
+	}
+	if err := handler.getUser(ctx); err != nil {
+		return err
+	}
+	if err := handler.getThirdUserInfo(ctx); err != nil {
+		return err
+	}
+	if handler.thirdUserInfo.ID != handler.User.ID {
+		return fmt.Errorf("invalid userid")
+	}
+	if handler.User.EmailAddress != "" || handler.User.PhoneNO != "" {
+		err := handler.deleteThirdUserInfo(ctx)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err := handler.deleteUser(ctx); err != nil {
+		return err
+	}
+
+	return nil
 }

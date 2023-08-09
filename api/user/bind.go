@@ -43,3 +43,32 @@ func (s *Server) BindUser(ctx context.Context, in *npool.BindUserRequest) (*npoo
 		Info: info,
 	}, nil
 }
+
+func (s *Server) UnbindOAuth(ctx context.Context, in *npool.UnbindOAuthRequest) (*npool.UnbindOAuthResponse, error) {
+	handler, err := user1.NewHandler(
+		ctx,
+		user1.WithAppID(in.GetAppID()),
+		user1.WithUserID(&in.UserID),
+		user1.WithAccount(&in.Account, &in.AccountType),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UnbindOAuth",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UnbindOAuthResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	err = handler.UnbindOAuth(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UnbindOAuth",
+			"In", in,
+			"Error", err,
+		)
+		return &npool.UnbindOAuthResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.UnbindOAuthResponse{}, nil
+}

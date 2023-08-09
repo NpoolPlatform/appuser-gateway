@@ -185,7 +185,14 @@ func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 }
 
 func (h *loginHandler) getThirdUser(ctx context.Context) error {
-	info, err := usermwcli.GetUser(ctx, h.AppID, *h.UserID)
+	info, err := usermwcli.GetUserOnly(
+		ctx,
+		&usermwpb.Conds{
+			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Account},
+			ThirdPartyID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.ThirdPartyID},
+		},
+	)
 	if err != nil {
 		return err
 	}

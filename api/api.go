@@ -15,9 +15,9 @@ import (
 	appsubscribe "github.com/NpoolPlatform/appuser-gateway/api/subscriber/app/subscribe"
 	"github.com/NpoolPlatform/appuser-gateway/api/user"
 
-	"github.com/NpoolPlatform/appuser-gateway/api/authing/oauth"
-	"github.com/NpoolPlatform/appuser-gateway/api/authing/oauth/appoauththirdparty"
-	"github.com/NpoolPlatform/appuser-gateway/api/authing/oauth/oauththirdparty"
+	"github.com/NpoolPlatform/appuser-gateway/api/oauth"
+	"github.com/NpoolPlatform/appuser-gateway/api/oauth/appoauththirdparty"
+	"github.com/NpoolPlatform/appuser-gateway/api/oauth/oauththirdparty"
 	appusergw "github.com/NpoolPlatform/message/npool/appuser/gw/v1"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"

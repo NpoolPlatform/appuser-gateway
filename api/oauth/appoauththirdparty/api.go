@@ -3,7 +3,7 @@ package appoauththirdparty
 import (
 	"context"
 
-	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/authing/oauth/appoauththirdparty"
+	"github.com/NpoolPlatform/message/npool/appuser/gw/v1/oauth/appoauththirdparty"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 )

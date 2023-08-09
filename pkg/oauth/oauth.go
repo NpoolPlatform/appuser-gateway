@@ -8,12 +8,12 @@ import (
 	"time"
 
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
-	oauthmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/authing/oauth/appoauththirdparty"
+	oauthmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/oauth/appoauththirdparty"
 	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	oauthmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/authing/oauth/appoauththirdparty"
+	oauthmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/oauth/appoauththirdparty"
 	rolemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -39,31 +39,6 @@ type oauthHandler struct {
 	userInfo        *usermwpb.User
 }
 
-func (h *Handler) GetOAuthLoginList(ctx context.Context) ([]*oauthmwpb.OAuthThirdParty, error) {
-	infos, _, err := oauthmwcli.GetOAuthThirdParties(
-		ctx,
-		&oauthmwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-		},
-		h.Offset,
-		h.Limit,
-	)
-	if err != nil {
-		return nil, err
-	}
-	lists := []*oauthmwpb.OAuthThirdParty{}
-	for _, info := range infos {
-		thirdPartyInfo := &oauthmwpb.OAuthThirdParty{
-			ClientName:    info.ClientName,
-			ClientTag:     info.ClientTag,
-			ClientLogoURL: info.ClientLogoURL,
-		}
-		lists = append(lists, thirdPartyInfo)
-	}
-
-	return lists, nil
-}
-
 func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 	info, err := oauthmwcli.GetOAuthThirdPartyOnly(
 		ctx,
@@ -78,22 +53,25 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 	if info == nil {
 		return "", fmt.Errorf("unsupport oauth")
 	}
-	state := uuid.NewString()
-	const expireTime = 10 * time.Minute
+
+	clientNameStr := h.ClientName.String()
+	state := fmt.Sprintf("%v-%v", clientNameStr, uuid.NewString())
+	stateKey := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixOAuthLogin, h.AppID, state)
+	const expireTime = 5 * time.Minute
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return "", err
 	}
-	clientNameStr := h.ClientName.String()
-	err = cli.Set(ctx, state, clientNameStr, expireTime).Err()
+	err = cli.Set(ctx, stateKey, clientNameStr, expireTime).Err()
 	if err != nil {
 		return "", err
 	}
+
 	redirectURL := fmt.Sprintf(
 		"%s?client_id=%s&scope=%s&redirect_uri=%s&response_type=%s&state=%s",
 		info.ClientOAuthURL, info.ClientID, info.Scope, info.CallbackURL, info.ResponseType, state,
 	)
-	_, err = cli.Get(ctx, state).Result()
+	_, err = cli.Get(ctx, stateKey).Result()
 	if err == redis.Nil {
 		return "", nil
 	} else if err != nil {
@@ -114,7 +92,8 @@ func (h *oauthHandler) validate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	clientNameStr, err := cli.Get(ctx, *h.State).Result()
+	stateKey := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixOAuthLogin, h.AppID, *h.State)
+	clientNameStr, err := cli.Get(ctx, stateKey).Result()
 	if err != nil {
 		return fmt.Errorf("invalid state")
 	}
@@ -153,7 +132,7 @@ func (h *oauthHandler) getAccessToken(ctx context.Context) error {
 	return nil
 }
 
-func (h *oauthHandler) getThirdUserInfo(ctx context.Context) error {
+func (h *oauthHandler) getOAuthUserInfo(ctx context.Context) error {
 	thirdUserInfo, err := thirdmwcli.GetOAuthUserInfo(ctx, *h.ClientName, h.accessTokenInfo.AccessToken)
 	if err != nil {
 		return err
@@ -164,27 +143,22 @@ func (h *oauthHandler) getThirdUserInfo(ctx context.Context) error {
 }
 
 func (h *oauthHandler) getUserInfo(ctx context.Context) (*usermwpb.User, error) {
-	const maxlimit = 2
-	infos, _, err := usermwcli.GetThirdUsers(
+	info, err := usermwcli.GetUserOnly(
 		ctx,
 		&usermwpb.Conds{
 			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
 			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: h.thirdUserInfo.ID},
+			ThirdPartyID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.oauthConf.ThirdPartyID},
 		},
-		0,
-		maxlimit,
 	)
 	if err != nil {
 		return nil, err
 	}
-	if infos == nil {
+	if info == nil {
 		return nil, nil
 	}
-	if len(infos) > 1 {
-		return nil, fmt.Errorf("oauth user too many")
-	}
-	h.userInfo = infos[0]
-	return infos[0], nil
+	h.userInfo = info
+	return info, nil
 }
 
 func encryptPassword(pwd string) string {
@@ -225,7 +199,7 @@ func (h *oauthHandler) createUserInfo(ctx context.Context) (*usermwpb.User, erro
 		return nil, fmt.Errorf("invalid default role")
 	}
 
-	info, err := usermwcli.CreateThirdUser(
+	info, err := usermwcli.CreateUser(
 		ctx,
 		&usermwpb.UserReq{
 			ID:                 handler.UserID,
@@ -251,6 +225,7 @@ func (h *oauthHandler) login(ctx context.Context) (info *usermwpb.User, err erro
 		user1.WithAppID(h.AppID),
 		user1.WithUserID(&h.userInfo.ID),
 		user1.WithAccount(&h.thirdUserInfo.ID, h.ClientName),
+		user1.WithThirdPartyID(&h.oauthConf.ThirdPartyID),
 	)
 	if err != nil {
 		return nil, err
@@ -283,7 +258,7 @@ func (h *Handler) OAuthLogin(ctx context.Context) (info *usermwpb.User, err erro
 		return nil, err
 	}
 
-	if err := handler.getThirdUserInfo(ctx); err != nil {
+	if err := handler.getOAuthUserInfo(ctx); err != nil {
 		return nil, err
 	}
 

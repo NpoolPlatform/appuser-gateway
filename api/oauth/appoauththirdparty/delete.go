@@ -1,11 +1,11 @@
-package oauththirdparty
+package appoauththirdparty
 
 import (
 	"context"
 
-	oauth1 "github.com/NpoolPlatform/appuser-gateway/pkg/authing/oauth/oauththirdparty"
+	oauth1 "github.com/NpoolPlatform/appuser-gateway/pkg/oauth/appoauththirdparty"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/authing/oauth/oauththirdparty"
+	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/oauth/appoauththirdparty"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,6 +15,7 @@ func (s *Server) DeleteOAuthThirdParty(ctx context.Context, in *npool.DeleteOAut
 	handler, err := oauth1.NewHandler(
 		ctx,
 		oauth1.WithID(&in.ID),
+		oauth1.WithAppID(in.GetTargetAppID()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -45,15 +45,15 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/get/oauth/login/list
+          - path: /api/appuser/v1/get/appoauththirdparties
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/get/oauth/login/url
+          - path: /api/appuser/v1/get/oauthloginurl
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/oauth/login
+          - path: /api/appuser/v1/oauthlogin
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -393,7 +393,7 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/get/oauththirdparty
+          - path: /api/appuser/v1/get/oauththirdparties
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -409,7 +409,7 @@ spec:
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
-          - path: /api/appuser/v1/get/appoauththirdparty
+          - path: /api/appuser/v1/get/app/appoauththirdparties
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -418,6 +418,10 @@ spec:
               serviceName: appuser-gateway
               servicePort: 50500
           - path: /api/appuser/v1/bind/user
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/unbind/oauth
             backend:
               serviceName: appuser-gateway
               servicePort: 50500

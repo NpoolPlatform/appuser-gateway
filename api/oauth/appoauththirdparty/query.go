@@ -1,12 +1,12 @@
-//nolint:dupl
 package appoauththirdparty
 
 import (
 	"context"
 
-	oauth1 "github.com/NpoolPlatform/appuser-gateway/pkg/authing/oauth/appoauththirdparty"
+	oauth1 "github.com/NpoolPlatform/appuser-gateway/pkg/oauth/appoauththirdparty"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/authing/oauth/appoauththirdparty"
+	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/oauth/appoauththirdparty"
+	oauthmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/oauth/appoauththirdparty"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -38,8 +38,18 @@ func (s *Server) GetOAuthThirdParties(ctx context.Context, in *npool.GetOAuthThi
 		return &npool.GetOAuthThirdPartiesResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
+	lists := []*oauthmwpb.OAuthThirdParty{}
+	for _, info := range infos {
+		thirdPartyInfo := &oauthmwpb.OAuthThirdParty{
+			ClientName:    info.ClientName,
+			ClientTag:     info.ClientTag,
+			ClientLogoURL: info.ClientLogoURL,
+		}
+		lists = append(lists, thirdPartyInfo)
+	}
+
 	return &npool.GetOAuthThirdPartiesResponse{
-		Infos: infos,
+		Infos: lists,
 		Total: total,
 	}, nil
 }

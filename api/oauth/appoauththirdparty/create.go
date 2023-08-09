@@ -3,9 +3,9 @@ package appoauththirdparty
 import (
 	"context"
 
-	oauth1 "github.com/NpoolPlatform/appuser-gateway/pkg/authing/oauth/appoauththirdparty"
+	oauth1 "github.com/NpoolPlatform/appuser-gateway/pkg/oauth/appoauththirdparty"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/authing/oauth/appoauththirdparty"
+	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/oauth/appoauththirdparty"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
