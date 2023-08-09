@@ -132,7 +132,7 @@ func (h *oauthHandler) getAccessToken(ctx context.Context) error {
 	return nil
 }
 
-func (h *oauthHandler) getThirdUserInfo(ctx context.Context) error {
+func (h *oauthHandler) getOAuthUserInfo(ctx context.Context) error {
 	thirdUserInfo, err := thirdmwcli.GetOAuthUserInfo(ctx, *h.ClientName, h.accessTokenInfo.AccessToken)
 	if err != nil {
 		return err
@@ -143,7 +143,7 @@ func (h *oauthHandler) getThirdUserInfo(ctx context.Context) error {
 }
 
 func (h *oauthHandler) getUserInfo(ctx context.Context) (*usermwpb.User, error) {
-	info, err := usermwcli.GetThirdUserOnly(
+	info, err := usermwcli.GetUserOnly(
 		ctx,
 		&usermwpb.Conds{
 			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
@@ -199,7 +199,7 @@ func (h *oauthHandler) createUserInfo(ctx context.Context) (*usermwpb.User, erro
 		return nil, fmt.Errorf("invalid default role")
 	}
 
-	info, err := usermwcli.CreateThirdUser(
+	info, err := usermwcli.CreateUser(
 		ctx,
 		&usermwpb.UserReq{
 			ID:                 handler.UserID,
@@ -258,7 +258,7 @@ func (h *Handler) OAuthLogin(ctx context.Context) (info *usermwpb.User, err erro
 		return nil, err
 	}
 
-	if err := handler.getThirdUserInfo(ctx); err != nil {
+	if err := handler.getOAuthUserInfo(ctx); err != nil {
 		return nil, err
 	}
 

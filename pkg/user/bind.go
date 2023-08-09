@@ -105,7 +105,7 @@ func (h *bindHandler) getUser(ctx context.Context) error {
 }
 
 func (h *bindHandler) getThirdUserInfo(ctx context.Context) error {
-	info, err := usermwcli.GetThirdUserOnly(
+	info, err := usermwcli.GetUserOnly(
 		ctx,
 		&usermwpb.Conds{
 			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
