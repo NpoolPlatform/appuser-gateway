@@ -16,8 +16,8 @@ import (
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
 
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
-	regmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
+	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/invitationcode"
+	regmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 
 	applangmwcli "github.com/NpoolPlatform/g11n-middleware/pkg/client/applang"
 	regmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
@@ -30,7 +30,6 @@ import (
 	tmplmwcli "github.com/NpoolPlatform/notif-middleware/pkg/client/template"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
 )
 
 type updateHandler struct {
@@ -340,10 +339,10 @@ func (h *updateHandler) verifyRegistrationInvitation(ctx context.Context) error 
 		return fmt.Errorf("invalid target userid")
 	}
 
-	reg, err := regmwcli.GetRegistrationOnly(ctx, &regmgrpb.Conds{
-		AppID:     &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
-		InviterID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.UserID},
-		InviteeID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
+	reg, err := regmwcli.GetRegistrationOnly(ctx, &regmwpb.Conds{
+		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		InviterID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		InviteeID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
 	})
 	if err != nil {
 		return nil
@@ -355,12 +354,10 @@ func (h *updateHandler) verifyRegistrationInvitation(ctx context.Context) error 
 }
 
 func (h *updateHandler) tryCreateInvitationCode(ctx context.Context) error {
-	info, err := ivcodemwcli.GetInvitationCodeOnly(
-		ctx,
-		&ivcodemwpb.Conds{
-			AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: h.AppID},
-			UserID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
-		},
+	info, err := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
+	},
 	)
 	if err != nil {
 		return err
