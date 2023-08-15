@@ -245,12 +245,11 @@ pipeline {
           revlist=`git rev-list --tags --max-count=1`
           rc=$?
           set -e
-          if [ ! 0 -eq $rc ]; then
-            exit 0
+          if [ 0 -eq $rc -a x"$revlist" != x ]; then
+            tag=`git describe --tags $revlist`
+            git reset --hard
+            git checkout $tag
           fi
-          tag=`git describe --tags $revlist`
-          git reset --hard
-          git checkout $tag
         '''.stripIndent())
         sh 'make verify-build'
         sh 'DEVELOPMENT=other DOCKER_REGISTRY=$DOCKER_REGISTRY make generate-docker-images'
