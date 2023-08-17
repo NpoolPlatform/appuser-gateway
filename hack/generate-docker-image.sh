@@ -49,9 +49,11 @@ cp ./cmd/$service_name/*.yaml $OUTPUT/.${service_name}.tmp
 cp $OUTPUT/$PLATFORM/$service_name $OUTPUT/.${service_name}.tmp
 cd $OUTPUT/.${service_name}.tmp
 
+token_access_secret=`cat /proc/sys/kernel/random/uuid`
+
 user=`whoami`
 if [ "$user" == "root" ]; then
-    docker build -t $registry/entropypool/$service_name:$version .
+    docker build --build-arg token_access_secret=${token_access_secret} -t $registry/entropypool/$service_name:$version .
 else
-    sudo docker build -t $registry/entropypool/$service_name:$version .
+    sudo docker build --build-arg token_access_secret=${token_access_secret} -t $registry/entropypool/$service_name:$version .
 fi
