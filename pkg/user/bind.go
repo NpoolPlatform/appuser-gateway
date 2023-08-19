@@ -306,9 +306,6 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 	if err := handler.getUser(ctx); err != nil {
 		return nil, err
 	}
-	if h.User.EmailAddress != "" || h.User.PhoneNO != "" {
-		return nil, fmt.Errorf("bind: invalid user: account has been bound")
-	}
 	if err := handler.getThirdUserInfo(ctx); err != nil {
 		return nil, err
 	}
