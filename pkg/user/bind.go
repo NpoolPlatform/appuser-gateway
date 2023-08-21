@@ -168,6 +168,32 @@ func (h *bindHandler) verifyNewAccountCode(ctx context.Context) error {
 	)
 }
 
+func (h *bindHandler) verifyNewAccount(ctx context.Context) error {
+	conds := &usermwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+	}
+	switch *h.NewAccountType {
+	case basetypes.SignMethod_Email:
+		conds.EmailAddress = &basetypes.StringVal{Op: cruder.EQ, Value: *h.NewAccount}
+	case basetypes.SignMethod_Mobile:
+		conds.PhoneNO = &basetypes.StringVal{Op: cruder.EQ, Value: *h.NewAccount}
+	}
+
+	info, err := usermwcli.GetUserOnly(ctx, conds)
+	if err != nil {
+		return err
+	}
+	if info != nil && info.ID != *h.UserID {
+		switch *h.NewAccountType {
+		case basetypes.SignMethod_Email:
+			return fmt.Errorf("email has already been taken")
+		case basetypes.SignMethod_Mobile:
+			return fmt.Errorf("phoneno has already been taken")
+		}
+	}
+	return nil
+}
+
 func (h *bindHandler) updateUser(ctx context.Context) error {
 	req := &usermwpb.UserReq{
 		ID:               h.UserID,
@@ -266,6 +292,9 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 	}
 
 	if err := handler.verifyNewAccountCode(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.verifyNewAccount(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.getThirdPartyConf(ctx); err != nil {
