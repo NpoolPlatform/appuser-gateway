@@ -168,6 +168,27 @@ func (h *bindHandler) verifyNewAccountCode(ctx context.Context) error {
 	)
 }
 
+func (h *bindHandler) verifyNewAccount(ctx context.Context) error {
+	conds := &usermwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+	}
+	switch *h.NewAccountType {
+	case basetypes.SignMethod_Email:
+		conds.EmailAddress = &basetypes.StringVal{Op: cruder.EQ, Value: *h.NewAccount}
+	case basetypes.SignMethod_Mobile:
+		conds.PhoneNO = &basetypes.StringVal{Op: cruder.EQ, Value: *h.NewAccount}
+	}
+
+	info, err := usermwcli.GetUserOnly(ctx, conds)
+	if err != nil {
+		return err
+	}
+	if info != nil && info.ID != *h.UserID {
+		return fmt.Errorf("invalid account")
+	}
+	return nil
+}
+
 func (h *bindHandler) updateUser(ctx context.Context) error {
 	req := &usermwpb.UserReq{
 		ID:               h.UserID,
@@ -177,7 +198,7 @@ func (h *bindHandler) updateUser(ctx context.Context) error {
 		ThirdPartyID:     h.thirdUserInfo.ThirdPartyID,
 		ThirdPartyUserID: h.thirdUserInfo.ThirdPartyUserID,
 	}
-	fmt.Printf("new_account_type=%v, new_account=%v\n", h.NewAccountType, h.NewAccount)
+
 	if h.NewAccountType != nil {
 		if *h.NewAccountType != basetypes.SignMethod_Google && h.NewAccount == nil {
 			return fmt.Errorf("invalid account")
@@ -204,41 +225,9 @@ func (h *bindHandler) updateUser(ctx context.Context) error {
 }
 
 func (h *bindHandler) updateCache(ctx context.Context) error {
-	if h.oldUserInfo.ID != h.User.ID {
-		meta, err := h.QueryCache(ctx)
-		if err != nil {
-			return err
-		}
-		if meta == nil || meta.User == nil {
-			return fmt.Errorf("cache: invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
-		}
-		h.Metadata = meta
-		h.UserID = &h.oldUserInfo.ID
-		if err := h.DeleteCache(ctx); err != nil {
-			return err
-		}
-
-		h.UserID = &h.User.ID
-		handler := &loginHandler{
-			Handler: h.Handler,
-		}
-		if err := handler.prepareMetadata(ctx); err != nil {
-			return err
-		}
-		token, err := createToken(h.Metadata)
-		if err != nil {
-			return err
-		}
-		h.Token = &token
-		handler.formalizeUser()
-		if err := h.CreateCache(ctx); err != nil {
-			return err
-		}
-	} else {
-		err := h.UpdateCache(ctx)
-		if err != nil {
-			return err
-		}
+	err := h.UpdateCache(ctx)
+	if err != nil {
+		return err
 	}
 	meta, err := h.QueryCache(ctx)
 	if err != nil {
@@ -298,6 +287,9 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 	}
 
 	if err := handler.verifyNewAccountCode(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.verifyNewAccount(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.getThirdPartyConf(ctx); err != nil {
