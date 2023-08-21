@@ -184,12 +184,7 @@ func (h *bindHandler) verifyNewAccount(ctx context.Context) error {
 		return err
 	}
 	if info != nil && info.ID != *h.UserID {
-		switch *h.NewAccountType {
-		case basetypes.SignMethod_Email:
-			return fmt.Errorf("email has already been taken")
-		case basetypes.SignMethod_Mobile:
-			return fmt.Errorf("phoneno has already been taken")
-		}
+		return fmt.Errorf("invalid account")
 	}
 	return nil
 }
