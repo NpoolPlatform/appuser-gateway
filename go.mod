@@ -3,16 +3,17 @@ module github.com/NpoolPlatform/appuser-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230809095441-e6ae9886fe6f
-	github.com/NpoolPlatform/basal-middleware v0.0.0-20230518061816-62bd589c0f63
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230913142320-746bdc6ca127
+	github.com/NpoolPlatform/basal-middleware v0.0.0-20230913134752-d45f93a3a60c
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20230518062456-3e53bebe90da
-	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230629111059-d8280578df85
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20230813055757-23d6ad3123fc
-	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230811100148-665aae942dc8
-	github.com/NpoolPlatform/notif-middleware v0.0.0-20230629102531-6aa588cd8391
-	github.com/NpoolPlatform/review-middleware v0.0.0-20230609030924-eca1f51482e9
-	github.com/NpoolPlatform/third-middleware v0.0.0-20230809085225-5727374ee64e
+	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230913141802-cbb17f1c7637
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20230913101807-3934219c0456
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230913112606-d48a3cb95447
+	github.com/NpoolPlatform/libent-cruder v0.0.0-20230825073905-d23e4d838f99
+	github.com/NpoolPlatform/message v0.0.0-20230913061740-0f175712c044
+	github.com/NpoolPlatform/notif-middleware v0.0.0-20230913142635-fe1be9a7165b
+	github.com/NpoolPlatform/review-middleware v0.0.0-20230913132355-adf7397154a7
+	github.com/NpoolPlatform/third-middleware v0.0.0-20230913134511-fac1c31f0821
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
@@ -22,7 +23,7 @@ require (
 	github.com/urfave/cli/v2 v2.16.3
 	go.opentelemetry.io/otel v1.10.0
 	go.opentelemetry.io/otel/trace v1.10.0
-	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
+	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
 )
@@ -32,6 +33,7 @@ require github.com/dtm-labs/dtm v1.17.1
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0 // indirect
 	github.com/ThreeDotsLabs/watermill-amqp/v2 v2.0.7 // indirect
+	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.16.14 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.7 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.17.5 // indirect
@@ -76,9 +78,8 @@ require (
 )
 
 require (
-	ariga.io/atlas v0.7.2-0.20220927111110-867ee0cca56a // indirect
-	entgo.io/ent v0.11.3 // indirect
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230811101104-636b885293d2
+	ariga.io/atlas v0.10.0 // indirect
+	entgo.io/ent v0.12.0 // indirect
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
@@ -109,7 +110,7 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
+	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
 	github.com/hashicorp/serf v0.9.7 // indirect
@@ -130,15 +131,15 @@ require (
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
-	github.com/spf13/cast v1.4.1 // indirect
+	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.11.0 // indirect
-	github.com/subosito/gotenv v1.2.0 // indirect
+	github.com/spf13/viper v1.12.0 // indirect
+	github.com/subosito/gotenv v1.3.0 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	go.uber.org/ratelimit v0.1.0 // indirect
+	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/mod v0.8.0 // indirect
 	golang.org/x/net v0.8.0 // indirect

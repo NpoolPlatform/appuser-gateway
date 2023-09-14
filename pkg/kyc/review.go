@@ -4,13 +4,14 @@ import (
 	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mw/v2/review"
+	reviewtypes "github.com/NpoolPlatform/message/npool/basetypes/review/v1"
+	reviewmwpb "github.com/NpoolPlatform/message/npool/review/mw/v2/review"
 	reviewsvcname "github.com/NpoolPlatform/review-middleware/pkg/servicename"
 )
 
 func (h *Handler) WithCreateKycReview(dispose *dtmcli.SagaDispose) {
 	serviceDomain := servicename.ServiceDomain
-	objectType := reviewmgrpb.ReviewObjectType_ObjectKyc
+	objectType := reviewtypes.ReviewObjectType_ObjectKyc
 
 	logger.Sugar().Infow(
 		"withCreateKycReview",
@@ -21,7 +22,7 @@ func (h *Handler) WithCreateKycReview(dispose *dtmcli.SagaDispose) {
 		"ObjectType", objectType,
 	)
 
-	req := &reviewmgrpb.ReviewReq{
+	req := &reviewmwpb.ReviewReq{
 		ID:         h.ReviewID,
 		AppID:      &h.AppID,
 		ObjectID:   h.ID,
@@ -33,7 +34,7 @@ func (h *Handler) WithCreateKycReview(dispose *dtmcli.SagaDispose) {
 		reviewsvcname.ServiceDomain,
 		"review.middleware.review.v2.Middleware/CreateReview",
 		"review.middleware.review.v2.Middleware/DeleteReview",
-		&reviewmgrpb.CreateReviewRequest{
+		&reviewmwpb.CreateReviewRequest{
 			Info: req,
 		},
 	)

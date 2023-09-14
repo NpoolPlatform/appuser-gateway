@@ -8,8 +8,8 @@ import (
 	appusermwsvcname "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
+	reviewtypes "github.com/NpoolPlatform/message/npool/basetypes/review/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mw/v2/review"
 	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
 	"github.com/dtm-labs/dtm/client/dtmcli/dtmimp"
 
@@ -27,7 +27,7 @@ func (h *updateHandler) checkReview(ctx context.Context) (bool, error) {
 		h.info.AppID,
 		servicename.ServiceDomain,
 		*h.ID,
-		reviewmgrpb.ReviewObjectType_ObjectKyc,
+		reviewtypes.ReviewObjectType_ObjectKyc,
 	)
 	if err != nil {
 		return false, err
@@ -37,10 +37,10 @@ func (h *updateHandler) checkReview(ctx context.Context) (bool, error) {
 	}
 
 	switch info.State {
-	case reviewmgrpb.ReviewState_Wait:
+	case reviewtypes.ReviewState_Wait:
 		h.ReviewID = &info.ID
 		return false, nil
-	case reviewmgrpb.ReviewState_Approved:
+	case reviewtypes.ReviewState_Approved:
 		return false, fmt.Errorf("not allowed")
 	}
 

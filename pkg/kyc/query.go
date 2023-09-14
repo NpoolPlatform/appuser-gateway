@@ -9,8 +9,8 @@ import (
 	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	kycmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
+	reviewtypes "github.com/NpoolPlatform/message/npool/basetypes/review/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	reviewmgrpb "github.com/NpoolPlatform/message/npool/review/mw/v2/review"
 	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
 )
 
@@ -29,7 +29,7 @@ func (h *Handler) GetKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
 		info.AppID,
 		servicename.ServiceDomain,
 		info.ID,
-		reviewmgrpb.ReviewObjectType_ObjectKyc,
+		reviewtypes.ReviewObjectType_ObjectKyc,
 	)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (h *Handler) GetKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
 		)
 	}
 
-	if rinfo.State == reviewmgrpb.ReviewState_Rejected {
+	if rinfo.State == reviewtypes.ReviewState_Rejected {
 		info.ReviewMessage = rinfo.GetMessage()
 	}
 
@@ -76,7 +76,7 @@ func (h *Handler) GetKycs(ctx context.Context) ([]*kycmwpb.Kyc, uint32, error) {
 		infos[0].AppID,
 		servicename.ServiceDomain,
 		ids,
-		reviewmgrpb.ReviewObjectType_ObjectKyc,
+		reviewtypes.ReviewObjectType_ObjectKyc,
 	)
 	if err != nil {
 		return nil, 0, err
