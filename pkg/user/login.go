@@ -274,21 +274,16 @@ func (h *loginHandler) verifyUserCode(ctx context.Context) error {
 		h.Account = &h.Metadata.User.GoogleSecret
 	}
 
-	if err := usercodemwcli.VerifyUserCode(
-		ctx,
-		&usercodemwpb.VerifyUserCodeRequest{
-			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-			AppID:       h.AppID,
-			Account:     *h.Account,
-			AccountType: *h.AccountType,
-			UsedFor:     basetypes.UsedFor_Signin,
-			Code:        *h.VerificationCode,
-		},
-	); err != nil {
+	if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+		AppID:       h.AppID,
+		Account:     *h.Account,
+		AccountType: *h.AccountType,
+		UsedFor:     basetypes.UsedFor_Signin,
+		Code:        *h.VerificationCode,
+	}); err != nil {
 		return err
 	}
-
-	h.Metadata.User.LoginVerified = true
 
 	return nil
 }
@@ -309,6 +304,7 @@ func (h *Handler) LoginVerify(ctx context.Context) (*usermwpb.User, error) {
 	if err := handler.verifyUserCode(ctx); err != nil {
 		return nil, err
 	}
+	h.User.LoginVerified = true
 	if err := h.CreateCache(ctx); err != nil {
 		return nil, err
 	}
@@ -324,11 +320,11 @@ func (h *Handler) Logined(ctx context.Context) (*usermwpb.User, error) {
 		Handler: h,
 	}
 
+	if !h.User.LoginVerified {
+		return nil, fmt.Errorf("not verified")
+	}
 	if err := handler.mustQueryMetadata(ctx); err != nil {
 		return nil, err
-	}
-	if !h.User.LoginVerified {
-		return nil, nil
 	}
 	if err := verifyToken(h.Metadata, *h.Token); err != nil {
 		return nil, err
