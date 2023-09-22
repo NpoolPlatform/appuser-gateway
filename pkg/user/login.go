@@ -305,6 +305,7 @@ func (h *Handler) LoginVerify(ctx context.Context) (*usermwpb.User, error) {
 		return nil, err
 	}
 	h.User.LoginVerified = true
+	h.Metadata.User.LoginVerified = true
 	if err := h.CreateCache(ctx); err != nil {
 		return nil, err
 	}
@@ -320,14 +321,14 @@ func (h *Handler) Logined(ctx context.Context) (*usermwpb.User, error) {
 		Handler: h,
 	}
 
-	if !h.User.LoginVerified {
-		return nil, fmt.Errorf("not verified")
-	}
 	if err := handler.mustQueryMetadata(ctx); err != nil {
 		return nil, err
 	}
 	if err := verifyToken(h.Metadata, *h.Token); err != nil {
 		return nil, err
+	}
+	if !h.User.LoginVerified {
+		return nil, fmt.Errorf("not verified")
 	}
 	if err := h.CreateCache(ctx); err != nil {
 		return nil, err
