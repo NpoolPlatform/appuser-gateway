@@ -62,8 +62,8 @@ github.com/NpoolPlatform/inspire-middleware v0.0.0-20230913112606-d48a3cb95447 h
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20230913112606-d48a3cb95447/go.mod h1:eTMv1XiJptV8MSrYDhJb/ucfzbtf1j8ozEc648jQF4g=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20230825073905-d23e4d838f99 h1:boB4NuhQxXWeV0Z1qSxgIqbiMYU30dqFGDLtgNTqYbE=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20230825073905-d23e4d838f99/go.mod h1:1B4hvnPiGavpCYaEjW5H6xDz+UizFdRTIRBtNIGbx5s=
-github.com/NpoolPlatform/message v0.0.0-20230917065134-468517781435 h1:cT9PDR25OaIf+wPi+GkvFZUml4MmurYAD0Q2TvwVYu8=
-github.com/NpoolPlatform/message v0.0.0-20230917065134-468517781435/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
+github.com/NpoolPlatform/message v0.0.0-20230922025200-093694e50098 h1:X7x5dRkHysQ3T9kZws9gY9+C8hiDpVa0hDhbtzO2YTY=
+github.com/NpoolPlatform/message v0.0.0-20230922025200-093694e50098/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230913142635-fe1be9a7165b h1:7hGJiOmH9BsiGtQbYphp9DxqJXaGwOjUQYLQ8CpgFvI=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230913142635-fe1be9a7165b/go.mod h1:38a93WvOz3Ww9LtaOboH+xRvIFlGFLn2zr7fqUTvEWY=
 github.com/NpoolPlatform/review-middleware v0.0.0-20230916115359-37c04d637e5c h1:/igm96m30ORiZAYqXYHyH1Bj2li0Bls96l8CIWJK134=
