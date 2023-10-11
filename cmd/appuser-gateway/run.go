@@ -6,7 +6,7 @@ import (
 	"github.com/NpoolPlatform/appuser-gateway/api"
 	"github.com/NpoolPlatform/appuser-gateway/pkg/migrator"
 	"github.com/NpoolPlatform/appuser-gateway/pkg/pubsub"
-	"github.com/NpoolPlatform/basal-middleware/pkg/db"
+	"github.com/NpoolPlatform/appuser-middleware/pkg/db"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/go-service-framework/pkg/oss"
 	ossconst "github.com/NpoolPlatform/go-service-framework/pkg/oss/const"
