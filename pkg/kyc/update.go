@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	servicename "github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	appusermwsvcname "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	npool "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
@@ -22,23 +21,20 @@ type updateHandler struct {
 }
 
 func (h *updateHandler) checkReview(ctx context.Context) (bool, error) {
-	info, err := reviewmwcli.GetObjectReview(
-		ctx,
-		h.info.AppID,
-		servicename.ServiceDomain,
-		*h.ID,
-		reviewtypes.ReviewObjectType_ObjectKyc,
-	)
+	info, err := reviewmwcli.GetReview(ctx, h.info.ReviewID)
 	if err != nil {
 		return false, err
 	}
 	if info == nil {
 		return true, nil
 	}
+	if info.AppID != h.AppID {
+		return false, fmt.Errorf("appid mismatch")
+	}
 
 	switch info.State {
 	case reviewtypes.ReviewState_Wait:
-		h.ReviewID = &info.ID
+		h.ReviewID = &info.EntID
 		return false, nil
 	case reviewtypes.ReviewState_Approved:
 		return false, fmt.Errorf("not allowed")
