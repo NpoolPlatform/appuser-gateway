@@ -23,7 +23,7 @@ func (h *Handler) WithCreateKycReview(dispose *dtmcli.SagaDispose) {
 	)
 
 	req := &reviewmwpb.ReviewReq{
-		ID:         h.ReviewID,
+		EntID:      h.ReviewID,
 		AppID:      &h.AppID,
 		ObjectID:   h.ID,
 		Domain:     &serviceDomain,
