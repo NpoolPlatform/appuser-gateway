@@ -17,11 +17,11 @@ import (
 
 type updateHandler struct {
 	*Handler
-	info *npool.Kyc
+	kyc *npool.Kyc
 }
 
 func (h *updateHandler) checkReview(ctx context.Context) (bool, error) {
-	info, err := reviewmwcli.GetReview(ctx, h.info.ReviewID)
+	info, err := reviewmwcli.GetReview(ctx, h.kyc.ReviewID)
 	if err != nil {
 		return false, err
 	}
@@ -47,8 +47,8 @@ func (h *updateHandler) withUpdateKyc(dispose *dtmcli.SagaDispose) {
 	state := basetypes.KycState_Reviewing
 	req := &npool.KycReq{
 		ID:           h.ID,
-		AppID:        &h.info.AppID,
-		UserID:       &h.info.UserID,
+		AppID:        &h.kyc.AppID,
+		UserID:       &h.kyc.UserID,
 		IDNumber:     h.IDNumber,
 		FrontImg:     h.FrontImg,
 		BackImg:      h.BackImg,
@@ -82,7 +82,7 @@ func (h *Handler) UpdateKyc(ctx context.Context) (*npool.Kyc, error) {
 
 	handler := &updateHandler{
 		Handler: h,
-		info:    info,
+		kyc:     info,
 	}
 	newReview, err := handler.checkReview(ctx)
 	if err != nil {
