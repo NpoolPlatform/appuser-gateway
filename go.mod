@@ -12,7 +12,7 @@ require (
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6
 	github.com/NpoolPlatform/message v0.0.0-20231026075959-2d8429391061
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20231011082608-04973d328d1f
-	github.com/NpoolPlatform/review-middleware v0.0.0-20231023084503-cd36a0ec91d7
+	github.com/NpoolPlatform/review-middleware v0.0.0-20231024080459-bf41f3bc38cd
 	github.com/NpoolPlatform/third-middleware v0.0.0-20231011073243-59e4e2a0a8ac
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
