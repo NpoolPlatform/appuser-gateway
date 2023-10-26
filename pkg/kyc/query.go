@@ -67,7 +67,7 @@ func (h *Handler) GetKycs(ctx context.Context) ([]*kycmwpb.Kyc, uint32, error) {
 
 	rinfos, _, err := reviewmwcli.GetReviews(ctx, &reviewmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: infos[0].AppID},
-		EntIDs:     &basetypes.StringSliceVal{Op: cruder.EQ, Value: ids},
+		EntIDs:     &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 		ObjectType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(reviewtypes.ReviewObjectType_ObjectKyc)},
 	}, 0, int32(len(ids)))
 	if err != nil {
