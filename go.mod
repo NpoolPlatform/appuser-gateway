@@ -3,16 +3,16 @@ module github.com/NpoolPlatform/appuser-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20231011071633-e14f373f95cb
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20231031093720-df8aa48046f6
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20231011062124-7ea6e9549a66
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20231011071916-859e5dcbf626
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20231026021135-ec3cd368fc24
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230930023319-e48074d9472e
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20231011071847-cbf62ecf31c9
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6
-	github.com/NpoolPlatform/message v0.0.0-20231027075951-f4da5d85ad08
+	github.com/NpoolPlatform/message v0.0.0-20231031084933-a94e6ab96c84
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20231011082608-04973d328d1f
-	github.com/NpoolPlatform/review-middleware v0.0.0-20231031040917-c4fa578c3f1e
+	github.com/NpoolPlatform/review-middleware v0.0.0-20231031085621-a1ee14e144fd
 	github.com/NpoolPlatform/third-middleware v0.0.0-20231011073243-59e4e2a0a8ac
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
