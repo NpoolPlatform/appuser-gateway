@@ -3,7 +3,6 @@ package kyc
 import (
 	"context"
 	"fmt"
-	"sort"
 
 	"github.com/NpoolPlatform/appuser-gateway/pkg/servicename"
 	kycmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/kyc"
@@ -11,6 +10,7 @@ import (
 	kycmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/kyc"
 	reviewtypes "github.com/NpoolPlatform/message/npool/basetypes/review/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	reviewmwpb "github.com/NpoolPlatform/message/npool/review/mw/v2/review"
 	reviewmwcli "github.com/NpoolPlatform/review-middleware/pkg/client/review"
 )
 
@@ -24,13 +24,7 @@ func (h *Handler) GetKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
 		return nil, err
 	}
 
-	rinfo, err := reviewmwcli.GetObjectReview(
-		ctx,
-		info.AppID,
-		servicename.ServiceDomain,
-		info.ID,
-		reviewtypes.ReviewObjectType_ObjectKyc,
-	)
+	rinfo, err := reviewmwcli.GetReview(ctx, info.ReviewID)
 	if err != nil {
 		return nil, err
 	}
@@ -68,28 +62,21 @@ func (h *Handler) GetKycs(ctx context.Context) ([]*kycmwpb.Kyc, uint32, error) {
 
 	ids := []string{}
 	for _, info := range infos {
-		ids = append(ids, info.ID)
+		ids = append(ids, info.ReviewID)
 	}
 
-	rinfos, err := reviewmwcli.GetObjectReviews(
-		ctx,
-		infos[0].AppID,
-		servicename.ServiceDomain,
-		ids,
-		reviewtypes.ReviewObjectType_ObjectKyc,
-	)
+	rinfos, _, err := reviewmwcli.GetReviews(ctx, &reviewmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: infos[0].AppID},
+		EntIDs:     &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+		ObjectType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(reviewtypes.ReviewObjectType_ObjectKyc)},
+	}, 0, int32(len(ids)))
 	if err != nil {
 		return nil, 0, err
 	}
 
-	// TODO: here we should only get the last one reviews of different state
-	sort.Slice(rinfos, func(i, j int) bool {
-		return rinfos[i].CreatedAt >= rinfos[j].CreatedAt
-	})
-
 	for _, info := range infos {
 		for _, rinfo := range rinfos {
-			if info.ID == rinfo.ObjectID {
+			if info.ReviewID == rinfo.EntID && info.State == basetypes.KycState_Rejected {
 				info.ReviewMessage = rinfo.Message
 				break
 			}
