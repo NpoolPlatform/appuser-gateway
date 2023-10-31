@@ -62,7 +62,7 @@ func (h *Handler) GetKycs(ctx context.Context) ([]*kycmwpb.Kyc, uint32, error) {
 
 	ids := []string{}
 	for _, info := range infos {
-		ids = append(ids, info.ID)
+		ids = append(ids, info.ReviewID)
 	}
 
 	rinfos, _, err := reviewmwcli.GetReviews(ctx, &reviewmwpb.Conds{
@@ -76,7 +76,7 @@ func (h *Handler) GetKycs(ctx context.Context) ([]*kycmwpb.Kyc, uint32, error) {
 
 	for _, info := range infos {
 		for _, rinfo := range rinfos {
-			if info.ID == rinfo.ObjectID {
+			if info.ReviewID == rinfo.EntID && info.State == basetypes.KycState_Rejected {
 				info.ReviewMessage = rinfo.Message
 				break
 			}
