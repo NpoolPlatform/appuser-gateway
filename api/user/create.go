@@ -14,10 +14,10 @@ import (
 func (s *Server) CreateUser(ctx context.Context, in *npool.CreateUserRequest) (*npool.CreateUserResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithEmailAddress(in.EmailAddress),
-		user1.WithPhoneNO(in.PhoneNO),
-		user1.WithPasswordHash(in.PasswordHash),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithEmailAddress(in.EmailAddress, false),
+		user1.WithPhoneNO(in.PhoneNO, false),
+		user1.WithPasswordHash(in.PasswordHash, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -46,10 +46,10 @@ func (s *Server) CreateUser(ctx context.Context, in *npool.CreateUserRequest) (*
 func (s *Server) CreateAppUser(ctx context.Context, in *npool.CreateAppUserRequest) (*npool.CreateAppUserResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetTargetAppID()),
-		user1.WithEmailAddress(in.EmailAddress),
-		user1.WithPhoneNO(in.PhoneNO),
-		user1.WithPasswordHash(&in.PasswordHash),
+		user1.WithAppID(&in.TargetAppID, true),
+		user1.WithEmailAddress(in.EmailAddress, false),
+		user1.WithPhoneNO(in.PhoneNO, false),
+		user1.WithPasswordHash(&in.PasswordHash, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

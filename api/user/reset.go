@@ -14,12 +14,13 @@ import (
 func (s *Server) ResetUser(ctx context.Context, in *npool.ResetUserRequest) (*npool.ResetUserResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(in.UserID),
-		user1.WithAccount(&in.Account, &in.AccountType),
-		user1.WithVerificationCode(&in.VerificationCode),
-		user1.WithPasswordHash(in.PasswordHash),
-		user1.WithRecoveryCode(in.RecoveryCode),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(in.UserID, false),
+		user1.WithAccount(&in.Account, true),
+		user1.WithAccountType(&in.AccountType, true),
+		user1.WithVerificationCode(&in.VerificationCode, true),
+		user1.WithPasswordHash(in.PasswordHash, true),
+		user1.WithRecoveryCode(in.RecoveryCode, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

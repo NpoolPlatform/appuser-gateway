@@ -440,9 +440,9 @@ func WithTargetUserID(id *string, must bool) func(context.Context, *Handler) err
 	}
 }
 
-func WithCheckInvitation(check bool, must bool) func(context.Context, *Handler) error {
+func WithCheckInvitation(check *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.CheckInvitation = &check
+		h.CheckInvitation = check
 		return nil
 	}
 }
