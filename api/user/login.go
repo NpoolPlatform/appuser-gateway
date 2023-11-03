@@ -15,11 +15,12 @@ import (
 func (s *Server) Login(ctx context.Context, in *npool.LoginRequest) (*npool.LoginResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithAccount(&in.Account, &in.AccountType),
-		user1.WithPasswordHash(&in.PasswordHash),
-		user1.WithManMachineSpec(in.GetManMachineSpec()),
-		user1.WithEnvironmentSpec(in.GetEnvironmentSpec()),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithAccount(&in.Account, true),
+		user1.WithAccountType(&in.AccountType, true),
+		user1.WithPasswordHash(&in.PasswordHash, true),
+		user1.WithManMachineSpec(&in.ManMachineSpec, true),
+		user1.WithEnvironmentSpec(&in.EnvironmentSpec, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -48,11 +49,12 @@ func (s *Server) Login(ctx context.Context, in *npool.LoginRequest) (*npool.Logi
 func (s *Server) LoginVerify(ctx context.Context, in *npool.LoginVerifyRequest) (*npool.LoginVerifyResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(&in.UserID),
-		user1.WithAccount(&in.Account, &in.AccountType),
-		user1.WithToken(in.GetToken()),
-		user1.WithVerificationCode(&in.VerificationCode),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(&in.UserID, true),
+		user1.WithAccount(&in.Account, true),
+		user1.WithAccountType(&in.AccountType, true),
+		user1.WithToken(&in.Token, true),
+		user1.WithVerificationCode(&in.VerificationCode, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -81,9 +83,9 @@ func (s *Server) LoginVerify(ctx context.Context, in *npool.LoginVerifyRequest) 
 func (s *Server) Logined(ctx context.Context, in *npool.LoginedRequest) (*npool.LoginedResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(&in.UserID),
-		user1.WithToken(in.GetToken()),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(&in.UserID, true),
+		user1.WithToken(&in.Token, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -112,9 +114,9 @@ func (s *Server) Logined(ctx context.Context, in *npool.LoginedRequest) (*npool.
 func (s *Server) Logout(ctx context.Context, in *npool.LogoutRequest) (*npool.LogoutResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(&in.UserID),
-		user1.WithToken(in.GetToken()),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(&in.UserID, true),
+		user1.WithToken(&in.Token, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -140,17 +142,11 @@ func (s *Server) Logout(ctx context.Context, in *npool.LogoutRequest) (*npool.Lo
 	}, nil
 }
 
-func (s *Server) GetLoginHistories(
-	ctx context.Context,
-	in *npool.GetLoginHistoriesRequest,
-) (
-	*npool.GetLoginHistoriesResponse,
-	error,
-) {
+func (s *Server) GetLoginHistories(ctx context.Context, in *npool.GetLoginHistoriesRequest) (*npool.GetLoginHistoriesResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(&in.UserID),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(&in.UserID, true),
 		user1.WithOffset(in.GetOffset()),
 		user1.WithLimit(in.GetLimit()),
 	)

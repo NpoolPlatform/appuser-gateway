@@ -14,28 +14,31 @@ import (
 func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*npool.UpdateUserResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(&in.UserID),
-		user1.WithAccount(in.Account, in.AccountType),
-		user1.WithNewAccount(in.NewAccount, in.NewAccountType),
-		user1.WithPasswordHash(in.PasswordHash),
-		user1.WithOldPasswordHash(in.OldPasswordHash),
-		user1.WithVerificationCode(in.VerificationCode),
-		user1.WithNewVerificationCode(in.NewVerificationCode),
-		user1.WithUsername(in.Username),
-		user1.WithAddressFields(in.AddressFields),
-		user1.WithGender(in.Gender),
-		user1.WithPostalCode(in.PostalCode),
-		user1.WithAge(in.Age),
-		user1.WithBirthday(in.Birthday),
-		user1.WithAvatar(in.Avatar),
-		user1.WithOrganization(in.Organization),
-		user1.WithFirstName(in.FirstName),
-		user1.WithLastName(in.LastName),
-		user1.WithIDNumber(in.IDNumber),
-		user1.WithSigninVerifyType(in.SigninVerifyType),
-		user1.WithKolConfirmed(in.KolConfirmed),
-		user1.WithSelectedLangID(in.SelectedLangID),
+		user1.WithID(&in.ID, true),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(&in.UserID, true),
+		user1.WithAccount(in.Account, false),
+		user1.WithAccountType(in.AccountType, false),
+		user1.WithNewAccount(in.NewAccount, false),
+		user1.WithNewAccountType(in.NewAccountType, false),
+		user1.WithPasswordHash(in.PasswordHash, false),
+		user1.WithOldPasswordHash(in.OldPasswordHash, false),
+		user1.WithVerificationCode(in.VerificationCode, false),
+		user1.WithNewVerificationCode(in.NewVerificationCode, false),
+		user1.WithUsername(in.Username, false),
+		user1.WithAddressFields(in.AddressFields, false),
+		user1.WithGender(in.Gender, false),
+		user1.WithPostalCode(in.PostalCode, false),
+		user1.WithAge(in.Age, false),
+		user1.WithBirthday(in.Birthday, false),
+		user1.WithAvatar(in.Avatar, false),
+		user1.WithOrganization(in.Organization, false),
+		user1.WithFirstName(in.FirstName, false),
+		user1.WithLastName(in.LastName, false),
+		user1.WithIDNumber(in.IDNumber, false),
+		user1.WithSigninVerifyType(in.SigninVerifyType, false),
+		user1.WithKolConfirmed(in.KolConfirmed, false),
+		user1.WithSelectedLangID(in.SelectedLangID, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -62,13 +65,15 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 }
 
 func (s *Server) UpdateAppUser(ctx context.Context, in *npool.UpdateAppUserRequest) (*npool.UpdateAppUserResponse, error) {
+	shouldUpdateCache := false
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(&in.TargetUserID),
-		user1.WithKol(in.Kol),
-		user1.WithEmailAddress(in.EmailAddress),
-		user1.WithShouldUpdateCache(false),
+		user1.WithID(&in.ID, true),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(&in.TargetUserID, true),
+		user1.WithKol(in.Kol, false),
+		user1.WithEmailAddress(in.EmailAddress, false),
+		user1.WithShouldUpdateCache(&shouldUpdateCache, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

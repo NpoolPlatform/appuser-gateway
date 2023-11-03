@@ -14,12 +14,12 @@ import (
 func (s *Server) Signup(ctx context.Context, in *user.SignupRequest) (*user.SignupResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithPasswordHash(&in.PasswordHash),
-		user1.WithAccount(&in.Account, &in.AccountType),
-		user1.WithVerificationCode(&in.VerificationCode),
-		user1.WithInvitationCode(in.InvitationCode),
-		user1.WithRequestTimeoutSeconds(10), //nolint
+		user1.WithAppID(&in.AppID, true),
+		user1.WithPasswordHash(&in.PasswordHash, true),
+		user1.WithAccount(&in.Account, true),
+		user1.WithAccountType(&in.AccountType, true),
+		user1.WithVerificationCode(&in.VerificationCode, true),
+		user1.WithInvitationCode(in.InvitationCode, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
