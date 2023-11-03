@@ -15,11 +15,11 @@ import (
 func (s *Server) CreateAppAuth(ctx context.Context, in *npool.CreateAppAuthRequest) (resp *npool.CreateAppAuthResponse, err error) {
 	handler, err := auth1.NewHandler(
 		ctx,
-		auth1.WithAppID(in.GetTargetAppID()),
-		auth1.WithRoleID(in.RoleID),
-		auth1.WithUserID(in.TargetUserID),
-		auth1.WithResource(in.GetResource()),
-		auth1.WithMethod(in.GetMethod()),
+		auth1.WithAppID(&in.TargetAppID, true),
+		auth1.WithRoleID(in.RoleID, false),
+		auth1.WithUserID(in.TargetUserID, false),
+		auth1.WithResource(&in.Resource, true),
+		auth1.WithMethod(&in.Method, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

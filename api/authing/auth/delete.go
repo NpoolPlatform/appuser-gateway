@@ -14,7 +14,8 @@ import (
 func (s *Server) DeleteAppAuth(ctx context.Context, in *npool.DeleteAppAuthRequest) (resp *npool.DeleteAppAuthResponse, err error) {
 	handler, err := auth1.NewHandler(
 		ctx,
-		auth1.WithID(&in.ID),
+		auth1.WithID(&in.ID, true),
+		auth1.WithEntID(&in.EntID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

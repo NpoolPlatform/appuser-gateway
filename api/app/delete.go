@@ -15,7 +15,8 @@ import (
 func (s *Server) DeleteApp(ctx context.Context, in *app.DeleteAppRequest) (*app.DeleteAppResponse, error) {
 	handler, err := app1.NewHandler(
 		ctx,
-		app1.WithID(&in.ID),
+		app1.WithID(&in.ID, true),
+		app1.WithEntID(&in.EntID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
