@@ -23,7 +23,7 @@ type createGenesisUserHandler struct {
 func (h *createGenesisUserHandler) getGenesisRoles(ctx context.Context) error {
 	const maxGenesisRoles = int32(20)
 	infos, _, err := rolemwcli.GetRoles(ctx, &rolemwpb.Conds{
-		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		Genesis: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 	}, 0, maxGenesisRoles)
 	if err != nil {
@@ -40,12 +40,12 @@ func (h *createGenesisUserHandler) createUser(ctx context.Context) error {
 	userID := uuid.NewString()
 	roleIDs := []string{}
 	for _, _role := range h.roles {
-		roleIDs = append(roleIDs, _role.ID)
+		roleIDs = append(roleIDs, _role.EntID)
 	}
 
 	info, err := usermwcli.CreateUser(ctx, &usermwpb.UserReq{
-		ID:           &userID,
-		AppID:        &h.AppID,
+		EntID:        &userID,
+		AppID:        h.AppID,
 		EmailAddress: h.EmailAddress,
 		PasswordHash: h.PasswordHash,
 		RoleIDs:      roleIDs,
