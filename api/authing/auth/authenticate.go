@@ -15,11 +15,11 @@ import (
 func (s *Server) Authenticate(ctx context.Context, in *npool.AuthenticateRequest) (*npool.AuthenticateResponse, error) {
 	handler, err := auth1.NewHandler(
 		ctx,
-		auth1.WithAppID(in.GetAppID()),
-		auth1.WithUserID(in.UserID),
-		auth1.WithToken(in.Token),
-		auth1.WithResource(in.GetResource()),
-		auth1.WithMethod(in.GetMethod()),
+		auth1.WithAppID(&in.AppID, true),
+		auth1.WithUserID(in.UserID, false),
+		auth1.WithToken(in.Token, false),
+		auth1.WithResource(&in.Resource, true),
+		auth1.WithMethod(&in.Method, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

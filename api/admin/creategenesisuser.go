@@ -12,18 +12,12 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) CreateGenesisUser(
-	ctx context.Context,
-	in *admin.CreateGenesisUserRequest,
-) (
-	*admin.CreateGenesisUserResponse,
-	error,
-) {
+func (s *Server) CreateGenesisUser(ctx context.Context, in *admin.CreateGenesisUserRequest) (*admin.CreateGenesisUserResponse, error) {
 	handler, err := admin1.NewHandler(
 		ctx,
-		admin1.WithAppID(in.GetTargetAppID()),
-		admin1.WithEmailAddress(&in.EmailAddress),
-		admin1.WithPasswordHash(&in.PasswordHash),
+		admin1.WithAppID(&in.TargetAppID, true),
+		admin1.WithEmailAddress(&in.EmailAddress, true),
+		admin1.WithPasswordHash(&in.PasswordHash, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

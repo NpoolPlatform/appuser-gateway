@@ -14,7 +14,7 @@ import (
 func (s *Server) GetAppAuths(ctx context.Context, in *npool.GetAppAuthsRequest) (resp *npool.GetAppAuthsResponse, err error) {
 	handler, err := auth1.NewHandler(
 		ctx,
-		auth1.WithAppID(in.GetTargetAppID()),
+		auth1.WithAppID(&in.TargetAppID, true),
 		auth1.WithOffset(in.GetOffset()),
 		auth1.WithLimit(in.GetLimit()),
 	)
