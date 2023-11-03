@@ -78,7 +78,7 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 	}
 
 	_allowed := false
-	defer handler.notifyAuthenticate(*&_allowed)
+	defer handler.notifyAuthenticate(*&_allowed) //nolint
 
 	_logined, err := handler.logined(ctx)
 	if err != nil {
