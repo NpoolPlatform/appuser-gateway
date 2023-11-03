@@ -5,21 +5,22 @@ import (
 	"fmt"
 
 	authmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/authing/auth"
-	uuid1 "github.com/NpoolPlatform/go-service-framework/pkg/const/uuid"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	authmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/authing/auth"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+
+	"github.com/google/uuid"
 )
 
 func (h *Handler) CreateAuth(ctx context.Context) (*authmwpb.Auth, error) {
-	defaultUUIDCond := &basetypes.StringVal{Op: cruder.EQ, Value: uuid1.InvalidUUIDStr}
+	defaultUUIDCond := &basetypes.StringVal{Op: cruder.EQ, Value: uuid.Nil.String()}
 
 	conds := &authmwpb.Conds{
-		AppID:    &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		UserID:   defaultUUIDCond,
 		RoleID:   defaultUUIDCond,
-		Resource: &basetypes.StringVal{Op: cruder.EQ, Value: h.Resource},
-		Method:   &basetypes.StringVal{Op: cruder.EQ, Value: h.Method},
+		Resource: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Resource},
+		Method:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.Method},
 	}
 	exist, err := authmwcli.ExistAuthConds(ctx, conds)
 	if err != nil {
@@ -56,10 +57,10 @@ func (h *Handler) CreateAuth(ctx context.Context) (*authmwpb.Auth, error) {
 	}
 
 	return authmwcli.CreateAuth(ctx, &authmwpb.AuthReq{
-		AppID:    &h.AppID,
+		AppID:    h.AppID,
 		RoleID:   h.RoleID,
 		UserID:   h.UserID,
-		Resource: &h.Resource,
-		Method:   &h.Method,
+		Resource: h.Resource,
+		Method:   h.Method,
 	})
 }

@@ -35,7 +35,7 @@ type Handler struct {
 	InvitationCode        *string
 	EmailAddress          *string
 	PhoneNO               *string
-	RequestTimeoutSeconds int64
+	RequestTimeoutSeconds *int64
 	ManMachineSpec        *string
 	EnvironmentSpec       *string
 	Metadata              *Metadata
@@ -60,15 +60,18 @@ type Handler struct {
 	Banned                *bool
 	BanMessage            *string
 	RecoveryCode          *string
-	ShouldUpdateCache     bool
+	ShouldUpdateCache     *bool
 	ThirdPartyID          *string
 	Offset                int32
 	Limit                 int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
+	shouldUpdateCache := true
+	requestTimeoutSeconds := int64(10)
 	handler := &Handler{
-		ShouldUpdateCache: true,
+		ShouldUpdateCache:     &shouldUpdateCache,
+		RequestTimeoutSeconds: &requestTimeoutSeconds,
 	}
 
 	for _, opt := range options {
@@ -300,30 +303,30 @@ func WithInvitationCode(code *string, must bool) func(context.Context, *Handler)
 	}
 }
 
-func WithRequestTimeoutSeconds(seconds int64, must bool) func(context.Context, *Handler) error {
+func WithRequestTimeoutSeconds(seconds *int64, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.RequestTimeoutSeconds = seconds
 		return nil
 	}
 }
 
-func WithManMachineSpec(manMachineSpec string, must bool) func(context.Context, *Handler) error {
+func WithManMachineSpec(manMachineSpec *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.ManMachineSpec = &manMachineSpec
+		h.ManMachineSpec = manMachineSpec
 		return nil
 	}
 }
 
-func WithEnvironmentSpec(envSpec string, must bool) func(context.Context, *Handler) error {
+func WithEnvironmentSpec(envSpec *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.EnvironmentSpec = &envSpec
+		h.EnvironmentSpec = envSpec
 		return nil
 	}
 }
 
-func WithToken(token string, must bool) func(context.Context, *Handler) error {
+func WithToken(token *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.Token = &token
+		h.Token = token
 		return nil
 	}
 }
@@ -666,7 +669,7 @@ func WithBanMessage(message *string, must bool) func(context.Context, *Handler) 
 	}
 }
 
-func WithShouldUpdateCache(update bool, must bool) func(context.Context, *Handler) error {
+func WithShouldUpdateCache(update *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ShouldUpdateCache = update
 		return nil
