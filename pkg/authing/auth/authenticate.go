@@ -26,9 +26,9 @@ func (h *authenticateHandler) logined(ctx context.Context) (bool, error) {
 
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(h.AppID),
-		user1.WithUserID(h.UserID),
-		user1.WithToken(*h.Token),
+		user1.WithAppID(h.AppID, true),
+		user1.WithUserID(h.UserID, true),
+		user1.WithToken(h.Token, true),
 	)
 	if err != nil {
 		return false, err
@@ -47,10 +47,10 @@ func (h *authenticateHandler) logined(ctx context.Context) (bool, error) {
 func (h *authenticateHandler) notifyAuthenticate(allowed bool) {
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
 		req := &authhismwpb.HistoryReq{
-			AppID:    &h.AppID,
+			AppID:    h.AppID,
 			UserID:   h.UserID,
-			Resource: &h.Resource,
-			Method:   &h.Method,
+			Resource: h.Resource,
+			Method:   h.Method,
 			Allowed:  &allowed,
 		}
 		return publisher.Update(
@@ -63,10 +63,10 @@ func (h *authenticateHandler) notifyAuthenticate(allowed bool) {
 	}); err != nil {
 		logger.Sugar().Errorw(
 			"notifyAuthenticate",
-			"AppID", h.AppID,
-			"UserID", h.UserID,
-			"Resource", h.Resource,
-			"Method", h.Method,
+			"AppID", *h.AppID,
+			"UserID", *h.UserID,
+			"Resource", *h.Resource,
+			"Method", *h.Method,
 			"Error", err,
 		)
 	}
@@ -78,16 +78,16 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 	}
 
 	_allowed := false
-	defer handler.notifyAuthenticate(_allowed)
+	defer handler.notifyAuthenticate(*&_allowed)
 
 	_logined, err := handler.logined(ctx)
 	if err != nil {
 		logger.Sugar().Warnw(
 			"Authenticate",
-			"AppID", h.AppID,
-			"UserID", h.UserID,
-			"Resource", h.Resource,
-			"Method", h.Method,
+			"AppID", *h.AppID,
+			"UserID", *h.UserID,
+			"Resource", *h.Resource,
+			"Method", *h.Method,
 			"Error", err,
 		)
 		return false, err
@@ -95,22 +95,22 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 	if !_logined {
 		logger.Sugar().Warnw(
 			"Authenticate",
-			"AppID", h.AppID,
-			"UserID", h.UserID,
-			"Resource", h.Resource,
-			"Method", h.Method,
+			"AppID", *h.AppID,
+			"UserID", *h.UserID,
+			"Resource", *h.Resource,
+			"Method", *h.Method,
 		)
 		return false, nil
 	}
 
-	_allowed, err = authmwcli.ExistAuth(ctx, h.AppID, h.UserID, h.Resource, h.Method)
+	_allowed, err = authmwcli.ExistAuth(ctx, *h.AppID, h.UserID, *h.Resource, *h.Method)
 	if err != nil {
 		logger.Sugar().Warnw(
 			"Authenticate",
-			"AppID", h.AppID,
-			"UserID", h.UserID,
-			"Resource", h.Resource,
-			"Method", h.Method,
+			"AppID", *h.AppID,
+			"UserID", *h.UserID,
+			"Resource", *h.Resource,
+			"Method", *h.Method,
 			"Error", err,
 		)
 		return false, err
@@ -118,10 +118,10 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 	if !_allowed {
 		logger.Sugar().Warnw(
 			"Authenticate",
-			"AppID", h.AppID,
-			"UserID", h.UserID,
-			"Resource", h.Resource,
-			"Method", h.Method,
+			"AppID", *h.AppID,
+			"UserID", *h.UserID,
+			"Resource", *h.Resource,
+			"Method", *h.Method,
 			"Allowed", _allowed,
 		)
 	}

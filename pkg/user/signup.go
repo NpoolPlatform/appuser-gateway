@@ -189,7 +189,7 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 
 	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{
 		WaitResult:     true,
-		RequestTimeout: signupHandler.RequestTimeoutSeconds,
+		RequestTimeout: *signupHandler.RequestTimeoutSeconds,
 	})
 	signupHandler.withCreateInvitationCode(sagaDispose)
 	signupHandler.withCreateUser(sagaDispose)

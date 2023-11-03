@@ -10,12 +10,7 @@ import (
 )
 
 func (h *Handler) GetAuths(ctx context.Context) ([]*authmwpb.Auth, uint32, error) {
-	return authmwcli.GetAuths(
-		ctx,
-		&authmwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	return authmwcli.GetAuths(ctx, &authmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+	}, h.Offset, h.Limit)
 }

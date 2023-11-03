@@ -231,7 +231,7 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	// Generate Notif
 	notif1.generateNotif(ctx)
 
-	if !h.ShouldUpdateCache {
+	if h.ShouldUpdateCache != nil && !*h.ShouldUpdateCache {
 		return h.User, nil
 	}
 
