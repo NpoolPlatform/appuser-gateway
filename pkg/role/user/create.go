@@ -9,8 +9,8 @@ import (
 
 func (h *Handler) CreateUser(ctx context.Context) (*roleusermwpb.User, error) {
 	return roleusermwcli.CreateUser(ctx, &roleusermwpb.UserReq{
-		AppID:  &h.AppID,
-		RoleID: &h.RoleID,
-		UserID: &h.UserID,
+		AppID:  h.AppID,
+		RoleID: h.RoleID,
+		UserID: h.UserID,
 	})
 }

@@ -11,9 +11,10 @@ import (
 )
 
 type Handler struct {
-	ID          *string
-	AppID       string
-	CreatedBy   string
+	ID          *uint32
+	EntID       *string
+	AppID       *string
+	CreatedBy   *string
 	Role        *string
 	Default     *bool
 	Description *string
@@ -31,22 +32,44 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
 		}
 		h.ID = id
 		return nil
 	}
 }
 
-func WithAppID(id string) func(context.Context, *Handler) error {
+func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		exist, err := appmwcli.ExistApp(ctx, id)
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid entid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.EntID = id
+		return nil
+	}
+}
+
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
+			return nil
+		}
+		exist, err := appmwcli.ExistApp(ctx, *id)
 		if err != nil {
 			return err
 		}
@@ -58,22 +81,28 @@ func WithAppID(id string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCreatedBy(id *string) func(context.Context, *Handler) error {
+func WithCreatedBy(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid createdby")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		h.CreatedBy = *id
+		h.CreatedBy = id
 		return nil
 	}
 }
 
-func WithRole(role *string) func(context.Context, *Handler) error {
+func WithRole(role *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if role == nil {
+			if must {
+				return fmt.Errorf("invalid role")
+			}
 			return nil
 		}
 		const leastRoleLen = 3
@@ -85,14 +114,14 @@ func WithRole(role *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithDefault(defautl *bool) func(context.Context, *Handler) error {
+func WithDefault(defautl *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Default = defautl
 		return nil
 	}
 }
 
-func WithDescription(description *string) func(context.Context, *Handler) error {
+func WithDescription(description *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Description = description
 		return nil
