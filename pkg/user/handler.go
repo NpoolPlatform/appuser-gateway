@@ -68,7 +68,7 @@ type Handler struct {
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
 	shouldUpdateCache := true
-	requestTimeoutSeconds := int64(10)
+	requestTimeoutSeconds := int64(10) //nolint
 	handler := &Handler{
 		ShouldUpdateCache:     &shouldUpdateCache,
 		RequestTimeoutSeconds: &requestTimeoutSeconds,
@@ -168,7 +168,6 @@ func validatePhoneNO(phoneNO string) error {
 	return nil
 }
 
-//nolint:gocyclo
 func WithAccount(account *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if account == nil {

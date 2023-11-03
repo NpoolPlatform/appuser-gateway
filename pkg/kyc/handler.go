@@ -31,7 +31,7 @@ type Handler struct {
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
-	requestTimeoutSeconds := int64(10)
+	requestTimeoutSeconds := int64(10) //nolint
 	handler := &Handler{
 		RequestTimeoutSeconds: &requestTimeoutSeconds,
 	}

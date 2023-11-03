@@ -22,7 +22,6 @@ type bindHandler struct {
 	oauthConf     *oauthmwpb.OAuthThirdParty
 }
 
-//nolint:gocyclo
 func (h *bindHandler) validate() error {
 	switch *h.AccountType {
 	case basetypes.SignMethod_Github:
