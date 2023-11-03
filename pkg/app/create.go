@@ -11,28 +11,25 @@ import (
 
 func (h *Handler) CreateApp(ctx context.Context) (*appmwpb.App, error) {
 	id := uuid.NewString()
-	if h.ID == nil {
-		h.ID = &id
+	if h.EntID == nil {
+		h.EntID = &id
 	}
 
-	return appmwcli.CreateApp(
-		ctx,
-		&appmwpb.AppReq{
-			ID:                       h.ID,
-			CreatedBy:                h.CreatedBy,
-			Name:                     h.Name,
-			Logo:                     h.Logo,
-			Description:              h.Description,
-			SignupMethods:            h.SignupMethods,
-			ExtSigninMethods:         h.ExtSigninMethods,
-			RecaptchaMethod:          h.RecaptchaMethod,
-			KycEnable:                h.KycEnable,
-			SigninVerifyEnable:       h.SigninVerifyEnable,
-			InvitationCodeMust:       h.InvitationCodeMust,
-			CreateInvitationCodeWhen: h.CreateInvitationCodeWhen,
-			MaxTypedCouponsPerOrder:  h.MaxTypedCouponsPerOrder,
-			Maintaining:              h.Maintaining,
-			CommitButtonTargets:      h.CommitButtonTargets,
-		},
-	)
+	return appmwcli.CreateApp(ctx, &appmwpb.AppReq{
+		EntID:                    h.EntID,
+		CreatedBy:                h.CreatedBy,
+		Name:                     h.Name,
+		Logo:                     h.Logo,
+		Description:              h.Description,
+		SignupMethods:            h.SignupMethods,
+		ExtSigninMethods:         h.ExtSigninMethods,
+		RecaptchaMethod:          h.RecaptchaMethod,
+		KycEnable:                h.KycEnable,
+		SigninVerifyEnable:       h.SigninVerifyEnable,
+		InvitationCodeMust:       h.InvitationCodeMust,
+		CreateInvitationCodeWhen: h.CreateInvitationCodeWhen,
+		MaxTypedCouponsPerOrder:  h.MaxTypedCouponsPerOrder,
+		Maintaining:              h.Maintaining,
+		CommitButtonTargets:      h.CommitButtonTargets,
+	})
 }
