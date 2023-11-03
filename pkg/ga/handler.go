@@ -10,9 +10,9 @@ import (
 )
 
 type Handler struct {
-	AppID  string
-	UserID string
-	Code   string
+	AppID  *string
+	UserID *string
+	Code   *string
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -25,9 +25,15 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithAppID(id string) func(context.Context, *Handler) error {
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		exist, err := appmwcli.ExistApp(ctx, id)
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
+			return nil
+		}
+		exist, err := appmwcli.ExistApp(ctx, *id)
 		if err != nil {
 			return err
 		}
@@ -39,9 +45,15 @@ func WithAppID(id string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithUserID(id string) func(context.Context, *Handler) error {
+func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if _, err := uuid.Parse(id); err != nil {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid userid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
 		h.UserID = id
@@ -49,7 +61,7 @@ func WithUserID(id string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCode(code string) func(context.Context, *Handler) error {
+func WithCode(code *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Code = code
 		return nil

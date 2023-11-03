@@ -11,8 +11,8 @@ import (
 func (h *Handler) SetupGoogleAuth(ctx context.Context) (*usermwpb.User, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(h.AppID),
-		user1.WithUserID(&h.UserID),
+		user1.WithAppID(h.AppID, true),
+		user1.WithUserID(h.UserID, true),
 	)
 	if err != nil {
 		return nil, err
