@@ -11,10 +11,6 @@ import (
 )
 
 func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
 	if h.Name != nil {
 		exist, err := appmwcli.ExistAppConds(ctx, &appmwpb.Conds{
 			Name: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Name},
@@ -27,26 +23,23 @@ func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
 		}
 	}
 
-	return appmwcli.UpdateApp(
-		ctx,
-		&appmwpb.AppReq{
-			ID:                       h.ID,
-			CreatedBy:                h.CreatedBy,
-			Name:                     h.Name,
-			Logo:                     h.Logo,
-			Description:              h.Description,
-			SignupMethods:            h.SignupMethods,
-			ExtSigninMethods:         h.ExtSigninMethods,
-			RecaptchaMethod:          h.RecaptchaMethod,
-			KycEnable:                h.KycEnable,
-			SigninVerifyEnable:       h.SigninVerifyEnable,
-			InvitationCodeMust:       h.InvitationCodeMust,
-			CreateInvitationCodeWhen: h.CreateInvitationCodeWhen,
-			MaxTypedCouponsPerOrder:  h.MaxTypedCouponsPerOrder,
-			Maintaining:              h.Maintaining,
-			CommitButtonTargets:      h.CommitButtonTargets,
-			Banned:                   h.Banned,
-			BanMessage:               h.BanMessage,
-		},
-	)
+	return appmwcli.UpdateApp(ctx, &appmwpb.AppReq{
+		ID:                       h.ID,
+		CreatedBy:                h.CreatedBy,
+		Name:                     h.Name,
+		Logo:                     h.Logo,
+		Description:              h.Description,
+		SignupMethods:            h.SignupMethods,
+		ExtSigninMethods:         h.ExtSigninMethods,
+		RecaptchaMethod:          h.RecaptchaMethod,
+		KycEnable:                h.KycEnable,
+		SigninVerifyEnable:       h.SigninVerifyEnable,
+		InvitationCodeMust:       h.InvitationCodeMust,
+		CreateInvitationCodeWhen: h.CreateInvitationCodeWhen,
+		MaxTypedCouponsPerOrder:  h.MaxTypedCouponsPerOrder,
+		Maintaining:              h.Maintaining,
+		CommitButtonTargets:      h.CommitButtonTargets,
+		Banned:                   h.Banned,
+		BanMessage:               h.BanMessage,
+	})
 }

@@ -11,8 +11,9 @@ import (
 )
 
 type Handler struct {
-	ID                       *string
-	IDs                      []string
+	ID                       *uint32
+	EntID                    *string
+	EntIDs                   []string
 	CreatedBy                *string
 	Name                     *string
 	Logo                     *string
@@ -43,22 +44,41 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
 		}
 		h.ID = id
 		return nil
 	}
 }
 
-func WithCreatedBy(id *string) func(context.Context, *Handler) error {
+func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid entid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.EntID = id
+		return nil
+	}
+}
+
+func WithCreatedBy(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid createdby")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -69,9 +89,12 @@ func WithCreatedBy(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithName(name *string) func(context.Context, *Handler) error {
+func WithName(name *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if name == nil {
+			if must {
+				return fmt.Errorf("invalid name")
+			}
 			return nil
 		}
 		const leastNameLen = 3
@@ -83,9 +106,12 @@ func WithName(name *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithLogo(logo *string) func(context.Context, *Handler) error {
+func WithLogo(logo *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if logo == nil {
+			if must {
+				return fmt.Errorf("invalid logo")
+			}
 			return nil
 		}
 		const leastLogoLen = 5
@@ -97,14 +123,14 @@ func WithLogo(logo *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithDescription(description *string) func(context.Context, *Handler) error {
+func WithDescription(description *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Description = description
 		return nil
 	}
 }
 
-func WithSignupMethods(methods []basetypes.SignMethod) func(context.Context, *Handler) error {
+func WithSignupMethods(methods []basetypes.SignMethod, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		for _, method := range methods {
 			switch method {
@@ -121,7 +147,7 @@ func WithSignupMethods(methods []basetypes.SignMethod) func(context.Context, *Ha
 	}
 }
 
-func WithExtSigninMethods(methods []basetypes.SignMethod) func(context.Context, *Handler) error {
+func WithExtSigninMethods(methods []basetypes.SignMethod, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		for _, method := range methods {
 			switch method {
@@ -146,46 +172,52 @@ func WithExtSigninMethods(methods []basetypes.SignMethod) func(context.Context, 
 	}
 }
 
-func WithRecaptchaMethod(method *basetypes.RecaptchaMethod) func(context.Context, *Handler) error {
+func WithRecaptchaMethod(method *basetypes.RecaptchaMethod, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if method == nil {
+			if must {
+				return fmt.Errorf("invalid recaptchamethod")
+			}
 			return nil
 		}
 		switch *method {
 		case basetypes.RecaptchaMethod_GoogleRecaptchaV3:
 		case basetypes.RecaptchaMethod_NoRecaptcha:
 		default:
-			return fmt.Errorf("invalid recaptcha method")
+			return fmt.Errorf("invalid recaptchamethod")
 		}
 		h.RecaptchaMethod = method
 		return nil
 	}
 }
 
-func WithKycEnable(enable *bool) func(context.Context, *Handler) error {
+func WithKycEnable(enable *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.KycEnable = enable
 		return nil
 	}
 }
 
-func WithSigninVerifyEnable(enable *bool) func(context.Context, *Handler) error {
+func WithSigninVerifyEnable(enable *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.SigninVerifyEnable = enable
 		return nil
 	}
 }
 
-func WithInvitationCodeMust(must *bool) func(context.Context, *Handler) error {
+func WithInvitationCodeMust(must *bool, _must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.InvitationCodeMust = must
 		return nil
 	}
 }
 
-func WithCreateInvitationCodeWhen(when *basetypes.CreateInvitationCodeWhen) func(context.Context, *Handler) error {
+func WithCreateInvitationCodeWhen(when *basetypes.CreateInvitationCodeWhen, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if when == nil {
+			if must {
+				return fmt.Errorf("invalid createinvitationcodewhen")
+			}
 			return nil
 		}
 		switch *when {
@@ -193,28 +225,28 @@ func WithCreateInvitationCodeWhen(when *basetypes.CreateInvitationCodeWhen) func
 		case basetypes.CreateInvitationCodeWhen_SetToKol:
 		case basetypes.CreateInvitationCodeWhen_HasPaidOrder:
 		default:
-			return fmt.Errorf("invalid create invitation code when")
+			return fmt.Errorf("invalid createinvitationcodewhen")
 		}
 		h.CreateInvitationCodeWhen = when
 		return nil
 	}
 }
 
-func WithMaxTypedCouponsPerOrder(max *uint32) func(context.Context, *Handler) error {
+func WithMaxTypedCouponsPerOrder(max *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.MaxTypedCouponsPerOrder = max
 		return nil
 	}
 }
 
-func WithMaintaining(maintaining *bool) func(context.Context, *Handler) error {
+func WithMaintaining(maintaining *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Maintaining = maintaining
 		return nil
 	}
 }
 
-func WithCommitButtonTargets(targets []string) func(context.Context, *Handler) error {
+func WithCommitButtonTargets(targets []string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.CommitButtonTargets = targets
 		return nil
@@ -238,21 +270,21 @@ func WithLimit(limit int32) func(context.Context, *Handler) error {
 	}
 }
 
-func WithIDs(ids []string) func(context.Context, *Handler) error {
+func WithEntIDs(ids []string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.IDs = ids
+		h.EntIDs = ids
 		return nil
 	}
 }
 
-func WithBanned(banned *bool) func(context.Context, *Handler) error {
+func WithBanned(banned *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Banned = banned
 		return nil
 	}
 }
 
-func WithBanMessage(message *string) func(context.Context, *Handler) error {
+func WithBanMessage(message *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.BanMessage = message
 		return nil
