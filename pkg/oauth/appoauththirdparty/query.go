@@ -10,12 +10,9 @@ import (
 )
 
 func (h *Handler) GetOAuthThirdParties(ctx context.Context) ([]*oauththirdpartymwpb.OAuthThirdParty, uint32, error) {
-	return oauththirdpartymwcli.GetOAuthThirdParties(
-		ctx,
-		&oauththirdpartymwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	conds := &oauththirdpartymwpb.Conds{}
+	if h.AppID != nil {
+		conds.AppID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID}
+	}
+	return oauththirdpartymwcli.GetOAuthThirdParties(ctx, conds, h.Offset, h.Limit)
 }

@@ -2,6 +2,7 @@ package oauththirdparty
 
 import (
 	"context"
+	"fmt"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -10,7 +11,8 @@ import (
 )
 
 type Handler struct {
-	ID             *string
+	ID             *uint32
+	EntID          *string
 	ClientName     *basetypes.SignMethod
 	ClientTag      *string
 	ClientOAuthURL *string
@@ -31,55 +33,71 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
 		}
 		h.ID = id
 		return nil
 	}
 }
 
-func WithClientName(clientName *basetypes.SignMethod) func(context.Context, *Handler) error {
+func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid entid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.EntID = id
+		return nil
+	}
+}
+
+func WithClientName(clientName *basetypes.SignMethod, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ClientName = clientName
 		return nil
 	}
 }
 
-func WithClientTag(code *string) func(context.Context, *Handler) error {
+func WithClientTag(code *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ClientTag = code
 		return nil
 	}
 }
 
-func WithClientLogoURL(state *string) func(context.Context, *Handler) error {
+func WithClientLogoURL(state *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ClientLogoURL = state
 		return nil
 	}
 }
 
-func WithClientOAuthURL(state *string) func(context.Context, *Handler) error {
+func WithClientOAuthURL(state *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ClientOAuthURL = state
 		return nil
 	}
 }
 
-func WithResponseType(state *string) func(context.Context, *Handler) error {
+func WithResponseType(state *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ResponseType = state
 		return nil
 	}
 }
 
-func WithScope(state *string) func(context.Context, *Handler) error {
+func WithScope(state *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Scope = state
 		return nil

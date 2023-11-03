@@ -8,14 +8,11 @@ import (
 )
 
 func (h *Handler) CreateOAuthThirdParty(ctx context.Context) (*oauththirdpartymwpb.OAuthThirdParty, error) {
-	return oauththirdpartymwcli.CreateOAuthThirdParty(
-		ctx,
-		&oauththirdpartymwpb.OAuthThirdPartyReq{
-			AppID:        &h.AppID,
-			ThirdPartyID: h.ThirdPartyID,
-			ClientID:     h.ClientID,
-			ClientSecret: h.ClientSecret,
-			CallbackURL:  h.CallbackURL,
-		},
-	)
+	return oauththirdpartymwcli.CreateOAuthThirdParty(ctx, &oauththirdpartymwpb.OAuthThirdPartyReq{
+		AppID:        h.AppID,
+		ThirdPartyID: h.ThirdPartyID,
+		ClientID:     h.ClientID,
+		ClientSecret: h.ClientSecret,
+		CallbackURL:  h.CallbackURL,
+	})
 }
