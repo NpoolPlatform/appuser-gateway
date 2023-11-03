@@ -10,13 +10,12 @@ import (
 )
 
 func (h *Handler) GetUsers(ctx context.Context) ([]*roleusermwpb.User, uint32, error) {
-	return roleusermwcli.GetUsers(
-		ctx,
-		&roleusermwpb.Conds{
-			AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-			RoleID: &basetypes.StringVal{Op: cruder.EQ, Value: h.RoleID},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	conds := &roleusermwpb.Conds{}
+	if h.AppID != nil {
+		conds.AppID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID}
+	}
+	if h.RoleID != nil {
+		conds.RoleID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.RoleID}
+	}
+	return roleusermwcli.GetUsers(ctx, conds, h.Offset, h.Limit)
 }
