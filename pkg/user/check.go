@@ -16,7 +16,7 @@ func (h *Handler) CheckUser(ctx context.Context) error {
 	}
 
 	conds := &usermwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}
 	if h.EmailAddress != nil {
 		conds.EmailAddress = &basetypes.StringVal{Op: cruder.EQ, Value: *h.EmailAddress}
@@ -37,7 +37,7 @@ func (h *Handler) CheckUser(ctx context.Context) error {
 
 func (h *Handler) CheckNewAccount(ctx context.Context) error {
 	conds := &usermwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}
 	if h.NewAccountType == nil {
 		return nil

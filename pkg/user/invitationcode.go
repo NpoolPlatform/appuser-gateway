@@ -32,7 +32,7 @@ func (h *Handler) CheckInvitationCode(ctx context.Context) (*string, error) {
 		return nil, fmt.Errorf("invalid code")
 	}
 
-	if ivc.AppID != h.AppID {
+	if ivc.AppID != *h.AppID {
 		return nil, fmt.Errorf("invalid invitation code")
 	}
 
