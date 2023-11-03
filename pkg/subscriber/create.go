@@ -17,7 +17,7 @@ func (h *Handler) CreateSubscriber(ctx context.Context) (*subscribermwpb.Subscri
 
 	if h.SubscribeAppID != nil {
 		exist, err := appsubscribemwcli.ExistAppSubscribeConds(ctx, &appsubscribemwpb.Conds{
-			AppID:          &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			AppID:          &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			SubscribeAppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.SubscribeAppID},
 		})
 		if err != nil {
@@ -26,13 +26,11 @@ func (h *Handler) CreateSubscriber(ctx context.Context) (*subscribermwpb.Subscri
 		if !exist {
 			return nil, fmt.Errorf("permission denied")
 		}
-		appID = *h.SubscribeAppID
+		appID = h.SubscribeAppID
 	}
 
-	return subscribermwcli.CreateSubscriber(
-		ctx,
-		&subscribermwpb.SubscriberReq{
-			AppID:        &appID,
-			EmailAddress: &h.EmailAddress,
-		})
+	return subscribermwcli.CreateSubscriber(ctx, &subscribermwpb.SubscriberReq{
+		AppID:        appID,
+		EmailAddress: h.EmailAddress,
+	})
 }

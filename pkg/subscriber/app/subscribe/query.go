@@ -10,12 +10,9 @@ import (
 )
 
 func (h *Handler) GetAppSubscribes(ctx context.Context) ([]*appsubscribemwpb.AppSubscribe, uint32, error) {
-	return appsubscribemwcli.GetAppSubscribes(
-		ctx,
-		&appsubscribemwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	conds := &appsubscribemwpb.Conds{}
+	if h.AppID != nil {
+		conds.AppID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID}
+	}
+	return appsubscribemwcli.GetAppSubscribes(ctx, conds, h.Offset, h.Limit)
 }
