@@ -15,7 +15,7 @@ import (
 func (s *Server) GetRoles(ctx context.Context, in *npool.GetRolesRequest) (*npool.GetRolesResponse, error) {
 	handler, err := role1.NewHandler(
 		ctx,
-		role1.WithAppID(in.GetAppID()),
+		role1.WithAppID(&in.AppID, true),
 		role1.WithOffset(in.GetOffset()),
 		role1.WithLimit(in.GetLimit()),
 	)
@@ -47,7 +47,7 @@ func (s *Server) GetRoles(ctx context.Context, in *npool.GetRolesRequest) (*npoo
 func (s *Server) GetAppRoles(ctx context.Context, in *npool.GetAppRolesRequest) (*npool.GetAppRolesResponse, error) {
 	handler, err := role1.NewHandler(
 		ctx,
-		role1.WithAppID(in.GetTargetAppID()),
+		role1.WithAppID(&in.TargetAppID, true),
 		role1.WithOffset(in.GetOffset()),
 		role1.WithLimit(in.GetLimit()),
 	)

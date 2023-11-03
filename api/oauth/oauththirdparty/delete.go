@@ -14,7 +14,8 @@ import (
 func (s *Server) DeleteOAuthThirdParty(ctx context.Context, in *npool.DeleteOAuthThirdPartyRequest) (*npool.DeleteOAuthThirdPartyResponse, error) {
 	handler, err := oauth1.NewHandler(
 		ctx,
-		oauth1.WithID(&in.ID),
+		oauth1.WithID(&in.ID, true),
+		oauth1.WithEntID(&in.EntID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

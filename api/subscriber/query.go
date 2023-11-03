@@ -14,7 +14,7 @@ import (
 func (s *Server) GetSubscriberes(ctx context.Context, in *npool.GetSubscriberesRequest) (*npool.GetSubscriberesResponse, error) {
 	handler, err := subscriber1.NewHandler(
 		ctx,
-		subscriber1.WithAppID(in.GetAppID()),
+		subscriber1.WithAppID(&in.AppID, true),
 		subscriber1.WithOffset(in.GetOffset()),
 		subscriber1.WithLimit(in.GetLimit()),
 	)

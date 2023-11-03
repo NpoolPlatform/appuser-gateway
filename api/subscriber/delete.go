@@ -14,8 +14,8 @@ import (
 func (s *Server) DeleteSubscriber(ctx context.Context, in *npool.DeleteSubscriberRequest) (*npool.DeleteSubscriberResponse, error) {
 	handler, err := subscriber1.NewHandler(
 		ctx,
-		subscriber1.WithAppID(in.GetAppID()),
-		subscriber1.WithEmailAddress(in.GetEmailAddress()),
+		subscriber1.WithAppID(&in.AppID, true),
+		subscriber1.WithEmailAddress(&in.EmailAddress, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

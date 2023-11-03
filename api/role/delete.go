@@ -15,8 +15,9 @@ import (
 func (s *Server) DeleteRole(ctx context.Context, in *npool.DeleteRoleRequest) (*npool.DeleteRoleResponse, error) {
 	handler, err := role1.NewHandler(
 		ctx,
-		role1.WithID(&in.ID),
-		role1.WithAppID(in.GetAppID()),
+		role1.WithID(&in.ID, true),
+		role1.WithEntID(&in.EntID, true),
+		role1.WithAppID(&in.AppID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -45,8 +46,9 @@ func (s *Server) DeleteRole(ctx context.Context, in *npool.DeleteRoleRequest) (*
 func (s *Server) DeleteAppRole(ctx context.Context, in *npool.DeleteAppRoleRequest) (*npool.DeleteAppRoleResponse, error) {
 	handler, err := role1.NewHandler(
 		ctx,
-		role1.WithID(&in.ID),
-		role1.WithAppID(in.GetTargetAppID()),
+		role1.WithID(&in.ID, true),
+		role1.WithEntID(&in.EntID, true),
+		role1.WithAppID(&in.TargetAppID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

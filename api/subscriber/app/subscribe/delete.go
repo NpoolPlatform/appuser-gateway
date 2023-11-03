@@ -14,8 +14,9 @@ import (
 func (s *Server) DeleteAppSubscribe(ctx context.Context, in *npool.DeleteAppSubscribeRequest) (*npool.DeleteAppSubscribeResponse, error) {
 	handler, err := appsubscribe1.NewHandler(
 		ctx,
-		appsubscribe1.WithID(&in.ID),
-		appsubscribe1.WithAppID(in.GetTargetAppID()),
+		appsubscribe1.WithID(&in.ID, true),
+		appsubscribe1.WithEntID(&in.EntID, true),
+		appsubscribe1.WithAppID(&in.TargetAppID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

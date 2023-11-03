@@ -14,12 +14,12 @@ import (
 func (s *Server) CreateOAuthThirdParty(ctx context.Context, in *npool.CreateOAuthThirdPartyRequest) (resp *npool.CreateOAuthThirdPartyResponse, err error) {
 	handler, err := oauth1.NewHandler(
 		ctx,
-		oauth1.WithClientName(&in.ClientName),
-		oauth1.WithClientTag(&in.ClientTag),
-		oauth1.WithClientLogoURL(&in.ClientLogoURL),
-		oauth1.WithClientOAuthURL(&in.ClientOAuthURL),
-		oauth1.WithResponseType(&in.ResponseType),
-		oauth1.WithScope(&in.Scope),
+		oauth1.WithClientName(&in.ClientName, true),
+		oauth1.WithClientTag(&in.ClientTag, true),
+		oauth1.WithClientLogoURL(&in.ClientLogoURL, true),
+		oauth1.WithClientOAuthURL(&in.ClientOAuthURL, true),
+		oauth1.WithResponseType(&in.ResponseType, true),
+		oauth1.WithScope(&in.Scope, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
