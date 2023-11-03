@@ -8,10 +8,8 @@ import (
 )
 
 func (h *Handler) CreateAppSubscribe(ctx context.Context) (*appsubscribemwpb.AppSubscribe, error) {
-	return appsubscribemwcli.CreateAppSubscribe(
-		ctx,
-		&appsubscribemwpb.AppSubscribeReq{
-			AppID:          &h.AppID,
-			SubscribeAppID: &h.SubscribeAppID,
-		})
+	return appsubscribemwcli.CreateAppSubscribe(ctx, &appsubscribemwpb.AppSubscribeReq{
+		AppID:          h.AppID,
+		SubscribeAppID: h.SubscribeAppID,
+	})
 }
