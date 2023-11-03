@@ -10,12 +10,7 @@ import (
 )
 
 func (h *Handler) GetAuthHistories(ctx context.Context) ([]*historymwpb.History, uint32, error) {
-	return historymwcli.GetHistories(
-		ctx,
-		&historymwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	return historymwcli.GetHistories(ctx, &historymwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+	}, h.Offset, h.Limit)
 }
