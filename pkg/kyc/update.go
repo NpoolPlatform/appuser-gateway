@@ -70,15 +70,13 @@ func (h *updateHandler) withUpdateKyc(dispose *dtmcli.SagaDispose) {
 }
 
 func (h *Handler) UpdateKyc(ctx context.Context) (*npool.Kyc, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
 	info, err := h.GetKyc(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	h.AppID = &info.AppID
+	h.ID = &info.ID
 
 	handler := &updateHandler{
 		Handler: h,

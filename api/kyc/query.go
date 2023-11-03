@@ -15,8 +15,8 @@ import (
 func (s *Server) GetKyc(ctx context.Context, in *npool.GetKycRequest) (resp *npool.GetKycResponse, err error) {
 	handler, err := kyc1.NewHandler(
 		ctx,
-		kyc1.WithAppID(in.GetAppID()),
-		kyc1.WithUserID(in.GetUserID()),
+		kyc1.WithAppID(&in.AppID, true),
+		kyc1.WithUserID(&in.UserID, true),
 		kyc1.WithOffset(0),
 		kyc1.WithLimit(1),
 	)
@@ -55,7 +55,7 @@ func (s *Server) GetKyc(ctx context.Context, in *npool.GetKycRequest) (resp *npo
 func (s *Server) GetKycs(ctx context.Context, in *npool.GetKycsRequest) (resp *npool.GetKycsResponse, err error) {
 	handler, err := kyc1.NewHandler(
 		ctx,
-		kyc1.WithAppID(in.GetAppID()),
+		kyc1.WithAppID(&in.AppID, true),
 		kyc1.WithOffset(in.GetOffset()),
 		kyc1.WithLimit(in.GetLimit()),
 	)
@@ -87,7 +87,7 @@ func (s *Server) GetKycs(ctx context.Context, in *npool.GetKycsRequest) (resp *n
 func (s *Server) GetAppKycs(ctx context.Context, in *npool.GetAppKycsRequest) (resp *npool.GetAppKycsResponse, err error) {
 	handler, err := kyc1.NewHandler(
 		ctx,
-		kyc1.WithAppID(in.GetTargetAppID()),
+		kyc1.WithAppID(&in.TargetAppID, true),
 		kyc1.WithOffset(in.GetOffset()),
 		kyc1.WithLimit(in.GetLimit()),
 	)

@@ -15,11 +15,12 @@ import (
 func (s *Server) UpdateRole(ctx context.Context, in *npool.UpdateRoleRequest) (*npool.UpdateRoleResponse, error) {
 	handler, err := role1.NewHandler(
 		ctx,
-		role1.WithID(&in.ID),
-		role1.WithAppID(in.GetAppID()),
-		role1.WithRole(in.RoleName),
-		role1.WithDescription(in.Description),
-		role1.WithDefault(in.Default),
+		role1.WithID(&in.ID, true),
+		role1.WithEntID(&in.EntID, true),
+		role1.WithAppID(&in.AppID, true),
+		role1.WithRole(in.RoleName, false),
+		role1.WithDescription(in.Description, false),
+		role1.WithDefault(in.Default, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -48,11 +49,12 @@ func (s *Server) UpdateRole(ctx context.Context, in *npool.UpdateRoleRequest) (*
 func (s *Server) UpdateAppRole(ctx context.Context, in *npool.UpdateAppRoleRequest) (*npool.UpdateAppRoleResponse, error) {
 	handler, err := role1.NewHandler(
 		ctx,
-		role1.WithID(&in.ID),
-		role1.WithAppID(in.GetTargetAppID()),
-		role1.WithRole(in.RoleName),
-		role1.WithDescription(in.Description),
-		role1.WithDefault(in.Default),
+		role1.WithID(&in.ID, true),
+		role1.WithEntID(&in.EntID, true),
+		role1.WithAppID(&in.TargetAppID, true),
+		role1.WithRole(in.RoleName, false),
+		role1.WithDescription(in.Description, false),
+		role1.WithDefault(in.Default, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

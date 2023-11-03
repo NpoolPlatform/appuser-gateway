@@ -14,11 +14,11 @@ import (
 func (s *Server) CreateOAuthThirdParty(ctx context.Context, in *npool.CreateOAuthThirdPartyRequest) (resp *npool.CreateOAuthThirdPartyResponse, err error) {
 	handler, err := oauth1.NewHandler(
 		ctx,
-		oauth1.WithAppID(in.GetTargetAppID()),
-		oauth1.WithClientID(&in.ClientID),
-		oauth1.WithClientSecret(&in.ClientSecret),
-		oauth1.WithCallbackURL(&in.CallbackURL),
-		oauth1.WithThirdPartyID(&in.ThirdPartyID),
+		oauth1.WithAppID(&in.TargetAppID, true),
+		oauth1.WithClientID(&in.ClientID, true),
+		oauth1.WithClientSecret(&in.ClientSecret, true),
+		oauth1.WithCallbackURL(&in.CallbackURL, true),
+		oauth1.WithThirdPartyID(&in.ThirdPartyID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

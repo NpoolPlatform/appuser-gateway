@@ -155,6 +155,7 @@ func WithImage(imgType *basetypes.KycImageType, img *string, must bool) func(con
 			if must {
 				return fmt.Errorf("invalid imagetype")
 			}
+			h.ImageType = imgType
 			return nil
 		}
 		if img != nil && *img == "" {

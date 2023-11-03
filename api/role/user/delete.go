@@ -15,9 +15,10 @@ import (
 func (s *Server) DeleteUser(ctx context.Context, in *npool.DeleteUserRequest) (*npool.DeleteUserResponse, error) {
 	handler, err := roleuser1.NewHandler(
 		ctx,
-		roleuser1.WithID(&in.ID),
-		roleuser1.WithAppID(in.GetAppID()),
-		roleuser1.WithUserID(in.GetTargetUserID()),
+		roleuser1.WithID(&in.ID, true),
+		roleuser1.WithEntID(&in.TargetUserID, true),
+		roleuser1.WithAppID(&in.AppID, true),
+		roleuser1.WithUserID(&in.TargetUserID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -46,9 +47,10 @@ func (s *Server) DeleteUser(ctx context.Context, in *npool.DeleteUserRequest) (*
 func (s *Server) DeleteAppUser(ctx context.Context, in *npool.DeleteAppUserRequest) (*npool.DeleteAppUserResponse, error) {
 	handler, err := roleuser1.NewHandler(
 		ctx,
-		roleuser1.WithID(&in.ID),
-		roleuser1.WithAppID(in.GetTargetAppID()),
-		roleuser1.WithUserID(in.GetTargetUserID()),
+		roleuser1.WithID(&in.ID, true),
+		roleuser1.WithEntID(&in.TargetUserID, true),
+		roleuser1.WithAppID(&in.TargetAppID, true),
+		roleuser1.WithUserID(&in.TargetUserID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

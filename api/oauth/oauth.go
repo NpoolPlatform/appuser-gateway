@@ -13,8 +13,8 @@ import (
 func (s *Server) GetOAuthLoginURL(ctx context.Context, in *npool.GetOAuthLoginURLRequest) (*npool.GetOAuthLoginURLResponse, error) {
 	handler, err := oauth1.NewHandler(
 		ctx,
-		oauth1.WithAppID(in.AppID),
-		oauth1.WithClientName(&in.ClientName),
+		oauth1.WithAppID(&in.AppID, true),
+		oauth1.WithClientName(&in.ClientName, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -43,9 +43,9 @@ func (s *Server) GetOAuthLoginURL(ctx context.Context, in *npool.GetOAuthLoginUR
 func (s *Server) OAuthLogin(ctx context.Context, in *npool.OAuthLoginRequest) (*npool.OAuthLoginResponse, error) {
 	handler, err := oauth1.NewHandler(
 		ctx,
-		oauth1.WithAppID(in.AppID),
-		oauth1.WithCode(&in.Code),
-		oauth1.WithState(&in.State),
+		oauth1.WithAppID(&in.AppID, true),
+		oauth1.WithCode(&in.Code, true),
+		oauth1.WithState(&in.State, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

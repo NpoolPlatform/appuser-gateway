@@ -15,9 +15,9 @@ import (
 func (s *Server) UploadKycImage(ctx context.Context, in *npool.UploadKycImageRequest) (resp *npool.UploadKycImageResponse, err error) {
 	handler, err := kyc1.NewHandler(
 		ctx,
-		kyc1.WithAppID(in.GetAppID()),
-		kyc1.WithUserID(in.GetUserID()),
-		kyc1.WithImage(&in.ImageType, &in.ImageBase64),
+		kyc1.WithAppID(&in.AppID, true),
+		kyc1.WithUserID(&in.UserID, true),
+		kyc1.WithImage(&in.ImageType, &in.ImageBase64, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -46,9 +46,9 @@ func (s *Server) UploadKycImage(ctx context.Context, in *npool.UploadKycImageReq
 func (s *Server) GetKycImage(ctx context.Context, in *npool.GetKycImageRequest) (resp *npool.GetKycImageResponse, err error) {
 	handler, err := kyc1.NewHandler(
 		ctx,
-		kyc1.WithAppID(in.GetAppID()),
-		kyc1.WithUserID(in.GetUserID()),
-		kyc1.WithImage(&in.ImageType, nil),
+		kyc1.WithAppID(&in.AppID, true),
+		kyc1.WithUserID(&in.UserID, true),
+		kyc1.WithImage(&in.ImageType, nil, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -77,9 +77,9 @@ func (s *Server) GetKycImage(ctx context.Context, in *npool.GetKycImageRequest) 
 func (s *Server) GetUserKycImage(ctx context.Context, in *npool.GetUserKycImageRequest) (resp *npool.GetUserKycImageResponse, err error) {
 	handler, err := kyc1.NewHandler(
 		ctx,
-		kyc1.WithAppID(in.GetAppID()),
-		kyc1.WithUserID(in.GetTargetUserID()),
-		kyc1.WithImage(&in.ImageType, nil),
+		kyc1.WithAppID(&in.AppID, true),
+		kyc1.WithUserID(&in.TargetUserID, true),
+		kyc1.WithImage(&in.ImageType, nil, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -105,16 +105,12 @@ func (s *Server) GetUserKycImage(ctx context.Context, in *npool.GetUserKycImageR
 	}, nil
 }
 
-func (s *Server) GetAppUserKycImage(
-	ctx context.Context, in *npool.GetAppUserKycImageRequest,
-) (
-	resp *npool.GetAppUserKycImageResponse, err error,
-) {
+func (s *Server) GetAppUserKycImage(ctx context.Context, in *npool.GetAppUserKycImageRequest) (resp *npool.GetAppUserKycImageResponse, err error) {
 	handler, err := kyc1.NewHandler(
 		ctx,
-		kyc1.WithAppID(in.GetTargetAppID()),
-		kyc1.WithUserID(in.GetTargetUserID()),
-		kyc1.WithImage(&in.ImageType, nil),
+		kyc1.WithAppID(&in.TargetAppID, true),
+		kyc1.WithUserID(&in.TargetUserID, true),
+		kyc1.WithImage(&in.ImageType, nil, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -15,7 +15,7 @@ import (
 func (s *Server) GetOAuthThirdParties(ctx context.Context, in *npool.GetOAuthThirdPartiesRequest) (resp *npool.GetOAuthThirdPartiesResponse, err error) {
 	handler, err := oauth1.NewHandler(
 		ctx,
-		oauth1.WithAppID(in.GetAppID()),
+		oauth1.WithAppID(&in.AppID, true),
 		oauth1.WithOffset(in.GetOffset()),
 		oauth1.WithLimit(in.GetLimit()),
 	)
@@ -57,7 +57,7 @@ func (s *Server) GetOAuthThirdParties(ctx context.Context, in *npool.GetOAuthThi
 func (s *Server) GetAppOAuthThirdParties(ctx context.Context, in *npool.GetAppOAuthThirdPartiesRequest) (resp *npool.GetAppOAuthThirdPartiesResponse, err error) {
 	handler, err := oauth1.NewHandler(
 		ctx,
-		oauth1.WithAppID(in.GetTargetAppID()),
+		oauth1.WithAppID(&in.TargetAppID, true),
 		oauth1.WithOffset(in.GetOffset()),
 		oauth1.WithLimit(in.GetLimit()),
 	)

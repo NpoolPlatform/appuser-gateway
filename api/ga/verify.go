@@ -11,16 +11,12 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) VerifyGoogleAuth(
-	ctx context.Context, in *npool.VerifyGoogleAuthRequest,
-) (
-	*npool.VerifyGoogleAuthResponse, error,
-) {
+func (s *Server) VerifyGoogleAuth(ctx context.Context, in *npool.VerifyGoogleAuthRequest) (*npool.VerifyGoogleAuthResponse, error) {
 	handler, err := ga1.NewHandler(
 		ctx,
-		ga1.WithAppID(in.GetAppID()),
-		ga1.WithUserID(in.GetUserID()),
-		ga1.WithCode(in.GetCode()),
+		ga1.WithAppID(&in.AppID, true),
+		ga1.WithUserID(&in.UserID, true),
+		ga1.WithCode(&in.Code, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
