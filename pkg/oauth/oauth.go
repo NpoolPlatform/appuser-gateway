@@ -40,13 +40,10 @@ type oauthHandler struct {
 }
 
 func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
-	info, err := oauthmwcli.GetOAuthThirdPartyOnly(
-		ctx,
-		&oauthmwpb.Conds{
-			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-			ClientName: &basetypes.Int32Val{Op: cruder.EQ, Value: int32(*h.ClientName)},
-		},
-	)
+	info, err := oauthmwcli.GetOAuthThirdPartyOnly(ctx, &oauthmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		ClientName: &basetypes.Int32Val{Op: cruder.EQ, Value: int32(*h.ClientName)},
+	})
 	if err != nil {
 		return "", err
 	}
@@ -56,7 +53,7 @@ func (h *Handler) GetOAuthURL(ctx context.Context) (string, error) {
 
 	clientNameStr := h.ClientName.String()
 	state := fmt.Sprintf("%v-%v", clientNameStr, uuid.NewString())
-	stateKey := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixOAuthLogin, h.AppID, state)
+	stateKey := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixOAuthLogin, *h.AppID, state)
 	const expireTime = 5 * time.Minute
 	cli, err := redis2.GetClient()
 	if err != nil {
@@ -92,7 +89,7 @@ func (h *oauthHandler) validate(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	stateKey := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixOAuthLogin, h.AppID, *h.State)
+	stateKey := fmt.Sprintf("%v:%v:%v", basetypes.Prefix_PrefixOAuthLogin, *h.AppID, *h.State)
 	clientNameStr, err := cli.Get(ctx, stateKey).Result()
 	if err != nil {
 		return fmt.Errorf("invalid state")
@@ -107,7 +104,7 @@ func (h *oauthHandler) getThirdPartyConf(ctx context.Context) error {
 	info, err := oauthmwcli.GetOAuthThirdPartyOnly(
 		ctx,
 		&oauthmwpb.Conds{
-			AppID:         &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			AppID:         &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			ClientName:    &basetypes.Int32Val{Op: cruder.EQ, Value: int32(*h.ClientName)},
 			DecryptSecret: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 		},
@@ -146,7 +143,7 @@ func (h *oauthHandler) getUserInfo(ctx context.Context) (*usermwpb.User, error) 
 	info, err := usermwcli.GetUserOnly(
 		ctx,
 		&usermwpb.Conds{
-			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: h.thirdUserInfo.ID},
 			ThirdPartyID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.oauthConf.ThirdPartyID},
 		},
@@ -174,9 +171,10 @@ func (h *oauthHandler) createUserInfo(ctx context.Context) (*usermwpb.User, erro
 	passwordHash := encryptPassword(passwordStr)
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(h.AppID),
-		user1.WithPasswordHash(&passwordHash),
-		user1.WithAccount(&h.thirdUserInfo.ID, &h.oauthConf.ClientName),
+		user1.WithAppID(h.AppID, true),
+		user1.WithPasswordHash(&passwordHash, true),
+		user1.WithAccount(&h.thirdUserInfo.ID, true),
+		user1.WithAccountType(&h.oauthConf.ClientName, true),
 	)
 
 	if err != nil {
@@ -189,7 +187,7 @@ func (h *oauthHandler) createUserInfo(ctx context.Context) (*usermwpb.User, erro
 	}
 
 	role, err := rolemwcli.GetRoleOnly(ctx, &rolemwpb.Conds{
-		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		Default: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 	})
 	if err != nil {
@@ -199,19 +197,16 @@ func (h *oauthHandler) createUserInfo(ctx context.Context) (*usermwpb.User, erro
 		return nil, fmt.Errorf("invalid default role")
 	}
 
-	info, err := usermwcli.CreateUser(
-		ctx,
-		&usermwpb.UserReq{
-			ID:                 handler.UserID,
-			AppID:              &h.AppID,
-			PasswordHash:       handler.PasswordHash,
-			RoleIDs:            []string{role.ID},
-			ThirdPartyID:       &h.oauthConf.ThirdPartyID,
-			ThirdPartyUserID:   &h.thirdUserInfo.ID,
-			ThirdPartyUsername: &h.thirdUserInfo.Login,
-			ThirdPartyAvatar:   &h.thirdUserInfo.AvatarURL,
-		},
-	)
+	info, err := usermwcli.CreateUser(ctx, &usermwpb.UserReq{
+		EntID:              handler.UserID,
+		AppID:              h.AppID,
+		PasswordHash:       handler.PasswordHash,
+		RoleIDs:            []string{role.EntID},
+		ThirdPartyID:       &h.oauthConf.ThirdPartyID,
+		ThirdPartyUserID:   &h.thirdUserInfo.ID,
+		ThirdPartyUsername: &h.thirdUserInfo.Login,
+		ThirdPartyAvatar:   &h.thirdUserInfo.AvatarURL,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -222,10 +217,11 @@ func (h *oauthHandler) createUserInfo(ctx context.Context) (*usermwpb.User, erro
 func (h *oauthHandler) login(ctx context.Context) (info *usermwpb.User, err error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(h.AppID),
-		user1.WithUserID(&h.userInfo.ID),
-		user1.WithAccount(&h.thirdUserInfo.ID, h.ClientName),
-		user1.WithThirdPartyID(&h.oauthConf.ThirdPartyID),
+		user1.WithAppID(h.AppID, true),
+		user1.WithUserID(&h.userInfo.EntID, true),
+		user1.WithAccount(&h.thirdUserInfo.ID, true),
+		user1.WithAccountType(h.ClientName, true),
+		user1.WithThirdPartyID(&h.oauthConf.ThirdPartyID, true),
 	)
 	if err != nil {
 		return nil, err
