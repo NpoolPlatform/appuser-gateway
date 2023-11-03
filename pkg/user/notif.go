@@ -46,7 +46,7 @@ func (h *notifHandler) generateNotif(ctx context.Context) {
 
 	logger.Sugar().Infof(
 		"generate notif",
-		"AppID", h.AppID,
+		"AppID", *h.AppID,
 		"UserID", *h.UserID,
 		"EventType", h.UsedFor,
 	)
@@ -60,8 +60,8 @@ func (h *notifHandler) generateNotif(ctx context.Context) {
 	if err != nil {
 		logger.Sugar().Errorf(
 			"send notif error %v", err,
-			"AppID", h.AppID,
-			"UserID", h.UserID,
+			"AppID", *h.AppID,
+			"UserID", *h.UserID,
 		)
 	}
 }

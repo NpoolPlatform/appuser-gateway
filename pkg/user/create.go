@@ -25,7 +25,7 @@ func (h *Handler) CreateUser(ctx context.Context) (*usermwpb.User, error) {
 	}
 
 	role, err := rolemwcli.GetRoleOnly(ctx, &rolemwpb.Conds{
-		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		Default: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 	})
 	if err != nil {
@@ -35,15 +35,12 @@ func (h *Handler) CreateUser(ctx context.Context) (*usermwpb.User, error) {
 		return nil, fmt.Errorf("invalid default role")
 	}
 
-	return usermwcli.CreateUser(
-		ctx,
-		&usermwpb.UserReq{
-			ID:           h.UserID,
-			AppID:        &h.AppID,
-			EmailAddress: h.EmailAddress,
-			PhoneNO:      h.PhoneNO,
-			PasswordHash: h.PasswordHash,
-			RoleIDs:      []string{role.ID},
-		},
-	)
+	return usermwcli.CreateUser(ctx, &usermwpb.UserReq{
+		EntID:        h.UserID,
+		AppID:        h.AppID,
+		EmailAddress: h.EmailAddress,
+		PhoneNO:      h.PhoneNO,
+		PasswordHash: h.PasswordHash,
+		RoleIDs:      []string{role.EntID},
+	})
 }

@@ -23,10 +23,10 @@ type queryHandler struct {
 func (h *queryHandler) getInvitationCodes(ctx context.Context) error {
 	ids := []string{}
 	for _, info := range h.infos {
-		ids = append(ids, info.ID)
+		ids = append(ids, info.EntID)
 	}
 	codes, _, err := ivcodemwcli.GetInvitationCodes(ctx, &ivcodemwpb.Conds{
-		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, int32(0), int32(len(ids)))
 	if err != nil {
@@ -37,7 +37,7 @@ func (h *queryHandler) getInvitationCodes(ctx context.Context) error {
 		userCode[code.UserID] = code
 	}
 	for _, info := range h.infos {
-		code, ok := userCode[info.ID]
+		code, ok := userCode[info.EntID]
 		if ok {
 			info.InvitationCode = &code.InvitationCode
 		}
@@ -52,7 +52,7 @@ func (h *Handler) GetUsers(ctx context.Context) ([]*usermwpb.User, uint32, error
 	infos, total, err := usermwcli.GetUsers(
 		ctx,
 		&usermwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		},
 		h.Offset,
 		h.Limit,
@@ -72,15 +72,15 @@ func (h *Handler) GetUser(ctx context.Context) (*usermwpb.User, error) {
 	if h.UserID == nil {
 		return nil, fmt.Errorf("invalid userid")
 	}
-	info, err := usermwcli.GetUser(ctx, h.AppID, *h.UserID)
+	info, err := usermwcli.GetUser(ctx, *h.AppID, *h.UserID)
 	if err != nil {
 		return nil, err
 	}
 	if info == nil {
-		return nil, fmt.Errorf("query: invalid user app_id=%v, user_id=%v", h.AppID, *h.UserID)
+		return nil, fmt.Errorf("query: invalid user app_id=%v, user_id=%v", *h.AppID, *h.UserID)
 	}
 	code, _ := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
-		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
 	})
 	if code != nil {

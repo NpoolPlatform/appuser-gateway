@@ -43,7 +43,7 @@ func (h *signupHandler) withCreateInvitationCode(dispose *dtmcli.SagaDispose) {
 	id := uuid.NewString()
 	req := &ivcodemwpb.InvitationCodeReq{
 		ID:     &id,
-		AppID:  &h.AppID,
+		AppID:  h.AppID,
 		UserID: h.UserID,
 	}
 
@@ -59,12 +59,12 @@ func (h *signupHandler) withCreateInvitationCode(dispose *dtmcli.SagaDispose) {
 
 func (h *signupHandler) withCreateUser(dispose *dtmcli.SagaDispose) {
 	req := &usermwpb.UserReq{
-		ID:           h.UserID,
-		AppID:        &h.AppID,
+		EntID:        h.UserID,
+		AppID:        h.AppID,
 		EmailAddress: h.EmailAddress,
 		PhoneNO:      h.PhoneNO,
 		PasswordHash: h.PasswordHash,
-		RoleIDs:      []string{h.defaultRole.ID},
+		RoleIDs:      []string{h.defaultRole.EntID},
 	}
 
 	dispose.Add(
@@ -85,7 +85,7 @@ func (h *signupHandler) withCreateRegistrationInvitation(dispose *dtmcli.SagaDis
 	id := uuid.NewString()
 	req := &registrationmwpb.RegistrationReq{
 		ID:        &id,
-		AppID:     &h.AppID,
+		AppID:     h.AppID,
 		InviterID: h.inviterID,
 		InviteeID: h.UserID,
 	}
@@ -102,7 +102,7 @@ func (h *signupHandler) withCreateRegistrationInvitation(dispose *dtmcli.SagaDis
 
 func (h *signupHandler) getDefaultRole(ctx context.Context) error {
 	role, err := rolemwcli.GetRoleOnly(ctx, &rolemwpb.Conds{
-		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		Default: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 	})
 	if err != nil {
@@ -118,7 +118,7 @@ func (h *signupHandler) getDefaultRole(ctx context.Context) error {
 func (h *signupHandler) rewardSignup() {
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
 		req := &eventmwpb.RewardEventRequest{
-			AppID:       h.AppID,
+			AppID:       *h.AppID,
 			UserID:      *h.UserID,
 			EventType:   basetypes.UsedFor_Signup,
 			Consecutive: 1,
@@ -133,7 +133,7 @@ func (h *signupHandler) rewardSignup() {
 	}); err != nil {
 		logger.Sugar().Errorw(
 			"rewardSignup",
-			"AppID", h.AppID,
+			"AppID", *h.AppID,
 			"UserID", h.UserID,
 			"Account", h.Account,
 			"AccountType", h.AccountType,
@@ -155,9 +155,9 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 	key := fmt.Sprintf(
 		"%v:%v:%v:%v",
 		basetypes.Prefix_PrefixUserAccount,
-		h.AppID,
+		*h.AppID,
 		basetypes.UsedFor_Signup,
-		h.Account,
+		*h.Account,
 	)
 	if err := redis2.TryLock(key, 0); err != nil {
 		return nil, err

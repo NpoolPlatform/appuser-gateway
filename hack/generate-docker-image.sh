@@ -13,28 +13,30 @@ OS="${PLATFORM%/*}"
 ARCH=$(basename "$PLATFORM")
 
 if git_status=$(git status --porcelain --untracked=no 2>/dev/null) && [[ -z "${git_status}" ]]; then
-    git_tree_state=clean
+  git_tree_state=clean
 fi
 
 set +e
-version=`git describe --tags --abbrev=0`
+## Get tag we're on
+# version=`git describe --tags --abbrev=0`
+version=`git describe --exact-match --tags $(git log -n1 --pretty='%h')`
 if [ ! $? -eq 0 ]; then
+  branch=`git rev-parse --abbrev-ref HEAD | grep -v ^HEAD$ || git rev-parse HEAD`
+  if [ "x$branch" == "xmaster" ]; then
     version=latest
+  else
+    version=`echo $branch | awk -F '/' '{print $2}'`
+  fi
+  ## Do we need commit ?
+  # commit=`git rev-parse HEAD`
+  # version=$version-$commit
 fi
 set -e
 
 service_name=$1
-## For development environment, pass the second variable
-if [ "xdevelopment" == "x$2" ]; then
-  version=latest
-elif [ "xother" != "x$2" ]; then
-  version=$2
-fi
-
 registry=uhub.service.ucloud.cn
-
-if [ "x" != $3 ]; then
-  registry=$3
+if [ "x" != $2 ]; then
+  registry=$2
 fi
 
 echo "Generate docker image for $PLATFORM -- $version"
@@ -53,7 +55,7 @@ token_access_secret=`cat /proc/sys/kernel/random/uuid`
 
 user=`whoami`
 if [ "$user" == "root" ]; then
-    docker build --build-arg token_access_secret=${token_access_secret} -t $registry/entropypool/$service_name:$version .
+  docker build --build-arg token_access_secret=${token_access_secret} -t $registry/entropypool/$service_name:$version .
 else
-    sudo docker build --build-arg token_access_secret=${token_access_secret} -t $registry/entropypool/$service_name:$version .
+  sudo docker build --build-arg token_access_secret=${token_access_secret} -t $registry/entropypool/$service_name:$version .
 fi

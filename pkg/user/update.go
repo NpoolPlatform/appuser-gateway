@@ -43,7 +43,7 @@ func (h *updateHandler) verifyOldPasswordHash(ctx context.Context) error {
 
 	if _, err := usermwcli.VerifyUser(
 		ctx,
-		h.AppID,
+		*h.AppID,
 		*h.UserID,
 		*h.OldPasswordHash,
 	); err != nil {
@@ -54,12 +54,12 @@ func (h *updateHandler) verifyOldPasswordHash(ctx context.Context) error {
 }
 
 func (h *updateHandler) getUser(ctx context.Context) error {
-	info, err := usermwcli.GetUser(ctx, h.AppID, *h.UserID)
+	info, err := usermwcli.GetUser(ctx, *h.AppID, *h.UserID)
 	if err != nil {
 		return err
 	}
 	if info == nil {
-		return fmt.Errorf("update: invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
+		return fmt.Errorf("update: invalid user: app_id=%v, user_id=%v", *h.AppID, *h.UserID)
 	}
 
 	h.User = info
@@ -109,17 +109,14 @@ func (h *updateHandler) verifyOldAccountCode(ctx context.Context) error {
 	} else if h.Account != nil {
 		account = *h.Account
 	}
-	return usercodemwcli.VerifyUserCode(
-		ctx,
-		&usercodemwpb.VerifyUserCodeRequest{
-			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-			AppID:       h.AppID,
-			Account:     account,
-			AccountType: *h.AccountType,
-			UsedFor:     basetypes.UsedFor_Update,
-			Code:        *h.VerificationCode,
-		},
-	)
+	return usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+		AppID:       *h.AppID,
+		Account:     account,
+		AccountType: *h.AccountType,
+		UsedFor:     basetypes.UsedFor_Update,
+		Code:        *h.VerificationCode,
+	})
 }
 
 func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
@@ -138,23 +135,20 @@ func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
 	} else if h.NewAccount != nil {
 		account = *h.NewAccount
 	}
-	return usercodemwcli.VerifyUserCode(
-		ctx,
-		&usercodemwpb.VerifyUserCodeRequest{
-			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-			AppID:       h.AppID,
-			Account:     account,
-			AccountType: *h.NewAccountType,
-			UsedFor:     basetypes.UsedFor_Update,
-			Code:        *h.NewVerificationCode,
-		},
-	)
+	return usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+		AppID:       *h.AppID,
+		Account:     account,
+		AccountType: *h.NewAccountType,
+		UsedFor:     basetypes.UsedFor_Update,
+		Code:        *h.NewVerificationCode,
+	})
 }
 
 func (h *updateHandler) updateUser(ctx context.Context) error {
 	req := &usermwpb.UserReq{
-		ID:                 h.UserID,
-		AppID:              &h.AppID,
+		EntID:              h.UserID,
+		AppID:              h.AppID,
 		Username:           h.Username,
 		AddressFields:      h.AddressFields,
 		Gender:             h.Gender,
@@ -254,11 +248,8 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 }
 
 func (h *updateHandler) getAccountUser(ctx context.Context) error {
-	if h.AccountType == nil || h.Account == nil {
-		return fmt.Errorf("invlaid account")
-	}
 	conds := &usermwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}
 	switch *h.AccountType {
 	case basetypes.SignMethod_Email:
@@ -277,7 +268,7 @@ func (h *updateHandler) getAccountUser(ctx context.Context) error {
 		return fmt.Errorf("invalid user: conds=%v", conds)
 	}
 
-	h.UserID = &info.ID
+	h.UserID = &info.EntID
 	h.User = info
 
 	return nil
@@ -290,16 +281,14 @@ func (h *updateHandler) verifyAccountCode(ctx context.Context) error {
 	if h.VerificationCode == nil {
 		return fmt.Errorf("invalid verification code")
 	}
-	return usercodemwcli.VerifyUserCode(
-		ctx,
-		&usercodemwpb.VerifyUserCodeRequest{
-			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-			AppID:       h.AppID,
-			Account:     *h.Account,
-			AccountType: *h.AccountType,
-			UsedFor:     basetypes.UsedFor_Update,
-			Code:        *h.VerificationCode,
-		})
+	return usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+		AppID:       *h.AppID,
+		Account:     *h.Account,
+		AccountType: *h.AccountType,
+		UsedFor:     basetypes.UsedFor_Update,
+		Code:        *h.VerificationCode,
+	})
 }
 
 func (h *Handler) ResetUser(ctx context.Context) error {
@@ -313,14 +302,11 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	if err := handler.verifyAccountCode(ctx); err != nil {
 		return err
 	}
-	if _, err := usermwcli.UpdateUser(
-		ctx,
-		&usermwpb.UserReq{
-			ID:           h.UserID,
-			AppID:        &h.AppID,
-			PasswordHash: h.PasswordHash,
-		},
-	); err != nil {
+	if _, err := usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
+		EntID:        h.UserID,
+		AppID:        h.AppID,
+		PasswordHash: h.PasswordHash,
+	}); err != nil {
 		return err
 	}
 
@@ -339,7 +325,7 @@ func (h *updateHandler) verifyRegistrationInvitation(ctx context.Context) error 
 	}
 
 	reg, err := regmwcli.GetRegistrationOnly(ctx, &regmwpb.Conds{
-		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		InviterID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
 		InviteeID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
 	})
@@ -354,7 +340,7 @@ func (h *updateHandler) verifyRegistrationInvitation(ctx context.Context) error 
 
 func (h *updateHandler) tryCreateInvitationCode(ctx context.Context) error {
 	info, err := ivcodemwcli.GetInvitationCodeOnly(ctx, &ivcodemwpb.Conds{
-		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
 	},
 	)
@@ -365,13 +351,10 @@ func (h *updateHandler) tryCreateInvitationCode(ctx context.Context) error {
 		return nil
 	}
 
-	_, err = ivcodemwcli.CreateInvitationCode(
-		ctx,
-		&ivcodemwpb.InvitationCodeReq{
-			AppID:  &h.AppID,
-			UserID: h.TargetUserID,
-		},
-	)
+	_, err = ivcodemwcli.CreateInvitationCode(ctx, &ivcodemwpb.InvitationCodeReq{
+		AppID:  h.AppID,
+		UserID: h.TargetUserID,
+	})
 	if err != nil {
 		return err
 	}
@@ -385,7 +368,7 @@ func (h *updateHandler) sendKolNotification(ctx context.Context) {
 	}
 
 	lang, err := applangmwcli.GetLangOnly(ctx, &applangmwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		Main:  &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 	})
 	if err != nil {
@@ -398,7 +381,7 @@ func (h *updateHandler) sendKolNotification(ctx context.Context) {
 	}
 
 	info, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
-		AppID:     h.AppID,
+		AppID:     *h.AppID,
 		LangID:    lang.LangID,
 		Channel:   basetypes.NotifChannel_ChannelEmail,
 		EventType: basetypes.UsedFor_CreateInvitationCode,
@@ -427,10 +410,6 @@ func (h *updateHandler) sendKolNotification(ctx context.Context) {
 }
 
 func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
-	if h.Kol == nil {
-		return nil, fmt.Errorf("invalid kol")
-	}
-
 	handler := &updateHandler{
 		Handler: h,
 	}
@@ -444,8 +423,8 @@ func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 		}
 	}
 	req := &usermwpb.UserReq{
-		ID:    h.TargetUserID,
-		AppID: &h.AppID,
+		EntID: h.TargetUserID,
+		AppID: h.AppID,
 		Kol:   h.Kol,
 	}
 	info, err := usermwcli.UpdateUser(ctx, req)

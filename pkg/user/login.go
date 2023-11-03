@@ -31,7 +31,7 @@ func (h *loginHandler) notifyLogin(loginType basetypes.LoginType) {
 
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
 		req := &loginhispb.HistoryReq{
-			AppID:     &h.AppID,
+			AppID:     h.AppID,
 			UserID:    h.UserID,
 			ClientIP:  &clientIP,
 			UserAgent: &h.Metadata.UserAgent,
@@ -47,7 +47,7 @@ func (h *loginHandler) notifyLogin(loginType basetypes.LoginType) {
 	}); err != nil {
 		logger.Sugar().Errorw(
 			"notifyLogin",
-			"AppID", h.AppID,
+			"AppID", *h.AppID,
 			"UserID", h.UserID,
 			"Account", h.Account,
 			"AccountType", h.AccountType,
@@ -75,7 +75,7 @@ func (h *loginHandler) verifyAccount(ctx context.Context) error {
 	}
 	info, err := usermwcli.VerifyAccount(
 		ctx,
-		h.AppID,
+		*h.AppID,
 		*h.Account,
 		*h.AccountType,
 		*h.PasswordHash,
@@ -86,10 +86,10 @@ func (h *loginHandler) verifyAccount(ctx context.Context) error {
 	if info == nil {
 		return fmt.Errorf("invalid user")
 	}
-	if _, err = uuid.Parse(info.ID); err != nil {
+	if _, err = uuid.Parse(info.EntID); err != nil {
 		return err
 	}
-	h.UserID = &info.ID
+	h.UserID = &info.EntID
 	h.User = info
 	return nil
 }
@@ -99,7 +99,7 @@ func (h *loginHandler) prepareMetadata(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	meta.AppID = uuid.MustParse(h.AppID)
+	meta.AppID = uuid.MustParse(*h.AppID)
 	meta.Account = *h.Account
 	meta.AccountType = h.AccountType.String()
 	meta.UserID = uuid.MustParse(*h.UserID)
@@ -132,7 +132,7 @@ func (h *loginHandler) getInvitationCode(ctx context.Context) error {
 	code, err := ivcodemwcli.GetInvitationCodeOnly(
 		ctx,
 		&ivcodemwpb.Conds{
-			AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
 		},
 	)
@@ -184,7 +184,7 @@ func (h *loginHandler) getThirdUser(ctx context.Context) error {
 	info, err := usermwcli.GetUserOnly(
 		ctx,
 		&usermwpb.Conds{
-			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Account},
 			ThirdPartyID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.ThirdPartyID},
 		},
@@ -276,7 +276,7 @@ func (h *loginHandler) verifyUserCode(ctx context.Context) error {
 
 	if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
 		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-		AppID:       h.AppID,
+		AppID:       *h.AppID,
 		Account:     *h.Account,
 		AccountType: *h.AccountType,
 		UsedFor:     basetypes.UsedFor_Signin,
