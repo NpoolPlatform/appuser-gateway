@@ -44,10 +44,10 @@ func (h *Handler) GetGenesisApps(ctx context.Context) ([]*appmwpb.App, error) {
 
 	ids := []string{}
 	for _, _app := range h.GenesisApps {
-		ids = append(ids, _app.ID)
+		ids = append(ids, _app.EntID)
 	}
 	infos, _, err := appmwcli.GetApps(ctx, &appmwpb.Conds{
-		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, 0, int32(len(ids)))
 	if err != nil {
 		return nil, err

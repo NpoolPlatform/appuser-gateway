@@ -36,7 +36,7 @@ func (h *Handler) GetGenesisUsers(ctx context.Context) ([]*usermwpb.User, error)
 		ids = append(ids, info.UserID)
 	}
 	infos, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
-		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, 0, int32(len(ids)))
 	if err != nil {
 		return nil, err
