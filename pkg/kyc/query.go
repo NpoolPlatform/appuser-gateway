@@ -15,11 +15,7 @@ import (
 )
 
 func (h *Handler) GetKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-
-	info, err := kycmwcli.GetKyc(ctx, *h.ID)
+	info, err := kycmwcli.GetKyc(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +42,7 @@ func (h *Handler) GetKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
 
 func (h *Handler) GetKycs(ctx context.Context) ([]*kycmwpb.Kyc, uint32, error) {
 	conds := &kycmwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}
 	if h.UserID != nil {
 		conds.UserID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID}
