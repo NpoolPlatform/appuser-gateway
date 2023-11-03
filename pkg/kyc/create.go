@@ -22,14 +22,14 @@ func (h *createHandler) withCreateKyc(dispose *dtmcli.SagaDispose) {
 		h.ReviewID = &reviewID
 	}
 	id := uuid.NewString()
-	if h.ID == nil {
-		h.ID = &id
+	if h.EntID == nil {
+		h.EntID = &id
 	}
 	state := basetypes.KycState_Reviewing
 
 	req := &npool.KycReq{
-		ID:           h.ID,
-		AppID:        &h.AppID,
+		EntID:        h.EntID,
+		AppID:        h.AppID,
 		UserID:       h.UserID,
 		DocumentType: h.DocumentType,
 		IDNumber:     h.IDNumber,
@@ -60,7 +60,7 @@ func (h *Handler) CreateKyc(ctx context.Context) (*npool.Kyc, error) {
 
 	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{
 		WaitResult:     true,
-		RequestTimeout: handler.RequestTimeoutSeconds,
+		RequestTimeout: *handler.RequestTimeoutSeconds,
 	})
 
 	handler.withCreateKyc(sagaDispose)
