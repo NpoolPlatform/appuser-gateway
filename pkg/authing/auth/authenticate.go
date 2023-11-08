@@ -85,7 +85,7 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 		logger.Sugar().Warnw(
 			"Authenticate",
 			"AppID", *h.AppID,
-			"UserID", *h.UserID,
+			"UserID", h.UserID,
 			"Resource", *h.Resource,
 			"Method", *h.Method,
 			"Error", err,
@@ -96,7 +96,7 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 		logger.Sugar().Warnw(
 			"Authenticate",
 			"AppID", *h.AppID,
-			"UserID", *h.UserID,
+			"UserID", h.UserID,
 			"Resource", *h.Resource,
 			"Method", *h.Method,
 		)
@@ -108,7 +108,7 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 		logger.Sugar().Warnw(
 			"Authenticate",
 			"AppID", *h.AppID,
-			"UserID", *h.UserID,
+			"UserID", h.UserID,
 			"Resource", *h.Resource,
 			"Method", *h.Method,
 			"Error", err,
@@ -119,7 +119,7 @@ func (h *Handler) Authenticate(ctx context.Context) (bool, error) {
 		logger.Sugar().Warnw(
 			"Authenticate",
 			"AppID", *h.AppID,
-			"UserID", *h.UserID,
+			"UserID", h.UserID,
 			"Resource", *h.Resource,
 			"Method", *h.Method,
 			"Allowed", _allowed,
