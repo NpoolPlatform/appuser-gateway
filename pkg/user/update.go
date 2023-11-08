@@ -200,8 +200,8 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 		Handler: h,
 	}
 
-	if h.UserID == nil {
-		return nil, fmt.Errorf("invalid userid")
+	if err := h.ExistUser(ctx); err != nil {
+		return nil, err
 	}
 
 	notif1 := &notifHandler{

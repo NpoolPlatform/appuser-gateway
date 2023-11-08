@@ -8,6 +8,9 @@ import (
 )
 
 func (h *Handler) UpdateOAuthThirdParty(ctx context.Context) (*oauththirdpartymwpb.OAuthThirdParty, error) {
+	if err := h.ExistOAuthThirdParty(ctx); err != nil {
+		return nil, err
+	}
 	return oauththirdpartymwcli.UpdateOAuthThirdParty(ctx, &oauththirdpartymwpb.OAuthThirdPartyReq{
 		ID:             h.ID,
 		ClientName:     h.ClientName,

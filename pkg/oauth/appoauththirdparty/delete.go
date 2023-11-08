@@ -8,5 +8,8 @@ import (
 )
 
 func (h *Handler) DeleteOAuthThirdParty(ctx context.Context) (*oauththirdpartymwpb.OAuthThirdParty, error) {
+	if err := h.ExistOAuthThirdParty(ctx); err != nil {
+		return nil, err
+	}
 	return oauththirdpartymwcli.DeleteOAuthThirdParty(ctx, *h.ID)
 }

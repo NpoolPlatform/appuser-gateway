@@ -8,5 +8,8 @@ import (
 )
 
 func (h *Handler) DeleteAuth(ctx context.Context) (*authmwpb.Auth, error) {
+	if err := h.ExistAuth(ctx); err != nil {
+		return nil, err
+	}
 	return authmwcli.DeleteAuth(ctx, *h.ID)
 }

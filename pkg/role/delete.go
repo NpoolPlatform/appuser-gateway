@@ -8,5 +8,8 @@ import (
 )
 
 func (h *Handler) DeleteRole(ctx context.Context) (*rolemwpb.Role, error) {
+	if err := h.ExistRole(ctx); err != nil {
+		return nil, err
+	}
 	return rolemwcli.DeleteRole(ctx, *h.ID)
 }

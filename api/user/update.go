@@ -15,6 +15,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithID(&in.ID, true),
+		user1.WithEntID(&in.UserID, true),
 		user1.WithAppID(&in.AppID, true),
 		user1.WithUserID(&in.UserID, true),
 		user1.WithAccount(in.Account, false),
@@ -69,6 +70,7 @@ func (s *Server) UpdateAppUser(ctx context.Context, in *npool.UpdateAppUserReque
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithID(&in.ID, true),
+		user1.WithEntID(&in.TargetUserID, true),
 		user1.WithAppID(&in.AppID, true),
 		user1.WithUserID(&in.TargetUserID, true),
 		user1.WithKol(in.Kol, false),

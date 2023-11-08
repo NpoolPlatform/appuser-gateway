@@ -8,6 +8,9 @@ import (
 )
 
 func (h *Handler) UpdateRole(ctx context.Context) (*rolemwpb.Role, error) {
+	if err := h.ExistRole(ctx); err != nil {
+		return nil, err
+	}
 	return rolemwcli.UpdateRole(ctx, &rolemwpb.RoleReq{
 		ID:          h.ID,
 		AppID:       h.AppID,
