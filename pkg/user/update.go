@@ -63,6 +63,10 @@ func (h *updateHandler) getUser(ctx context.Context) error {
 	}
 
 	h.User = info
+	h.EntID = &info.EntID
+	h.UserID = &info.EntID
+	h.ID = &info.ID
+
 	return nil
 }
 
@@ -147,6 +151,7 @@ func (h *updateHandler) verifyNewAccountCode(ctx context.Context) error {
 
 func (h *updateHandler) updateUser(ctx context.Context) error {
 	req := &usermwpb.UserReq{
+		ID:                 h.ID,
 		EntID:              h.UserID,
 		AppID:              h.AppID,
 		Username:           h.Username,
@@ -270,6 +275,8 @@ func (h *updateHandler) getAccountUser(ctx context.Context) error {
 
 	h.UserID = &info.EntID
 	h.User = info
+	h.ID = &info.ID
+	h.EntID = &info.EntID
 
 	return nil
 }
@@ -303,6 +310,7 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 		return err
 	}
 	if _, err := usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
+		ID:           h.ID,
 		EntID:        h.UserID,
 		AppID:        h.AppID,
 		PasswordHash: h.PasswordHash,
@@ -422,7 +430,11 @@ func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 			return nil, err
 		}
 	}
+	if err := handler.getUser(ctx); err != nil {
+		return nil, err
+	}
 	req := &usermwpb.UserReq{
+		ID:    h.ID,
 		EntID: h.TargetUserID,
 		AppID: h.AppID,
 		Kol:   h.Kol,
