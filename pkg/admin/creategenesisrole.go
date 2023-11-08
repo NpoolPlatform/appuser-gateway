@@ -4,8 +4,9 @@ import (
 	"context"
 
 	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
-	uuid1 "github.com/NpoolPlatform/go-service-framework/pkg/const/uuid"
 	rolemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/role"
+
+	"github.com/google/uuid"
 )
 
 type createGenesisRoleHandler struct {
@@ -14,7 +15,7 @@ type createGenesisRoleHandler struct {
 
 func (h *createGenesisRoleHandler) createGenesisRoles(ctx context.Context) error {
 	reqs := []*rolemwpb.RoleReq{}
-	createdBy := uuid1.InvalidUUIDStr
+	createdBy := uuid.Nil.String()
 	defautl := false
 	genesis := true
 

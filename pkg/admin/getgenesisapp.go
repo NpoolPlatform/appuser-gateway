@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
@@ -23,6 +24,8 @@ func (h *getGenesisAppHandler) getGenesisAppConfig() error {
 		servicename.ServiceDomain,
 		constant.KeyGenesisApp,
 	)
+
+	str = strings.ReplaceAll(str, "\"ID\":", "\"EntID\":")
 
 	if err := json.Unmarshal([]byte(str), &h.GenesisApps); err != nil {
 		return err
