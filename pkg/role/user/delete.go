@@ -8,5 +8,8 @@ import (
 )
 
 func (h *Handler) DeleteUser(ctx context.Context) (*roleusermwpb.User, error) {
+	if err := h.ExistUser(ctx); err != nil {
+		return nil, err
+	}
 	return roleusermwcli.DeleteUser(ctx, *h.ID)
 }

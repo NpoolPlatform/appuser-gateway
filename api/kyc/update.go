@@ -19,6 +19,7 @@ func (s *Server) UpdateKyc(ctx context.Context, in *npool.UpdateKycRequest) (res
 
 	handler, err := kyc1.NewHandler(
 		ctx,
+		kyc1.WithID(&in.ID, true),
 		kyc1.WithEntID(&in.KycID, true),
 		kyc1.WithAppID(&in.AppID, true),
 		kyc1.WithUserID(&in.UserID, true),

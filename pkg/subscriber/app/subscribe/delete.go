@@ -8,5 +8,8 @@ import (
 )
 
 func (h *Handler) DeleteAppSubscribe(ctx context.Context) (*appsubscribemwpb.AppSubscribe, error) {
+	if err := h.ExistAppSubscribe(ctx); err != nil {
+		return nil, err
+	}
 	return appsubscribemwcli.DeleteAppSubscribe(ctx, *h.ID)
 }
