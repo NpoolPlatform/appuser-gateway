@@ -23,6 +23,10 @@ func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
 		}
 	}
 
+	if err := h.ExistApp(ctx); err != nil {
+		return nil, err
+	}
+
 	return appmwcli.UpdateApp(ctx, &appmwpb.AppReq{
 		ID:                       h.ID,
 		CreatedBy:                h.CreatedBy,
