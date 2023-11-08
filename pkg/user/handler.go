@@ -89,6 +89,7 @@ func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 			if must {
 				return fmt.Errorf("invalid id")
 			}
+			return nil
 		}
 		h.ID = id
 		return nil
@@ -191,6 +192,7 @@ func WithAccount(account *string, must bool) func(context.Context, *Handler) err
 			if must {
 				return fmt.Errorf("invalid account")
 			}
+			return nil
 		}
 		if *account == "" {
 			return fmt.Errorf("invalid account")
@@ -362,6 +364,7 @@ func WithNewAccount(account *string, must bool) func(context.Context, *Handler) 
 			if must {
 				return fmt.Errorf("invalid account")
 			}
+			return nil
 		}
 		if *account == "" {
 			return fmt.Errorf("invalid account")
