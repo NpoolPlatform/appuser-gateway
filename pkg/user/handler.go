@@ -131,8 +131,8 @@ func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 		h.EntID = id
 		return nil
 	}
-
 }
+
 func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
