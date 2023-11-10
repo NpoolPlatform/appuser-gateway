@@ -53,7 +53,7 @@ func (h *notifHandler) generateNotif(ctx context.Context) {
 
 	_, err := notifmwcli.GenerateNotifs(ctx, &notif.GenerateNotifsRequest{
 		AppID:     h.AppID,
-		UserID:    *h.UserID,
+		UserID:    h.UserID,
 		EventType: h.UsedFor,
 		NotifType: basetypes.NotifType_NotifUnicast,
 	})

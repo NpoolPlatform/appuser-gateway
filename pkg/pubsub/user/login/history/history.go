@@ -31,7 +31,7 @@ func Apply(ctx context.Context, req interface{}) error {
 	now := uint32(time.Now().Unix())
 	_, err := notifmwcli.GenerateNotifs(ctx, &notif.GenerateNotifsRequest{
 		AppID:     *in.AppID,
-		UserID:    *in.UserID,
+		UserID:    in.UserID,
 		EventType: basetypes.UsedFor_NewLogin,
 		Vars: &template.TemplateVars{
 			IP:        in.ClientIP,
