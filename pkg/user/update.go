@@ -200,13 +200,21 @@ func (h *updateHandler) updateUser(ctx context.Context) error {
 	return nil
 }
 
+//nolint:gocyclo
 func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	handler := &updateHandler{
 		Handler: h,
 	}
 
-	if err := h.ExistUser(ctx); err != nil {
-		return nil, err
+	if h.ID != nil && h.EntID != nil {
+		if err := h.ExistUser(ctx); err != nil {
+			return nil, err
+		}
+	}
+	if h.UserID != nil && h.AppID != nil {
+		if err := h.ExistUserInApp(ctx); err != nil {
+			return nil, err
+		}
 	}
 
 	notif1 := &notifHandler{
