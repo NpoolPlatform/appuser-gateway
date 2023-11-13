@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/oss"
@@ -13,6 +14,14 @@ func (h *Handler) UploadKycImage(ctx context.Context) (string, error) {
 	if h.UserID == nil {
 		return "", fmt.Errorf("invalid userid")
 	}
+	existUser, err := usermwcli.ExistUser(ctx, *h.AppID, *h.UserID)
+	if err != nil {
+		return "", err
+	}
+	if !existUser {
+		return "", fmt.Errorf("invalid user")
+	}
+
 	if h.ImageType == nil {
 		return "", fmt.Errorf("invalid image type")
 	}
