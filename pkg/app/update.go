@@ -11,6 +11,17 @@ import (
 )
 
 func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
+	exist, err := appmwcli.ExistAppConds(ctx, &appmwpb.Conds{
+		ID:    &basetypes.Uint32Val{Op: cruder.EQ, Value: *h.ID},
+		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.EntID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, fmt.Errorf("invalid app")
+	}
+
 	if h.Name != nil {
 		exist, err := appmwcli.ExistAppConds(ctx, &appmwpb.Conds{
 			Name: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Name},
