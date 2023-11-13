@@ -16,7 +16,7 @@ func (s *Server) DeleteUser(ctx context.Context, in *npool.DeleteUserRequest) (*
 	handler, err := roleuser1.NewHandler(
 		ctx,
 		roleuser1.WithID(&in.ID, true),
-		roleuser1.WithEntID(&in.TargetUserID, true),
+		roleuser1.WithEntID(&in.EntID, true),
 		roleuser1.WithAppID(&in.AppID, true),
 		roleuser1.WithUserID(&in.TargetUserID, true),
 	)
@@ -48,7 +48,7 @@ func (s *Server) DeleteAppUser(ctx context.Context, in *npool.DeleteAppUserReque
 	handler, err := roleuser1.NewHandler(
 		ctx,
 		roleuser1.WithID(&in.ID, true),
-		roleuser1.WithEntID(&in.TargetUserID, true),
+		roleuser1.WithEntID(&in.EntID, true),
 		roleuser1.WithAppID(&in.TargetAppID, true),
 		roleuser1.WithUserID(&in.TargetUserID, true),
 	)
