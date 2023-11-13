@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	"context"
+	"fmt"
 
 	subscribermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/subscriber"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -18,7 +19,7 @@ func (h *Handler) DeleteSubscriber(ctx context.Context) (*subscribermwpb.Subscri
 		return nil, err
 	}
 	if info == nil {
-		return nil, nil
+		return nil, fmt.Errorf("subscriber not exist")
 	}
 	return subscribermwcli.DeleteSubscriber(ctx, info.ID)
 }
