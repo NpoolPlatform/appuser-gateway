@@ -74,6 +74,9 @@ func (h *Handler) UpdateKyc(ctx context.Context) (*npool.Kyc, error) {
 	if err != nil {
 		return nil, err
 	}
+	if info == nil {
+		return nil, fmt.Errorf("invalid kyc")
+	}
 	if info.ID != *h.ID {
 		return nil, fmt.Errorf("invalid kyc")
 	}

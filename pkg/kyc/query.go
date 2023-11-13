@@ -19,6 +19,9 @@ func (h *Handler) GetKyc(ctx context.Context) (*kycmwpb.Kyc, error) {
 	if err != nil {
 		return nil, err
 	}
+	if info == nil {
+		return nil, nil
+	}
 
 	rinfo, err := reviewmwcli.GetReview(ctx, info.ReviewID)
 	if err != nil {
