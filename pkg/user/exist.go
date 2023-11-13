@@ -23,3 +23,17 @@ func (h *Handler) ExistUser(ctx context.Context) error {
 	}
 	return nil
 }
+
+func (h *Handler) ExistUserInApp(ctx context.Context) error {
+	exist, err := usermwcli.ExistUserConds(ctx, &usermwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+	})
+	if err != nil {
+		return err
+	}
+	if !exist {
+		return fmt.Errorf("invalid user")
+	}
+	return nil
+}
