@@ -40,6 +40,7 @@ func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
 
 	return appmwcli.UpdateApp(ctx, &appmwpb.AppReq{
 		ID:                       h.ID,
+		EntID:                    h.NewEntID,
 		CreatedBy:                h.CreatedBy,
 		Name:                     h.Name,
 		Logo:                     h.Logo,

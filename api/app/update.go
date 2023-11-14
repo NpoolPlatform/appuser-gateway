@@ -16,6 +16,7 @@ func (s *Server) UpdateApp(ctx context.Context, in *npool.UpdateAppRequest) (*np
 		ctx,
 		app1.WithID(&in.ID, true),
 		app1.WithEntID(&in.EntID, true),
+		app1.WithNewEntID(in.NewEntID, false),
 		app1.WithName(in.Name, false),
 		app1.WithLogo(in.Logo, false),
 		app1.WithDescription(in.Description, false),
