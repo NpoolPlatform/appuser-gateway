@@ -13,6 +13,7 @@ import (
 type Handler struct {
 	ID                       *uint32
 	EntID                    *string
+	NewEntID                 *string
 	EntIDs                   []string
 	CreatedBy                *string
 	Name                     *string
@@ -69,6 +70,22 @@ func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 			return err
 		}
 		h.EntID = id
+		return nil
+	}
+}
+
+func WithNewEntID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid newentid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.NewEntID = id
 		return nil
 	}
 }
