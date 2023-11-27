@@ -6,6 +6,7 @@ import (
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
+	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -66,7 +67,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 }
 
 func (s *Server) UpdateAppUser(ctx context.Context, in *npool.UpdateAppUserRequest) (*npool.UpdateAppUserResponse, error) {
-	shouldUpdateCache := false
+	updateCacheMode := appusertypes.UpdateCacheMode_DontUpdateCache
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithID(&in.ID, true),
@@ -75,7 +76,7 @@ func (s *Server) UpdateAppUser(ctx context.Context, in *npool.UpdateAppUserReque
 		user1.WithUserID(&in.TargetUserID, true),
 		user1.WithKol(in.Kol, false),
 		user1.WithEmailAddress(in.EmailAddress, false),
-		user1.WithShouldUpdateCache(&shouldUpdateCache, true),
+		user1.WithUpdateCacheMode(&updateCacheMode, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

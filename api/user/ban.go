@@ -7,20 +7,21 @@ import (
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
+	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) BanUser(ctx context.Context, in *npool.BanUserRequest) (*npool.BanUserResponse, error) {
-	shouldUpdateCache := true
+	updateCacheMode := appusertypes.UpdateCacheMode_UpdateCacheIfExist
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(&in.AppID, true),
 		user1.WithUserID(&in.TargetUserID, true),
 		user1.WithBanned(&in.Banned, true),
 		user1.WithBanMessage(&in.BanMessage, true),
-		user1.WithShouldUpdateCache(&shouldUpdateCache, true),
+		user1.WithUpdateCacheMode(&updateCacheMode, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -44,14 +45,14 @@ func (s *Server) BanUser(ctx context.Context, in *npool.BanUserRequest) (*npool.
 }
 
 func (s *Server) BanAppUser(ctx context.Context, in *npool.BanAppUserRequest) (*npool.BanAppUserResponse, error) {
-	shouldUpdateCache := true
+	updateCacheMode := appusertypes.UpdateCacheMode_UpdateCacheIfExist
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(&in.TargetAppID, true),
 		user1.WithUserID(&in.TargetUserID, true),
 		user1.WithBanned(&in.Banned, true),
 		user1.WithBanMessage(&in.BanMessage, true),
-		user1.WithShouldUpdateCache(&shouldUpdateCache, true),
+		user1.WithUpdateCacheMode(&updateCacheMode, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -244,8 +245,22 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	// Generate Notif
 	notif1.generateNotif(ctx)
 
-	if h.ShouldUpdateCache != nil && !*h.ShouldUpdateCache {
-		return h.User, nil
+	if h.UpdateCacheMode != nil {
+		switch *h.UpdateCacheMode {
+		case appusertypes.UpdateCacheMode_RequiredUpdateCache:
+		case appusertypes.UpdateCacheMode_UpdateCacheIfExist:
+			meta, err := h.QueryCache(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if meta == nil {
+				return h.User, nil
+			}
+		case appusertypes.UpdateCacheMode_DontUpdateCache:
+			return h.User, nil
+		default:
+			return nil, fmt.Errorf("invalid updatecachemode")
+		}
 	}
 
 	if err := h.UpdateCache(ctx); err != nil {

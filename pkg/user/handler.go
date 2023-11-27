@@ -10,6 +10,7 @@ import (
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/google/uuid"
@@ -62,6 +63,7 @@ type Handler struct {
 	BanMessage            *string
 	RecoveryCode          *string
 	ShouldUpdateCache     *bool
+	UpdateCacheMode       *appusertypes.UpdateCacheMode
 	ThirdPartyID          *string
 	Offset                int32
 	Limit                 int32
@@ -683,6 +685,26 @@ func WithBanMessage(message *string, must bool) func(context.Context, *Handler) 
 func WithShouldUpdateCache(update *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ShouldUpdateCache = update
+		return nil
+	}
+}
+
+func WithUpdateCacheMode(mode *appusertypes.UpdateCacheMode, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if mode == nil {
+			if must {
+				return fmt.Errorf("invalid updatecachemode")
+			}
+			return nil
+		}
+		switch *mode {
+		case appusertypes.UpdateCacheMode_RequiredUpdateCache:
+		case appusertypes.UpdateCacheMode_UpdateCacheIfExist:
+		case appusertypes.UpdateCacheMode_DontUpdateCache:
+		default:
+			return fmt.Errorf("invalid updatecachemode")
+		}
+		h.UpdateCacheMode = mode
 		return nil
 	}
 }
