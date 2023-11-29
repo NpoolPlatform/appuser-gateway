@@ -19,7 +19,7 @@ func (h *Handler) ExistUser(ctx context.Context) error {
 		return err
 	}
 	if !exist {
-		return fmt.Errorf("invalid user")
+		return fmt.Errorf("invalid user id=%v, ent_id=%v", *h.ID, *h.EntID)
 	}
 	return nil
 }
@@ -33,7 +33,7 @@ func (h *Handler) ExistUserInApp(ctx context.Context) error {
 		return err
 	}
 	if !exist {
-		return fmt.Errorf("invalid user")
+		return fmt.Errorf("invalid user app_id=%v, user_id=%v", *h.AppID, *h.UserID)
 	}
 	return nil
 }
