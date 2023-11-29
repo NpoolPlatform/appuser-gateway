@@ -199,12 +199,6 @@ func (h *Handler) UpdateCache(ctx context.Context) error {
 	h.User.LoginClientUserAgent = meta.User.LoginClientUserAgent
 	h.User.LoginVerified = meta.User.LoginVerified
 
-	if h.Account != nil {
-		meta.Account = *h.Account
-	}
-	if h.AccountType != nil {
-		meta.AccountType = h.AccountType.String()
-	}
 	if h.User.GoogleOTPAuth == "" {
 		h.User.GoogleOTPAuth = meta.User.GoogleOTPAuth
 	}
