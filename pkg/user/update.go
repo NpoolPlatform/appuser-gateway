@@ -81,6 +81,7 @@ func (h *updateHandler) getTargetUser(ctx context.Context) error {
 		return fmt.Errorf("update: invalid user: app_id=%v, user_id=%v", *h.AppID, *h.UserID)
 	}
 	h.targetID = &info.ID
+	h.targetUser = info
 	return nil
 }
 
