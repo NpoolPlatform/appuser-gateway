@@ -203,7 +203,7 @@ func (h *Handler) UpdateCache(ctx context.Context) error {
 		meta.Account = *h.Account
 	}
 	if h.AccountType != nil {
-		meta.AccountType = *h.AccountType
+		meta.AccountType = h.AccountType.String()
 	}
 	if h.User.GoogleOTPAuth == "" {
 		h.User.GoogleOTPAuth = meta.User.GoogleOTPAuth
