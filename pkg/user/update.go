@@ -249,7 +249,6 @@ func (h *updateHandler) updateCache(ctx context.Context) error {
 	return nil
 }
 
-//nolint:gocyclo
 func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	handler := &updateHandler{
 		Handler: h,
