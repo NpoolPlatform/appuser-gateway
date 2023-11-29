@@ -407,6 +407,7 @@ func WithNewAccountType(accountType *basetypes.SignMethod, must bool) func(conte
 		switch *accountType {
 		case basetypes.SignMethod_Mobile:
 		case basetypes.SignMethod_Email:
+		case basetypes.SignMethod_Google:
 		default:
 			return fmt.Errorf("invalid newaccounttype")
 		}
