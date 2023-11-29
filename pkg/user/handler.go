@@ -195,6 +195,11 @@ func WithAccount(account *string, must bool) func(context.Context, *Handler) err
 			return nil
 		}
 
+		// For google auth
+		if *account == "" {
+			return nil
+		}
+
 		var accountType basetypes.SignMethod
 		if err := validatePhoneNO(*account); err == nil {
 			h.PhoneNO = account
