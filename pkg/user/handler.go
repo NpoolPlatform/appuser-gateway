@@ -204,14 +204,6 @@ func WithAccount(account *string, must bool) func(context.Context, *Handler) err
 			h.EmailAddress = account
 		}
 
-		switch accountType {
-		case basetypes.SignMethod_Mobile:
-		case basetypes.SignMethod_Email:
-			if *account == "" {
-				return fmt.Errorf("invalid account")
-			}
-		}
-
 		if h.AccountType != nil && accountType != *h.AccountType {
 			return fmt.Errorf("invalid accounttype")
 		}
@@ -372,7 +364,7 @@ func WithNewAccount(account *string, must bool) func(context.Context, *Handler) 
 			return nil
 		}
 		if *account == "" {
-			return fmt.Errorf("invalid account")
+			return fmt.Errorf("invalid newaccount")
 		}
 
 		var accountType basetypes.SignMethod
@@ -381,11 +373,11 @@ func WithNewAccount(account *string, must bool) func(context.Context, *Handler) 
 		} else if err := validateEmailAddress(*account); err == nil {
 			accountType = basetypes.SignMethod_Email
 		} else {
-			return fmt.Errorf("invalid account")
+			return fmt.Errorf("invalid newaccount")
 		}
 
 		if h.NewAccountType != nil && accountType != *h.NewAccountType {
-			return fmt.Errorf("invalid accounttype")
+			return fmt.Errorf("invalid newaccounttype")
 		}
 
 		h.NewAccountType = &accountType
@@ -402,8 +394,10 @@ func WithNewAccountType(accountType *basetypes.SignMethod, must bool) func(conte
 			}
 			return nil
 		}
-		if h.NewAccountType != nil && *accountType != *h.NewAccountType {
-			return fmt.Errorf("invalid newaccounttype")
+		if h.NewAccount != nil && *h.NewAccount != "" {
+			if h.NewAccountType != nil && *accountType != *h.NewAccountType {
+				return fmt.Errorf("invalid newaccounttype")
+			}
 		}
 		switch *accountType {
 		case basetypes.SignMethod_Mobile:
