@@ -10,7 +10,6 @@ import (
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/google/uuid"
@@ -62,18 +61,17 @@ type Handler struct {
 	Banned                *bool
 	BanMessage            *string
 	RecoveryCode          *string
-	ShouldUpdateCache     *bool
-	UpdateCacheMode       *appusertypes.UpdateCacheMode
+	UpdateCacheMode       *UpdateCacheMode
 	ThirdPartyID          *string
 	Offset                int32
 	Limit                 int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
-	shouldUpdateCache := true
+	updateCacheMode := RequiredUpdateCache
 	requestTimeoutSeconds := int64(10) //nolint
 	handler := &Handler{
-		ShouldUpdateCache:     &shouldUpdateCache,
+		UpdateCacheMode:       &updateCacheMode,
 		RequestTimeoutSeconds: &requestTimeoutSeconds,
 	}
 
@@ -682,14 +680,7 @@ func WithBanMessage(message *string, must bool) func(context.Context, *Handler) 
 	}
 }
 
-func WithShouldUpdateCache(update *bool, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		h.ShouldUpdateCache = update
-		return nil
-	}
-}
-
-func WithUpdateCacheMode(mode *appusertypes.UpdateCacheMode, must bool) func(context.Context, *Handler) error {
+func WithUpdateCacheMode(mode *UpdateCacheMode, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if mode == nil {
 			if must {
@@ -698,9 +689,9 @@ func WithUpdateCacheMode(mode *appusertypes.UpdateCacheMode, must bool) func(con
 			return nil
 		}
 		switch *mode {
-		case appusertypes.UpdateCacheMode_RequiredUpdateCache:
-		case appusertypes.UpdateCacheMode_UpdateCacheIfExist:
-		case appusertypes.UpdateCacheMode_DontUpdateCache:
+		case RequiredUpdateCache:
+		case UpdateCacheIfExist:
+		case DontUpdateCache:
 		default:
 			return fmt.Errorf("invalid updatecachemode")
 		}

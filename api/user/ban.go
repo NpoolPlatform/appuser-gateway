@@ -7,14 +7,13 @@ import (
 	user1 "github.com/NpoolPlatform/appuser-gateway/pkg/user"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	npool "github.com/NpoolPlatform/message/npool/appuser/gw/v1/user"
-	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) BanUser(ctx context.Context, in *npool.BanUserRequest) (*npool.BanUserResponse, error) {
-	updateCacheMode := appusertypes.UpdateCacheMode_UpdateCacheIfExist
+	updateCacheMode := user1.UpdateCacheIfExist
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(&in.AppID, true),
@@ -45,7 +44,7 @@ func (s *Server) BanUser(ctx context.Context, in *npool.BanUserRequest) (*npool.
 }
 
 func (s *Server) BanAppUser(ctx context.Context, in *npool.BanAppUserRequest) (*npool.BanAppUserResponse, error) {
-	updateCacheMode := appusertypes.UpdateCacheMode_UpdateCacheIfExist
+	updateCacheMode := user1.UpdateCacheIfExist
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(&in.TargetAppID, true),

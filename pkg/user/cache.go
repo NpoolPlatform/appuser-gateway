@@ -13,6 +13,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type UpdateCacheMode int32
+
+const (
+	RequiredUpdateCache UpdateCacheMode = 10
+	UpdateCacheIfExist  UpdateCacheMode = 20
+	DontUpdateCache     UpdateCacheMode = 30
+)
+
 const (
 	redisTimeout    = 5 * time.Second
 	loginExpiration = 4 * time.Hour
@@ -199,4 +207,27 @@ func (h *Handler) UpdateCache(ctx context.Context) error {
 	h.Metadata = meta
 
 	return h.CreateCache(ctx)
+}
+
+func (h *Handler) CheckShouldUpdateCache(ctx context.Context) (bool, error) {
+	if h.UpdateCacheMode == nil {
+		return true, nil
+	}
+	switch *h.UpdateCacheMode {
+	case RequiredUpdateCache:
+		return true, nil
+	case UpdateCacheIfExist:
+		meta, err := h.QueryCache(ctx)
+		if err != nil {
+			return false, err
+		}
+		if meta == nil {
+			return false, nil
+		}
+	case DontUpdateCache:
+		return false, nil
+	default:
+		return false, fmt.Errorf("invalid updatecachemode")
+	}
+	return true, nil
 }

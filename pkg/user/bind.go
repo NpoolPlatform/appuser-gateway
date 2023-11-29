@@ -273,7 +273,11 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 		return nil, err
 	}
 
-	if h.ShouldUpdateCache != nil && !*h.ShouldUpdateCache {
+	shouldUpdateCache, err := handler.CheckShouldUpdateCache(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if !shouldUpdateCache {
 		return h.User, nil
 	}
 
