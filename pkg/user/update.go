@@ -215,6 +215,40 @@ func (h *updateHandler) updateUser(ctx context.Context) error {
 	return nil
 }
 
+func (h *updateHandler) updateCache(ctx context.Context) error {
+	if (h.EmailAddress != nil && *h.EmailAddress != h.User.EmailAddress) ||
+		(h.PhoneNO != nil && *h.PhoneNO != h.User.PhoneNO) {
+		meta, err := h.QueryCache(ctx)
+		if err != nil {
+			return err
+		}
+		h.Metadata = meta
+		if err := h.DeleteCache(ctx); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	updatable, err := h.CheckShouldUpdateCache(ctx)
+	if err != nil {
+		return err
+	}
+	if !updatable {
+		return nil
+	}
+
+	if err := h.UpdateCache(ctx); err != nil {
+		return err
+	}
+	meta, err := h.QueryCache(ctx)
+	if err != nil {
+		return err
+	}
+	h.Metadata = meta
+	h.User = meta.User
+	return nil
+}
+
 //nolint:gocyclo
 func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	handler := &updateHandler{
@@ -255,36 +289,14 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	if err := handler.updateUser(ctx); err != nil {
 		return nil, err
 	}
+	if err := handler.updateCache(ctx); err != nil {
+		return nil, err
+	}
 
 	// Generate Notif
 	notif1.generateNotif(ctx)
 
-	if (h.EmailAddress != nil && *h.EmailAddress != h.User.EmailAddress) ||
-		(h.PhoneNO != nil && *h.PhoneNO != h.User.PhoneNO) {
-		if err := h.DeleteCache(ctx); err != nil {
-			return nil, err
-		}
-		return h.User, nil
-	}
-
-	shouldUpdateCache, err := handler.CheckShouldUpdateCache(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if !shouldUpdateCache {
-		return h.User, nil
-	}
-
-	if err := h.UpdateCache(ctx); err != nil {
-		return nil, err
-	}
-	meta, err := h.QueryCache(ctx)
-	if err != nil {
-		return nil, err
-	}
-	h.Metadata = meta
-
-	return h.Metadata.User, nil
+	return h.User, nil
 }
 
 func (h *updateHandler) getAccountUser(ctx context.Context) error {
