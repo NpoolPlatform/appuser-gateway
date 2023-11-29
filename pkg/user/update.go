@@ -34,6 +34,8 @@ import (
 
 type updateHandler struct {
 	*Handler
+	targetID   *uint32
+	targetUser *usermwpb.User
 }
 
 func (h *updateHandler) verifyOldPasswordHash(ctx context.Context) error {
@@ -67,6 +69,18 @@ func (h *updateHandler) getUser(ctx context.Context) error {
 	h.UserID = &info.EntID
 	h.ID = &info.ID
 
+	return nil
+}
+
+func (h *updateHandler) getTargetUser(ctx context.Context) error {
+	info, err := usermwcli.GetUser(ctx, *h.AppID, *h.TargetUserID)
+	if err != nil {
+		return err
+	}
+	if info == nil {
+		return fmt.Errorf("update: invalid user: app_id=%v, user_id=%v", *h.AppID, *h.UserID)
+	}
+	h.targetID = &info.ID
 	return nil
 }
 
@@ -419,7 +433,7 @@ func (h *updateHandler) sendKolNotification(ctx context.Context) {
 		Subject:     info.Subject,
 		Content:     info.Content,
 		From:        info.From,
-		To:          h.TargetUser.EmailAddress,
+		To:          h.targetUser.EmailAddress,
 		ToCCs:       info.ToCCs,
 		ReplyTos:    info.ReplyTos,
 		AccountType: basetypes.SignMethod_Email,
@@ -445,8 +459,11 @@ func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 	if err := handler.getUser(ctx); err != nil {
 		return nil, err
 	}
+	if err := handler.getTargetUser(ctx); err != nil {
+		return nil, err
+	}
 	req := &usermwpb.UserReq{
-		ID:    h.ID,
+		ID:    handler.targetID,
 		EntID: h.TargetUserID,
 		AppID: h.AppID,
 		Kol:   h.Kol,
@@ -455,8 +472,6 @@ func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	h.TargetUser = info
 
 	if err := handler.tryCreateInvitationCode(ctx); err != nil {
 		return nil, err

@@ -23,7 +23,6 @@ type Handler struct {
 	UserID                *string
 	User                  *usermwpb.User
 	TargetUserID          *string
-	TargetUser            *usermwpb.User
 	CheckInvitation       *bool
 	Account               *string
 	NewAccount            *string
