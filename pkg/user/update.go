@@ -259,8 +259,11 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	// Generate Notif
 	notif1.generateNotif(ctx)
 
-	if h.EmailAddress != nil || h.PhoneNO != nil {
-		h.DeleteCache(ctx)
+	if (h.EmailAddress != nil && *h.EmailAddress != h.User.EmailAddress) ||
+		(h.PhoneNO != nil && *h.PhoneNO != h.User.PhoneNO) {
+		if err := h.DeleteCache(ctx); err != nil {
+			return nil, err
+		}
 		return h.User, nil
 	}
 
