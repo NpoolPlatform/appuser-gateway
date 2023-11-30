@@ -83,7 +83,7 @@ func (h *loginHandler) verifyAccount(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if info == nil {
+	if info == nil || info.Banned {
 		return fmt.Errorf("invalid user")
 	}
 	if _, err = uuid.Parse(info.EntID); err != nil {
