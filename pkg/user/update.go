@@ -375,6 +375,11 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	}); err != nil {
 		return err
 	}
+	updateCacheMode := DeleteCacheIfExist
+	h.UpdateCacheMode = &updateCacheMode
+	if err := handler.updateCache(ctx); err != nil {
+		return err
+	}
 
 	notif1 := &notifHandler{
 		Handler: h,
