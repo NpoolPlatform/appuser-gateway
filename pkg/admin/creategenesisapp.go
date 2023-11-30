@@ -4,8 +4,9 @@ import (
 	"context"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
-	uuid1 "github.com/NpoolPlatform/go-service-framework/pkg/const/uuid"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
+
+	"github.com/google/uuid"
 )
 
 type createGenesisAppHandler struct {
@@ -13,7 +14,7 @@ type createGenesisAppHandler struct {
 }
 
 func (h *createGenesisAppHandler) createGenesisApps(ctx context.Context) error {
-	createdBy := uuid1.InvalidUUIDStr
+	createdBy := uuid.Nil.String()
 	logo := "NOT SET"
 	reqs := []*appmwpb.AppReq{}
 

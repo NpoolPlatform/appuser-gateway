@@ -12,8 +12,9 @@ import (
 )
 
 type Handler struct {
-	ID         *string
-	AppID      string
+	ID         *uint32
+	EntID      *string
+	AppID      *string
 	ClientName *basetypes.SignMethod
 	Code       *string
 	State      *string
@@ -31,25 +32,47 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
 		}
 		h.ID = id
 		return nil
 	}
 }
 
-func WithAppID(id string) func(context.Context, *Handler) error {
+func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if _, err := uuid.Parse(id); err != nil {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		exist, err := appmwcli.ExistApp(ctx, id)
+		h.EntID = id
+		return nil
+	}
+}
+
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		exist, err := appmwcli.ExistApp(ctx, *id)
 		if err != nil {
 			return err
 		}
@@ -61,21 +84,21 @@ func WithAppID(id string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithClientName(clientName *basetypes.SignMethod) func(context.Context, *Handler) error {
+func WithClientName(clientName *basetypes.SignMethod, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ClientName = clientName
 		return nil
 	}
 }
 
-func WithCode(code *string) func(context.Context, *Handler) error {
+func WithCode(code *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Code = code
 		return nil
 	}
 }
 
-func WithState(state *string) func(context.Context, *Handler) error {
+func WithState(state *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.State = state
 		return nil

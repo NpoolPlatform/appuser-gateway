@@ -13,13 +13,18 @@ import (
 )
 
 func (s *Server) BanUser(ctx context.Context, in *npool.BanUserRequest) (*npool.BanUserResponse, error) {
+	updateCacheMode := user1.UpdateCacheIfExist
+	if in.Banned {
+		updateCacheMode = user1.DeleteCacheIfExist
+	}
+
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(&in.TargetUserID),
-		user1.WithBanned(&in.Banned),
-		user1.WithBanMessage(&in.BanMessage),
-		user1.WithShouldUpdateCache(false),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(&in.TargetUserID, true),
+		user1.WithBanned(&in.Banned, true),
+		user1.WithBanMessage(&in.BanMessage, true),
+		user1.WithUpdateCacheMode(&updateCacheMode, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -43,13 +48,18 @@ func (s *Server) BanUser(ctx context.Context, in *npool.BanUserRequest) (*npool.
 }
 
 func (s *Server) BanAppUser(ctx context.Context, in *npool.BanAppUserRequest) (*npool.BanAppUserResponse, error) {
+	updateCacheMode := user1.UpdateCacheIfExist
+	if in.Banned {
+		updateCacheMode = user1.DeleteCacheIfExist
+	}
+
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetTargetAppID()),
-		user1.WithUserID(&in.TargetUserID),
-		user1.WithBanned(&in.Banned),
-		user1.WithBanMessage(&in.BanMessage),
-		user1.WithShouldUpdateCache(false),
+		user1.WithAppID(&in.TargetAppID, true),
+		user1.WithUserID(&in.TargetUserID, true),
+		user1.WithBanned(&in.Banned, true),
+		user1.WithBanMessage(&in.BanMessage, true),
+		user1.WithUpdateCacheMode(&updateCacheMode, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

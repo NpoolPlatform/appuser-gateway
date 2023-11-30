@@ -1,3 +1,4 @@
+//nolint:dupl
 package auth
 
 import (
@@ -12,13 +13,14 @@ import (
 )
 
 type Handler struct {
-	ID       *string
-	AppID    string
+	ID       *uint32
+	EntID    *string
+	AppID    *string
 	UserID   *string
 	Token    *string
 	RoleID   *string
-	Resource string
-	Method   string
+	Resource *string
+	Method   *string
 	Offset   int32
 	Limit    int32
 }
@@ -33,25 +35,47 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
 		}
 		h.ID = id
 		return nil
 	}
 }
 
-func WithAppID(id string) func(context.Context, *Handler) error {
+func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if _, err := uuid.Parse(id); err != nil {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid entid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		exist, err := appmwcli.ExistApp(ctx, id)
+		h.EntID = id
+		return nil
+	}
+}
+
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		exist, err := appmwcli.ExistApp(ctx, *id)
 		if err != nil {
 			return err
 		}
@@ -63,9 +87,12 @@ func WithAppID(id string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithUserID(id *string) func(context.Context, *Handler) error {
+func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid userid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -77,16 +104,19 @@ func WithUserID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithToken(token *string) func(context.Context, *Handler) error {
+func WithToken(token *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Token = token
 		return nil
 	}
 }
 
-func WithRoleID(id *string) func(context.Context, *Handler) error {
+func WithRoleID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid roleid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -104,24 +134,36 @@ func WithRoleID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithMethod(method string) func(context.Context, *Handler) error {
+func WithMethod(method *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		switch method {
+		if method == nil {
+			if must {
+				return fmt.Errorf("invalid method")
+			}
+			return nil
+		}
+		switch *method {
 		case "POST":
 		case "GET":
 		default:
-			return fmt.Errorf("method %v invalid", method)
+			return fmt.Errorf("method %v invalid", *method)
 		}
 		h.Method = method
 		return nil
 	}
 }
 
-func WithResource(resource string) func(context.Context, *Handler) error {
+func WithResource(resource *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
+		if resource == nil {
+			if must {
+				return fmt.Errorf("invalid resource")
+			}
+			return nil
+		}
 		const leastResourceLen = 3
-		if len(resource) < leastResourceLen {
-			return fmt.Errorf("resource %v invalid", resource)
+		if len(*resource) < leastResourceLen {
+			return fmt.Errorf("resource %v invalid", *resource)
 		}
 		h.Resource = resource
 		return nil

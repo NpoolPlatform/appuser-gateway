@@ -14,9 +14,10 @@ import (
 func (s *Server) BanApp(ctx context.Context, in *npool.BanAppRequest) (*npool.BanAppResponse, error) {
 	handler, err := app1.NewHandler(
 		ctx,
-		app1.WithID(&in.ID),
-		app1.WithBanned(&in.Banned),
-		app1.WithBanMessage(&in.BanMessage),
+		app1.WithID(&in.ID, true),
+		app1.WithEntID(&in.EntID, true),
+		app1.WithBanned(&in.Banned, true),
+		app1.WithBanMessage(&in.BanMessage, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

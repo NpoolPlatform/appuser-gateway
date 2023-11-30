@@ -16,8 +16,8 @@ import (
 func (h *Handler) VerifyGoogleAuth(ctx context.Context) (*usermwpb.User, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(h.AppID),
-		user1.WithUserID(&h.UserID),
+		user1.WithAppID(h.AppID, true),
+		user1.WithUserID(h.UserID, true),
 	)
 	if err != nil {
 		return nil, err
@@ -34,17 +34,14 @@ func (h *Handler) VerifyGoogleAuth(ctx context.Context) (*usermwpb.User, error) 
 		return nil, fmt.Errorf("invalid google secret")
 	}
 
-	if err := usercodemwcli.VerifyUserCode(
-		ctx,
-		&usercodemwpb.VerifyUserCodeRequest{
-			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-			AppID:       h.AppID,
-			Account:     user.GoogleSecret,
-			AccountType: basetypes.SignMethod_Google,
-			UsedFor:     basetypes.UsedFor_Update,
-			Code:        h.Code,
-		},
-	); err != nil {
+	if err := usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+		AppID:       *h.AppID,
+		Account:     user.GoogleSecret,
+		AccountType: basetypes.SignMethod_Google,
+		UsedFor:     basetypes.UsedFor_Update,
+		Code:        *h.Code,
+	}); err != nil {
 		return nil, err
 	}
 

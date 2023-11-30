@@ -12,8 +12,9 @@ import (
 )
 
 type Handler struct {
-	ID           *string
-	AppID        string
+	ID           *uint32
+	EntID        *string
+	AppID        *string
 	ThirdPartyID *string
 	ClientID     *string
 	ClientSecret *string
@@ -32,25 +33,47 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
 		}
 		h.ID = id
 		return nil
 	}
 }
 
-func WithAppID(id string) func(context.Context, *Handler) error {
+func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if _, err := uuid.Parse(id); err != nil {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid entid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		exist, err := appmwcli.ExistApp(ctx, id)
+		h.EntID = id
+		return nil
+	}
+}
+
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		exist, err := appmwcli.ExistApp(ctx, *id)
 		if err != nil {
 			return err
 		}
@@ -62,9 +85,12 @@ func WithAppID(id string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithThirdPartyID(id *string) func(context.Context, *Handler) error {
+func WithThirdPartyID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid thirdpartyid")
+			}
 			return nil
 		}
 		_id, err := uuid.Parse(*id)
@@ -83,21 +109,21 @@ func WithThirdPartyID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithClientID(code *string) func(context.Context, *Handler) error {
+func WithClientID(code *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ClientID = code
 		return nil
 	}
 }
 
-func WithClientSecret(state *string) func(context.Context, *Handler) error {
+func WithClientSecret(state *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.ClientSecret = state
 		return nil
 	}
 }
 
-func WithCallbackURL(state *string) func(context.Context, *Handler) error {
+func WithCallbackURL(state *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.CallbackURL = state
 		return nil

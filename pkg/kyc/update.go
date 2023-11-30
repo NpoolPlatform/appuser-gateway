@@ -28,7 +28,7 @@ func (h *updateHandler) checkReview(ctx context.Context) (bool, error) {
 	if info == nil {
 		return true, nil
 	}
-	if info.AppID != h.AppID {
+	if info.AppID != *h.AppID {
 		return false, fmt.Errorf("appid mismatch")
 	}
 
@@ -70,16 +70,18 @@ func (h *updateHandler) withUpdateKyc(dispose *dtmcli.SagaDispose) {
 }
 
 func (h *Handler) UpdateKyc(ctx context.Context) (*npool.Kyc, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
 	info, err := h.GetKyc(ctx)
 	if err != nil {
 		return nil, err
 	}
+	if info == nil {
+		return nil, fmt.Errorf("invalid kyc")
+	}
+	if info.ID != *h.ID {
+		return nil, fmt.Errorf("invalid kyc")
+	}
 
-	h.AppID = info.AppID
-
+	h.AppID = &info.AppID
 	handler := &updateHandler{
 		Handler: h,
 		kyc:     info,
@@ -96,7 +98,7 @@ func (h *Handler) UpdateKyc(ctx context.Context) (*npool.Kyc, error) {
 
 	sagaDispose := dtmcli.NewSagaDispose(dtmimp.TransOptions{
 		WaitResult:     true,
-		RequestTimeout: handler.RequestTimeoutSeconds,
+		RequestTimeout: *handler.RequestTimeoutSeconds,
 	})
 
 	handler.withUpdateKyc(sagaDispose)

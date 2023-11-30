@@ -15,8 +15,8 @@ import (
 func (s *Server) GetUsers(ctx context.Context, in *npool.GetUsersRequest) (*npool.GetUsersResponse, error) {
 	handler, err := roleuser1.NewHandler(
 		ctx,
-		roleuser1.WithAppID(in.GetAppID()),
-		roleuser1.WithRoleID(in.GetRoleID()),
+		roleuser1.WithAppID(&in.AppID, true),
+		roleuser1.WithRoleID(&in.RoleID, false),
 		roleuser1.WithOffset(in.GetOffset()),
 		roleuser1.WithLimit(in.GetLimit()),
 	)
@@ -48,8 +48,8 @@ func (s *Server) GetUsers(ctx context.Context, in *npool.GetUsersRequest) (*npoo
 func (s *Server) GetAppUsers(ctx context.Context, in *npool.GetAppUsersRequest) (*npool.GetAppUsersResponse, error) {
 	handler, err := roleuser1.NewHandler(
 		ctx,
-		roleuser1.WithAppID(in.GetTargetAppID()),
-		roleuser1.WithRoleID(in.GetRoleID()),
+		roleuser1.WithAppID(&in.TargetAppID, true),
+		roleuser1.WithRoleID(&in.RoleID, false),
 		roleuser1.WithOffset(in.GetOffset()),
 		roleuser1.WithLimit(in.GetLimit()),
 	)

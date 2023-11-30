@@ -14,7 +14,7 @@ import (
 func (s *Server) GetApp(ctx context.Context, in *npool.GetAppRequest) (*npool.GetAppResponse, error) {
 	handler, err := app1.NewHandler(
 		ctx,
-		app1.WithID(&in.AppID),
+		app1.WithEntID(&in.AppID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

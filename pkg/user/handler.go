@@ -16,12 +16,13 @@ import (
 )
 
 type Handler struct {
-	AppID                 string
+	ID                    *uint32
+	EntID                 *string
+	AppID                 *string
 	App                   *appmwpb.App
 	UserID                *string
 	User                  *usermwpb.User
 	TargetUserID          *string
-	TargetUser            *usermwpb.User
 	CheckInvitation       *bool
 	Account               *string
 	NewAccount            *string
@@ -34,7 +35,7 @@ type Handler struct {
 	InvitationCode        *string
 	EmailAddress          *string
 	PhoneNO               *string
-	RequestTimeoutSeconds int64
+	RequestTimeoutSeconds *int64
 	ManMachineSpec        *string
 	EnvironmentSpec       *string
 	Metadata              *Metadata
@@ -59,15 +60,18 @@ type Handler struct {
 	Banned                *bool
 	BanMessage            *string
 	RecoveryCode          *string
-	ShouldUpdateCache     bool
+	UpdateCacheMode       *UpdateCacheMode
 	ThirdPartyID          *string
 	Offset                int32
 	Limit                 int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
+	updateCacheMode := RequiredUpdateCache
+	requestTimeoutSeconds := int64(10) //nolint
 	handler := &Handler{
-		ShouldUpdateCache: true,
+		UpdateCacheMode:       &updateCacheMode,
+		RequestTimeoutSeconds: &requestTimeoutSeconds,
 	}
 
 	for _, opt := range options {
@@ -78,17 +82,33 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithAppID(id string) func(context.Context, *Handler) error {
+func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		app, err := appmwcli.GetApp(ctx, id)
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
+			return nil
+		}
+		h.ID = id
+		return nil
+	}
+}
+
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
+			return nil
+		}
+		app, err := appmwcli.GetApp(ctx, *id)
 		if err != nil {
-			return fmt.Errorf("get app error: %v", err)
+			return err
 		}
 		if app == nil {
 			return fmt.Errorf("invalid app")
-		}
-		if _, err := uuid.Parse(id); err != nil {
-			return err
 		}
 		h.AppID = id
 		h.App = app
@@ -96,9 +116,28 @@ func WithAppID(id string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithUserID(id *string) func(context.Context, *Handler) error {
+func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid entid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.EntID = id
+		return nil
+	}
+}
+
+func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid userid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -109,13 +148,16 @@ func WithUserID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithPasswordHash(pwdHash *string) func(context.Context, *Handler) error {
+func WithPasswordHash(pwdHash *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if pwdHash == nil {
+			if must {
+				return fmt.Errorf("invalid passwordhash")
+			}
 			return nil
 		}
 		if *pwdHash == "" {
-			return fmt.Errorf("invalid password")
+			return fmt.Errorf("invalid passwordhash")
 		}
 		h.PasswordHash = pwdHash
 		return nil
@@ -137,72 +179,67 @@ func validatePhoneNO(phoneNO string) error {
 			`[\-\.\ \\\/]?(\d+))?$`,
 	)
 	if !re.MatchString(phoneNO) {
-		return fmt.Errorf("invalid phone no")
+		return fmt.Errorf("invalid phoneno")
 	}
 
 	return nil
 }
 
-//nolint:gocyclo
-func WithAccount(account *string, accountType *basetypes.SignMethod) func(context.Context, *Handler) error {
+func WithAccount(account *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if accountType == nil {
+		if account == nil {
+			if must {
+				return fmt.Errorf("invalid account")
+			}
 			return nil
 		}
 
-		switch *accountType {
-		case basetypes.SignMethod_Mobile:
-			fallthrough //nolint
-		case basetypes.SignMethod_Email:
-			fallthrough //nolint
-		case basetypes.SignMethod_Github:
-			fallthrough //nolint
-		case basetypes.SignMethod_Google:
-			fallthrough //nolint
-		case basetypes.SignMethod_Facebook:
-			fallthrough //nolint
-		case basetypes.SignMethod_Twitter:
-			fallthrough //nolint
-		case basetypes.SignMethod_Linkedin:
-			fallthrough //nolint
-		case basetypes.SignMethod_Wechat:
-			if account == nil {
-				return fmt.Errorf("invalid account")
-			}
+		// For google auth
+		if *account == "" {
+			return nil
 		}
 
-		var err error
-
-		switch *accountType {
-		case basetypes.SignMethod_Mobile:
+		var accountType basetypes.SignMethod
+		if err := validatePhoneNO(*account); err == nil {
 			h.PhoneNO = account
-			err = validatePhoneNO(*account)
-		case basetypes.SignMethod_Email:
+			accountType = basetypes.SignMethod_Mobile
+		} else if err := validateEmailAddress(*account); err == nil {
+			accountType = basetypes.SignMethod_Email
 			h.EmailAddress = account
-			err = validateEmailAddress(*account)
-		case basetypes.SignMethod_Github:
-		case basetypes.SignMethod_Google:
-		case basetypes.SignMethod_Facebook:
-		case basetypes.SignMethod_Twitter:
-		case basetypes.SignMethod_Linkedin:
-		case basetypes.SignMethod_Wechat:
-		default:
-			return fmt.Errorf("invalid account type")
 		}
 
-		if err != nil {
-			return err
+		if h.AccountType != nil && accountType != *h.AccountType {
+			return fmt.Errorf("invalid accounttype")
 		}
 
-		h.AccountType = accountType
+		h.AccountType = &accountType
 		h.Account = account
 		return nil
 	}
 }
 
-func WithEmailAddress(emailAddress *string) func(context.Context, *Handler) error {
+func WithAccountType(accountType *basetypes.SignMethod, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if accountType == nil {
+			if must {
+				return fmt.Errorf("invalid accounttype")
+			}
+			return nil
+		}
+		if h.AccountType != nil && *accountType != *h.AccountType {
+			return fmt.Errorf("invalid accounttype")
+		}
+		h.AccountType = accountType
+		return nil
+	}
+}
+
+func WithEmailAddress(emailAddress *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if emailAddress == nil {
+			if must {
+				return fmt.Errorf("invalid emailaddress")
+			}
 			return nil
 		}
 		if err := validateEmailAddress(*emailAddress); err != nil {
@@ -213,9 +250,12 @@ func WithEmailAddress(emailAddress *string) func(context.Context, *Handler) erro
 	}
 }
 
-func WithPhoneNO(phoneNO *string) func(context.Context, *Handler) error {
+func WithPhoneNO(phoneNO *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if phoneNO == nil {
+			if must {
+				return fmt.Errorf("invalid phoneno")
+			}
 			return nil
 		}
 		if err := validatePhoneNO(*phoneNO); err != nil {
@@ -226,69 +266,78 @@ func WithPhoneNO(phoneNO *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithVerificationCode(code *string) func(context.Context, *Handler) error {
+func WithVerificationCode(code *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if code == nil {
+			if must {
+				return fmt.Errorf("invalid verificationcode")
+			}
 			return nil
 		}
 		if *code == "" {
-			return fmt.Errorf("invalid verification code")
+			return fmt.Errorf("invalid verificationcode")
 		}
 		h.VerificationCode = code
 		return nil
 	}
 }
 
-func WithNewVerificationCode(code *string) func(context.Context, *Handler) error {
+func WithNewVerificationCode(code *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if code == nil {
+			if must {
+				return fmt.Errorf("invalid newverificationcode")
+			}
 			return nil
 		}
 		if *code == "" {
-			return fmt.Errorf("invalid new verification code")
+			return fmt.Errorf("invalid newverificationcode")
 		}
 		h.NewVerificationCode = code
 		return nil
 	}
 }
 
-func WithInvitationCode(code *string) func(context.Context, *Handler) error {
+func WithInvitationCode(code *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if code == nil {
+			if must {
+				return fmt.Errorf("invalid invitationcode")
+			}
 			return nil
 		}
 		if *code == "" {
-			return fmt.Errorf("invalid invitation code")
+			return fmt.Errorf("invalid invitationcode")
 		}
 		h.InvitationCode = code
 		return nil
 	}
 }
 
-func WithRequestTimeoutSeconds(seconds int64) func(context.Context, *Handler) error {
+func WithRequestTimeoutSeconds(seconds *int64, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.RequestTimeoutSeconds = seconds
 		return nil
 	}
 }
 
-func WithManMachineSpec(manMachineSpec string) func(context.Context, *Handler) error {
+func WithManMachineSpec(manMachineSpec *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.ManMachineSpec = &manMachineSpec
+		h.ManMachineSpec = manMachineSpec
 		return nil
 	}
 }
 
-func WithEnvironmentSpec(envSpec string) func(context.Context, *Handler) error {
+func WithEnvironmentSpec(envSpec *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.EnvironmentSpec = &envSpec
+		h.EnvironmentSpec = envSpec
 		return nil
 	}
 }
 
-func WithToken(token string) func(context.Context, *Handler) error {
+func WithToken(token *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.Token = &token
+		h.Token = token
 		return nil
 	}
 }
@@ -310,72 +359,100 @@ func WithLimit(limit int32) func(context.Context, *Handler) error {
 	}
 }
 
-func WithNewAccount(account *string, accountType *basetypes.SignMethod) func(context.Context, *Handler) error {
+func WithNewAccount(account *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if accountType == nil {
-			return nil
-		}
-
-		switch *accountType {
-		case basetypes.SignMethod_Mobile:
-			fallthrough //nolint
-		case basetypes.SignMethod_Email:
-			if account == nil {
+		if account == nil {
+			if must {
 				return fmt.Errorf("invalid account")
 			}
+			return nil
+		}
+		if *account == "" {
+			return fmt.Errorf("invalid newaccount")
 		}
 
-		var err error
-
-		switch *accountType {
-		case basetypes.SignMethod_Mobile:
-			err = validatePhoneNO(*account)
-		case basetypes.SignMethod_Email:
-			err = validateEmailAddress(*account)
-		case basetypes.SignMethod_Google:
-		default:
-			return fmt.Errorf("invalid account type")
+		var accountType basetypes.SignMethod
+		if err := validatePhoneNO(*account); err == nil {
+			accountType = basetypes.SignMethod_Mobile
+		} else if err := validateEmailAddress(*account); err == nil {
+			accountType = basetypes.SignMethod_Email
+		} else {
+			return fmt.Errorf("invalid newaccount")
 		}
 
-		if err != nil {
-			return err
+		if h.NewAccountType != nil && accountType != *h.NewAccountType {
+			return fmt.Errorf("invalid newaccounttype")
 		}
 
-		h.NewAccountType = accountType
+		h.NewAccountType = &accountType
 		h.NewAccount = account
 		return nil
 	}
 }
 
-func WithOldPasswordHash(pwdHash *string) func(context.Context, *Handler) error {
+func WithNewAccountType(accountType *basetypes.SignMethod, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if accountType == nil {
+			if must {
+				return fmt.Errorf("invalid newaccounttype")
+			}
+			return nil
+		}
+		if h.NewAccount != nil && *h.NewAccount != "" {
+			if h.NewAccountType != nil && *accountType != *h.NewAccountType {
+				return fmt.Errorf("invalid newaccounttype")
+			}
+		}
+		switch *accountType {
+		case basetypes.SignMethod_Mobile:
+		case basetypes.SignMethod_Email:
+		case basetypes.SignMethod_Google:
+		default:
+			return fmt.Errorf("invalid newaccounttype")
+		}
+		h.NewAccountType = accountType
+		return nil
+	}
+}
+
+func WithOldPasswordHash(pwdHash *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if pwdHash == nil {
+			if must {
+				return fmt.Errorf("invalid oldpasswordhash")
+			}
 			return nil
 		}
 		if *pwdHash == "" {
-			return fmt.Errorf("invalid old password")
+			return fmt.Errorf("invalid oldpasswordhash")
 		}
 		h.OldPasswordHash = pwdHash
 		return nil
 	}
 }
 
-func WithRecoveryCode(code *string) func(context.Context, *Handler) error {
+func WithRecoveryCode(code *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if code == nil {
+			if must {
+				return fmt.Errorf("invalid recoverycode")
+			}
 			return nil
 		}
 		if *code == "" {
-			return fmt.Errorf("invalid code")
+			return fmt.Errorf("invalid recoverycode")
 		}
 		h.RecoveryCode = code
 		return nil
 	}
 }
 
-func WithTargetUserID(id *string) func(context.Context, *Handler) error {
+func WithTargetUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid targetuserid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -386,23 +463,26 @@ func WithTargetUserID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCheckInvitation(check bool) func(context.Context, *Handler) error {
+func WithCheckInvitation(check *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.CheckInvitation = &check
+		h.CheckInvitation = check
 		return nil
 	}
 }
 
-func WithKol(kol *bool) func(context.Context, *Handler) error {
+func WithKol(kol *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Kol = kol
 		return nil
 	}
 }
 
-func WithUsername(username *string) func(context.Context, *Handler) error {
+func WithUsername(username *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if username == nil {
+			if must {
+				return fmt.Errorf("invalid username")
+			}
 			return nil
 		}
 		re := regexp.MustCompile("^[a-zA-Z0-9\u3040-\u31ff][[a-zA-Z0-9_\\-\\.\u3040-\u31ff]{3,32}$") //nolint
@@ -414,16 +494,19 @@ func WithUsername(username *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithAddressFields(addressFields []string) func(context.Context, *Handler) error {
+func WithAddressFields(addressFields []string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.AddressFields = addressFields
 		return nil
 	}
 }
 
-func WithGender(gender *string) func(context.Context, *Handler) error {
+func WithGender(gender *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if gender == nil {
+			if must {
+				return fmt.Errorf("invalid gender")
+			}
 			return nil
 		}
 		if *gender == "" {
@@ -434,42 +517,42 @@ func WithGender(gender *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithPostalCode(postalCode *string) func(context.Context, *Handler) error {
+func WithPostalCode(postalCode *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if postalCode == nil {
+			if must {
+				return fmt.Errorf("invalid postalcode")
+			}
 			return nil
 		}
 		if *postalCode == "" {
-			return fmt.Errorf("invalid postalCode")
+			return fmt.Errorf("invalid postalcode")
 		}
 		h.PostalCode = postalCode
 		return nil
 	}
 }
 
-func WithAge(age *uint32) func(context.Context, *Handler) error {
+func WithAge(age *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if age == nil {
-			return nil
-		}
 		h.Age = age
 		return nil
 	}
 }
 
-func WithBirthday(birthday *uint32) func(context.Context, *Handler) error {
+func WithBirthday(birthday *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if birthday == nil {
-			return nil
-		}
 		h.Birthday = birthday
 		return nil
 	}
 }
 
-func WithAvatar(avatar *string) func(context.Context, *Handler) error {
+func WithAvatar(avatar *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if avatar == nil {
+			if must {
+				return fmt.Errorf("invalid avatar")
+			}
 			return nil
 		}
 		if *avatar == "" {
@@ -480,9 +563,12 @@ func WithAvatar(avatar *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithOrganization(organization *string) func(context.Context, *Handler) error {
+func WithOrganization(organization *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if organization == nil {
+			if must {
+				return fmt.Errorf("invalid organization")
+			}
 			return nil
 		}
 		if *organization == "" {
@@ -493,9 +579,12 @@ func WithOrganization(organization *string) func(context.Context, *Handler) erro
 	}
 }
 
-func WithFirstName(firstName *string) func(context.Context, *Handler) error {
+func WithFirstName(firstName *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if firstName == nil {
+			if must {
+				return fmt.Errorf("invalid firstname")
+			}
 			return nil
 		}
 		if *firstName == "" {
@@ -506,9 +595,12 @@ func WithFirstName(firstName *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithLastName(lastName *string) func(context.Context, *Handler) error {
+func WithLastName(lastName *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if lastName == nil {
+			if must {
+				return fmt.Errorf("invalid lastname")
+			}
 			return nil
 		}
 		if *lastName == "" {
@@ -519,9 +611,12 @@ func WithLastName(lastName *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithIDNumber(idNumber *string) func(context.Context, *Handler) error {
+func WithIDNumber(idNumber *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if idNumber == nil {
+			if must {
+				return fmt.Errorf("invalid idnumber")
+			}
 			return nil
 		}
 		if *idNumber == "" {
@@ -532,9 +627,12 @@ func WithIDNumber(idNumber *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithSigninVerifyType(verifyType *basetypes.SignMethod) func(context.Context, *Handler) error {
+func WithSigninVerifyType(verifyType *basetypes.SignMethod, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if verifyType == nil {
+			if must {
+				return fmt.Errorf("invalid signinverifytype")
+			}
 			return nil
 		}
 		switch *verifyType {
@@ -542,23 +640,26 @@ func WithSigninVerifyType(verifyType *basetypes.SignMethod) func(context.Context
 		case basetypes.SignMethod_Mobile:
 		case basetypes.SignMethod_Google:
 		default:
-			return fmt.Errorf("invalid sign verify type")
+			return fmt.Errorf("invalid signverifytype")
 		}
 		h.SigninVerifyType = verifyType
 		return nil
 	}
 }
 
-func WithKolConfirmed(confirmed *bool) func(context.Context, *Handler) error {
+func WithKolConfirmed(confirmed *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.KolConfirmed = confirmed
 		return nil
 	}
 }
 
-func WithSelectedLangID(id *string) func(context.Context, *Handler) error {
+func WithSelectedLangID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid selectedlangid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -569,30 +670,47 @@ func WithSelectedLangID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithBanned(banned *bool) func(context.Context, *Handler) error {
+func WithBanned(banned *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Banned = banned
 		return nil
 	}
 }
 
-func WithBanMessage(message *string) func(context.Context, *Handler) error {
+func WithBanMessage(message *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.BanMessage = message
 		return nil
 	}
 }
 
-func WithShouldUpdateCache(update bool) func(context.Context, *Handler) error {
+func WithUpdateCacheMode(mode *UpdateCacheMode, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.ShouldUpdateCache = update
+		if mode == nil {
+			if must {
+				return fmt.Errorf("invalid updatecachemode")
+			}
+			return nil
+		}
+		switch *mode {
+		case RequiredUpdateCache:
+		case UpdateCacheIfExist:
+		case DeleteCacheIfExist:
+		case DontUpdateCache:
+		default:
+			return fmt.Errorf("invalid updatecachemode")
+		}
+		h.UpdateCacheMode = mode
 		return nil
 	}
 }
 
-func WithThirdPartyID(id *string) func(context.Context, *Handler) error {
+func WithThirdPartyID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid thirdpartyid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {

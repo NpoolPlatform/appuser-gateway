@@ -14,9 +14,9 @@ import (
 func (s *Server) CreateSubscriber(ctx context.Context, in *npool.CreateSubscriberRequest) (*npool.CreateSubscriberResponse, error) {
 	handler, err := subscriber1.NewHandler(
 		ctx,
-		subscriber1.WithAppID(in.GetAppID()),
-		subscriber1.WithSubscribeAppID(in.SubscribeAppID),
-		subscriber1.WithEmailAddress(in.GetEmailAddress()),
+		subscriber1.WithAppID(&in.AppID, true),
+		subscriber1.WithSubscribeAppID(in.SubscribeAppID, false),
+		subscriber1.WithEmailAddress(&in.EmailAddress, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

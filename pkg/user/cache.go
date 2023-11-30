@@ -13,6 +13,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type UpdateCacheMode int32
+
+const (
+	RequiredUpdateCache UpdateCacheMode = 10
+	UpdateCacheIfExist  UpdateCacheMode = 20
+	DeleteCacheIfExist  UpdateCacheMode = 30
+	DontUpdateCache     UpdateCacheMode = 40
+)
+
 const (
 	redisTimeout    = 5 * time.Second
 	loginExpiration = 4 * time.Hour
@@ -96,10 +105,10 @@ func (h *Handler) CreateCache(ctx context.Context) error {
 }
 
 func (h *Handler) QueryCache(ctx context.Context) (*Metadata, error) {
-	if h.UserID == nil {
-		return nil, fmt.Errorf("invalid userid")
-	}
+	return h.QueryUserCache(ctx, *h.UserID)
+}
 
+func (h *Handler) QueryUserCache(ctx context.Context, userID string) (*Metadata, error) {
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return nil, err
@@ -108,16 +117,16 @@ func (h *Handler) QueryCache(ctx context.Context) (*Metadata, error) {
 	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
 	defer cancel()
 
-	appID, err := uuid.Parse(h.AppID)
+	appID, err := uuid.Parse(*h.AppID)
 	if err != nil {
 		return nil, err
 	}
-	userID, err := uuid.Parse(*h.UserID)
+	_userID, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	val, err := cli.Get(ctx, appUserKey(appID, userID)).Result()
+	val, err := cli.Get(ctx, appUserKey(appID, _userID)).Result()
 	if err == redis.Nil {
 		return nil, nil
 	} else if err != nil {
@@ -152,6 +161,10 @@ func (h *Handler) QueryCache(ctx context.Context) (*Metadata, error) {
 }
 
 func (h *Handler) DeleteCache(ctx context.Context) error {
+	return h.DeleteUserCache(ctx, h.Metadata)
+}
+
+func (h *Handler) DeleteUserCache(ctx context.Context, meta *Metadata) error {
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return err
@@ -160,12 +173,12 @@ func (h *Handler) DeleteCache(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
 	defer cancel()
 
-	err = cli.Del(ctx, metaToUserKey(h.Metadata)).Err()
+	err = cli.Del(ctx, metaToUserKey(meta)).Err()
 	if err != nil {
 		return err
 	}
 
-	err = cli.Del(ctx, metaToAccountKey(h.Metadata)).Err()
+	err = cli.Del(ctx, metaToAccountKey(meta)).Err()
 	if err != nil {
 		return err
 	}
@@ -183,7 +196,7 @@ func (h *Handler) UpdateCache(ctx context.Context) error {
 		return err
 	}
 	if meta == nil || meta.User == nil {
-		return fmt.Errorf("cache: invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
+		return fmt.Errorf("cache: invalid user: app_id=%v, user_id=%v", *h.AppID, *h.UserID)
 	}
 
 	h.User.InvitationCode = meta.User.InvitationCode

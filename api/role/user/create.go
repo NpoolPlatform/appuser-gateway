@@ -15,9 +15,9 @@ import (
 func (s *Server) CreateUser(ctx context.Context, in *npool.CreateUserRequest) (*npool.CreateUserResponse, error) {
 	handler, err := roleuser1.NewHandler(
 		ctx,
-		roleuser1.WithAppID(in.GetAppID()),
-		roleuser1.WithUserID(in.GetTargetUserID()),
-		roleuser1.WithRoleID(in.GetRoleID()),
+		roleuser1.WithAppID(&in.AppID, true),
+		roleuser1.WithUserID(&in.TargetUserID, true),
+		roleuser1.WithRoleID(&in.RoleID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -46,9 +46,9 @@ func (s *Server) CreateUser(ctx context.Context, in *npool.CreateUserRequest) (*
 func (s *Server) CreateAppUser(ctx context.Context, in *npool.CreateAppUserRequest) (*npool.CreateAppUserResponse, error) {
 	handler, err := roleuser1.NewHandler(
 		ctx,
-		roleuser1.WithAppID(in.GetTargetAppID()),
-		roleuser1.WithUserID(in.GetTargetUserID()),
-		roleuser1.WithRoleID(in.GetRoleID()),
+		roleuser1.WithAppID(&in.TargetAppID, true),
+		roleuser1.WithUserID(&in.TargetUserID, true),
+		roleuser1.WithRoleID(&in.RoleID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

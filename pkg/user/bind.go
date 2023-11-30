@@ -22,20 +22,7 @@ type bindHandler struct {
 	oauthConf     *oauthmwpb.OAuthThirdParty
 }
 
-//nolint:gocyclo
 func (h *bindHandler) validate() error {
-	if h.UserID == nil {
-		return fmt.Errorf("invalid userid")
-	}
-	if h.AppID == "" {
-		return fmt.Errorf("invalid appid")
-	}
-	if h.Account == nil {
-		return fmt.Errorf("invalid account")
-	}
-	if h.AccountType == nil {
-		return fmt.Errorf("invalid accounttype")
-	}
 	switch *h.AccountType {
 	case basetypes.SignMethod_Github:
 	case basetypes.SignMethod_Google:
@@ -46,37 +33,16 @@ func (h *bindHandler) validate() error {
 	default:
 		return fmt.Errorf("invalid accounttype")
 	}
-	if h.NewAccount == nil {
-		return fmt.Errorf("invalid newaccount")
-	}
-	if h.NewAccountType == nil {
-		return fmt.Errorf("invalid newaccounttype")
-	}
 	switch *h.NewAccountType {
 	case basetypes.SignMethod_Email:
 	case basetypes.SignMethod_Mobile:
 	default:
 		return fmt.Errorf("invalid newaccounttype")
 	}
-	if h.NewVerificationCode == nil {
-		return fmt.Errorf("invalid newverificationcode")
-	}
 	return nil
 }
 
 func (h *bindHandler) validUnbindOAuth() error {
-	if h.UserID == nil {
-		return fmt.Errorf("invalid userid")
-	}
-	if h.AppID == "" {
-		return fmt.Errorf("invalid appid")
-	}
-	if h.Account == nil {
-		return fmt.Errorf("invalid account")
-	}
-	if h.AccountType == nil {
-		return fmt.Errorf("invalid accounttype")
-	}
 	switch *h.AccountType {
 	case basetypes.SignMethod_Github:
 	case basetypes.SignMethod_Google:
@@ -91,16 +57,17 @@ func (h *bindHandler) validUnbindOAuth() error {
 }
 
 func (h *bindHandler) getUser(ctx context.Context) error {
-	info, err := usermwcli.GetUser(ctx, h.AppID, *h.UserID)
+	info, err := usermwcli.GetUser(ctx, *h.AppID, *h.UserID)
 	if err != nil {
 		return err
 	}
 	if info == nil {
-		return fmt.Errorf("bind: invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
+		return fmt.Errorf("bind: invalid user: app_id=%v, user_id=%v", *h.AppID, *h.UserID)
 	}
 
 	h.User = info
 	h.oldUserInfo = info
+	h.ID = &info.ID
 	return nil
 }
 
@@ -108,7 +75,7 @@ func (h *bindHandler) getThirdUserInfo(ctx context.Context) error {
 	info, err := usermwcli.GetUserOnly(
 		ctx,
 		&usermwpb.Conds{
-			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			AppID:            &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			ThirdPartyUserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Account},
 			ThirdPartyID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.oauthConf.ThirdPartyID},
 		},
@@ -129,7 +96,7 @@ func (h *bindHandler) getThirdPartyConf(ctx context.Context) error {
 	info, err := oauthmwcli.GetOAuthThirdPartyOnly(
 		ctx,
 		&oauthmwpb.Conds{
-			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			ClientName: &basetypes.Int32Val{Op: cruder.EQ, Value: int32(*h.AccountType)},
 		},
 	)
@@ -155,22 +122,19 @@ func (h *bindHandler) verifyNewAccountCode(ctx context.Context) error {
 	if h.NewAccount != nil {
 		account = *h.NewAccount
 	}
-	return usercodemwcli.VerifyUserCode(
-		ctx,
-		&usercodemwpb.VerifyUserCodeRequest{
-			Prefix:      basetypes.Prefix_PrefixUserCode.String(),
-			AppID:       h.AppID,
-			Account:     account,
-			AccountType: *h.NewAccountType,
-			UsedFor:     basetypes.UsedFor_Update,
-			Code:        *h.NewVerificationCode,
-		},
-	)
+	return usercodemwcli.VerifyUserCode(ctx, &usercodemwpb.VerifyUserCodeRequest{
+		Prefix:      basetypes.Prefix_PrefixUserCode.String(),
+		AppID:       *h.AppID,
+		Account:     account,
+		AccountType: *h.NewAccountType,
+		UsedFor:     basetypes.UsedFor_Update,
+		Code:        *h.NewVerificationCode,
+	})
 }
 
 func (h *bindHandler) verifyNewAccount(ctx context.Context) error {
 	conds := &usermwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}
 	switch *h.NewAccountType {
 	case basetypes.SignMethod_Email:
@@ -183,7 +147,7 @@ func (h *bindHandler) verifyNewAccount(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if info != nil && info.ID != *h.UserID {
+	if info != nil && info.EntID != *h.UserID {
 		return fmt.Errorf("invalid account")
 	}
 	return nil
@@ -191,8 +155,8 @@ func (h *bindHandler) verifyNewAccount(ctx context.Context) error {
 
 func (h *bindHandler) updateUser(ctx context.Context) error {
 	req := &usermwpb.UserReq{
-		ID:               h.UserID,
-		AppID:            &h.AppID,
+		EntID:            h.UserID,
+		AppID:            h.AppID,
 		EmailAddress:     h.EmailAddress,
 		PhoneNO:          h.PhoneNO,
 		ThirdPartyID:     h.thirdUserInfo.ThirdPartyID,
@@ -244,7 +208,7 @@ func (h *bindHandler) deleteCache(ctx context.Context) error {
 		return err
 	}
 	if meta == nil || meta.User == nil {
-		return fmt.Errorf("cache: invalid user: app_id=%v, user_id=%v", h.AppID, *h.UserID)
+		return fmt.Errorf("cache: invalid user: app_id=%v, user_id=%v", *h.AppID, *h.UserID)
 	}
 	h.Metadata = meta
 	if err := h.DeleteCache(ctx); err != nil {
@@ -254,7 +218,7 @@ func (h *bindHandler) deleteCache(ctx context.Context) error {
 }
 
 func (h *bindHandler) deleteThirdUserInfo(ctx context.Context) error {
-	_, err := usermwcli.DeleteThirdUser(ctx, h.AppID, *h.UserID, h.oauthConf.ThirdPartyID, *h.Account)
+	_, err := usermwcli.DeleteThirdUser(ctx, *h.AppID, *h.ID, h.oauthConf.ThirdPartyID, *h.Account)
 	if err != nil {
 		return nil
 	}
@@ -266,7 +230,7 @@ func (h *bindHandler) deleteThirdUserInfo(ctx context.Context) error {
 }
 
 func (h *bindHandler) deleteUser(ctx context.Context) error {
-	_, err := usermwcli.DeleteUser(ctx, h.AppID, *h.UserID)
+	_, err := usermwcli.DeleteUser(ctx, *h.AppID, *h.ID)
 	if err != nil {
 		return nil
 	}
@@ -307,10 +271,6 @@ func (h *Handler) BindUser(ctx context.Context) (*usermwpb.User, error) {
 
 	if err := handler.updateUser(ctx); err != nil {
 		return nil, err
-	}
-
-	if !h.ShouldUpdateCache {
-		return h.User, nil
 	}
 
 	if err := handler.updateCache(ctx); err != nil {

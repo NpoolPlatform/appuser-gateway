@@ -11,16 +11,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) GetAppAuthHistories(
-	ctx context.Context,
-	in *npool.GetAppAuthHistoriesRequest,
-) (
-	*npool.GetAppAuthHistoriesResponse,
-	error,
-) {
+func (s *Server) GetAppAuthHistories(ctx context.Context, in *npool.GetAppAuthHistoriesRequest) (*npool.GetAppAuthHistoriesResponse, error) {
 	handler, err := history1.NewHandler(
 		ctx,
-		history1.WithAppID(in.GetTargetAppID()),
+		history1.WithAppID(&in.TargetAppID, true),
 		history1.WithOffset(in.GetOffset()),
 		history1.WithLimit(in.GetLimit()),
 	)

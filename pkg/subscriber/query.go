@@ -10,12 +10,9 @@ import (
 )
 
 func (h *Handler) GetSubscriberes(ctx context.Context) ([]*subscribermwpb.Subscriber, uint32, error) {
-	return subscribermwcli.GetSubscriberes(
-		ctx,
-		&subscribermwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	conds := &subscribermwpb.Conds{}
+	if h.AppID != nil {
+		conds.AppID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID}
+	}
+	return subscribermwcli.GetSubscriberes(ctx, conds, h.Offset, h.Limit)
 }

@@ -8,15 +8,12 @@ import (
 )
 
 func (h *Handler) CreateOAuthThirdParty(ctx context.Context) (*oauththirdpartymwpb.OAuthThirdParty, error) {
-	return oauththirdpartymwcli.CreateOAuthThirdParty(
-		ctx,
-		&oauththirdpartymwpb.OAuthThirdPartyReq{
-			ClientName:     h.ClientName,
-			ClientTag:      h.ClientTag,
-			ClientLogoURL:  h.ClientLogoURL,
-			ClientOAuthURL: h.ClientOAuthURL,
-			ResponseType:   h.ResponseType,
-			Scope:          h.Scope,
-		},
-	)
+	return oauththirdpartymwcli.CreateOAuthThirdParty(ctx, &oauththirdpartymwpb.OAuthThirdPartyReq{
+		ClientName:     h.ClientName,
+		ClientTag:      h.ClientTag,
+		ClientLogoURL:  h.ClientLogoURL,
+		ClientOAuthURL: h.ClientOAuthURL,
+		ResponseType:   h.ResponseType,
+		Scope:          h.Scope,
+	})
 }

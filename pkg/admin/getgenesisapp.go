@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
@@ -23,6 +24,8 @@ func (h *getGenesisAppHandler) getGenesisAppConfig() error {
 		servicename.ServiceDomain,
 		constant.KeyGenesisApp,
 	)
+
+	str = strings.ReplaceAll(str, "\"ID\":", "\"EntID\":")
 
 	if err := json.Unmarshal([]byte(str), &h.GenesisApps); err != nil {
 		return err
@@ -44,10 +47,10 @@ func (h *Handler) GetGenesisApps(ctx context.Context) ([]*appmwpb.App, error) {
 
 	ids := []string{}
 	for _, _app := range h.GenesisApps {
-		ids = append(ids, _app.ID)
+		ids = append(ids, _app.EntID)
 	}
 	infos, _, err := appmwcli.GetApps(ctx, &appmwpb.Conds{
-		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, 0, int32(len(ids)))
 	if err != nil {
 		return nil, err

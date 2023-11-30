@@ -11,8 +11,15 @@ import (
 )
 
 func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
+	exist, err := appmwcli.ExistAppConds(ctx, &appmwpb.Conds{
+		ID:    &basetypes.Uint32Val{Op: cruder.EQ, Value: *h.ID},
+		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.EntID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, fmt.Errorf("invalid app")
 	}
 
 	if h.Name != nil {
@@ -27,26 +34,28 @@ func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
 		}
 	}
 
-	return appmwcli.UpdateApp(
-		ctx,
-		&appmwpb.AppReq{
-			ID:                       h.ID,
-			CreatedBy:                h.CreatedBy,
-			Name:                     h.Name,
-			Logo:                     h.Logo,
-			Description:              h.Description,
-			SignupMethods:            h.SignupMethods,
-			ExtSigninMethods:         h.ExtSigninMethods,
-			RecaptchaMethod:          h.RecaptchaMethod,
-			KycEnable:                h.KycEnable,
-			SigninVerifyEnable:       h.SigninVerifyEnable,
-			InvitationCodeMust:       h.InvitationCodeMust,
-			CreateInvitationCodeWhen: h.CreateInvitationCodeWhen,
-			MaxTypedCouponsPerOrder:  h.MaxTypedCouponsPerOrder,
-			Maintaining:              h.Maintaining,
-			CommitButtonTargets:      h.CommitButtonTargets,
-			Banned:                   h.Banned,
-			BanMessage:               h.BanMessage,
-		},
-	)
+	if err := h.ExistApp(ctx); err != nil {
+		return nil, err
+	}
+
+	return appmwcli.UpdateApp(ctx, &appmwpb.AppReq{
+		ID:                       h.ID,
+		EntID:                    h.NewEntID,
+		CreatedBy:                h.CreatedBy,
+		Name:                     h.Name,
+		Logo:                     h.Logo,
+		Description:              h.Description,
+		SignupMethods:            h.SignupMethods,
+		ExtSigninMethods:         h.ExtSigninMethods,
+		RecaptchaMethod:          h.RecaptchaMethod,
+		KycEnable:                h.KycEnable,
+		SigninVerifyEnable:       h.SigninVerifyEnable,
+		InvitationCodeMust:       h.InvitationCodeMust,
+		CreateInvitationCodeWhen: h.CreateInvitationCodeWhen,
+		MaxTypedCouponsPerOrder:  h.MaxTypedCouponsPerOrder,
+		Maintaining:              h.Maintaining,
+		CommitButtonTargets:      h.CommitButtonTargets,
+		Banned:                   h.Banned,
+		BanMessage:               h.BanMessage,
+	})
 }

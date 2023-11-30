@@ -12,8 +12,9 @@ import (
 )
 
 type Handler struct {
-	ID                    *string
-	AppID                 string
+	ID                    *uint32
+	EntID                 *string
+	AppID                 *string
 	UserID                *string
 	DocumentType          *basetypes.KycDocumentType
 	IDNumber              *string
@@ -24,13 +25,16 @@ type Handler struct {
 	ReviewID              *string
 	State                 *basetypes.KycState
 	ImageType             *basetypes.KycImageType
-	RequestTimeoutSeconds int64
+	RequestTimeoutSeconds *int64
 	Offset                int32
 	Limit                 int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
-	handler := &Handler{}
+	requestTimeoutSeconds := int64(10) //nolint
+	handler := &Handler{
+		RequestTimeoutSeconds: &requestTimeoutSeconds,
+	}
 	for _, opt := range options {
 		if err := opt(ctx, handler); err != nil {
 			return nil, err
@@ -39,25 +43,47 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
 		}
 		h.ID = id
 		return nil
 	}
 }
 
-func WithAppID(id string) func(context.Context, *Handler) error {
+func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if _, err := uuid.Parse(id); err != nil {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid entid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		exist, err := appmwcli.ExistApp(ctx, id)
+		h.EntID = id
+		return nil
+	}
+}
+
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		exist, err := appmwcli.ExistApp(ctx, *id)
 		if err != nil {
 			return err
 		}
@@ -69,20 +95,29 @@ func WithAppID(id string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithUserID(id string) func(context.Context, *Handler) error {
+func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if _, err := uuid.Parse(id); err != nil {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid userid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
 		// Here shoud check app/user exist at low level
-		h.UserID = &id
+		h.UserID = id
 		return nil
 	}
 }
 
-func WithDocumentType(docType *basetypes.KycDocumentType) func(context.Context, *Handler) error {
+func WithDocumentType(docType *basetypes.KycDocumentType, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if docType == nil {
+			if must {
+				return fmt.Errorf("invalid documenttype")
+			}
 			return nil
 		}
 		switch *docType {
@@ -90,16 +125,19 @@ func WithDocumentType(docType *basetypes.KycDocumentType) func(context.Context, 
 		case basetypes.KycDocumentType_DriverLicense:
 		case basetypes.KycDocumentType_Passport:
 		default:
-			return fmt.Errorf("invalid document type")
+			return fmt.Errorf("invalid documenttype")
 		}
 		h.DocumentType = docType
 		return nil
 	}
 }
 
-func WithIDNumber(idNumber *string) func(context.Context, *Handler) error {
+func WithIDNumber(idNumber *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if idNumber == nil {
+			if must {
+				return fmt.Errorf("invalid idnumber")
+			}
 			return nil
 		}
 		const leastIDNumberLen = 8
@@ -111,13 +149,20 @@ func WithIDNumber(idNumber *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithImage(imgType *basetypes.KycImageType, img *string) func(context.Context, *Handler) error {
+func WithImage(imgType *basetypes.KycImageType, img *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if imgType == nil {
+			if must {
+				return fmt.Errorf("invalid imagetype")
+			}
+			h.ImageType = imgType
 			return nil
 		}
 		if img != nil && *img == "" {
-			return fmt.Errorf("invalid image")
+			if must {
+				return fmt.Errorf("invalid image")
+			}
+			return nil
 		}
 		switch *imgType {
 		case basetypes.KycImageType_FrontImg:
@@ -127,46 +172,52 @@ func WithImage(imgType *basetypes.KycImageType, img *string) func(context.Contex
 		case basetypes.KycImageType_SelfieImg:
 			h.SelfieImg = img
 		default:
-			return fmt.Errorf("invalid image type")
+			return fmt.Errorf("invalid imagetype")
 		}
 		h.ImageType = imgType
 		return nil
 	}
 }
 
-func WithBackImg(img *string) func(context.Context, *Handler) error {
+func WithBackImg(img *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.BackImg = img
 		return nil
 	}
 }
 
-func WithSelfieImg(img *string) func(context.Context, *Handler) error {
+func WithSelfieImg(img *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.SelfieImg = img
 		return nil
 	}
 }
 
-func WithEntityType(entType *basetypes.KycEntityType) func(context.Context, *Handler) error {
+func WithEntityType(entType *basetypes.KycEntityType, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if entType == nil {
+			if must {
+				return fmt.Errorf("invalid entitytype")
+			}
 			return nil
 		}
 		switch *entType {
 		case basetypes.KycEntityType_Individual:
 		case basetypes.KycEntityType_Organization:
 		default:
-			return fmt.Errorf("invalid entity type")
+			return fmt.Errorf("invalid entitytype")
 		}
 		h.EntityType = entType
 		return nil
 	}
 }
 
-func WithReviewID(id *string) func(context.Context, *Handler) error {
+func WithReviewID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid reviewid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -177,9 +228,12 @@ func WithReviewID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithState(state *basetypes.KycState) func(context.Context, *Handler) error {
+func WithState(state *basetypes.KycState, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if state == nil {
+			if must {
+				return fmt.Errorf("invalid state")
+			}
 			return nil
 		}
 		switch *state {
@@ -194,7 +248,7 @@ func WithState(state *basetypes.KycState) func(context.Context, *Handler) error 
 	}
 }
 
-func WithRequestTimeoutSeconds(seconds int64) func(context.Context, *Handler) error {
+func WithRequestTimeoutSeconds(seconds *int64, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.RequestTimeoutSeconds = seconds
 		return nil

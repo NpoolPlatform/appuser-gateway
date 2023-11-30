@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	"context"
+	"fmt"
 
 	subscribermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/subscriber"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -10,18 +11,15 @@ import (
 )
 
 func (h *Handler) DeleteSubscriber(ctx context.Context) (*subscribermwpb.Subscriber, error) {
-	info, err := subscribermwcli.GetSubscriberOnly(
-		ctx,
-		&subscribermwpb.Conds{
-			AppID:        &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-			EmailAddress: &basetypes.StringVal{Op: cruder.EQ, Value: h.EmailAddress},
-		},
-	)
+	info, err := subscribermwcli.GetSubscriberOnly(ctx, &subscribermwpb.Conds{
+		AppID:        &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EmailAddress: &basetypes.StringVal{Op: cruder.EQ, Value: *h.EmailAddress},
+	})
 	if err != nil {
 		return nil, err
 	}
 	if info == nil {
-		return nil, nil
+		return nil, fmt.Errorf("subscriber not exist")
 	}
 	return subscribermwcli.DeleteSubscriber(ctx, info.ID)
 }

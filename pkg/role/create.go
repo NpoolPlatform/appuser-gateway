@@ -8,14 +8,11 @@ import (
 )
 
 func (h *Handler) CreateRole(ctx context.Context) (*rolemwpb.Role, error) {
-	return rolemwcli.CreateRole(
-		ctx,
-		&rolemwpb.RoleReq{
-			AppID:       &h.AppID,
-			CreatedBy:   &h.CreatedBy,
-			Role:        h.Role,
-			Description: h.Description,
-			Default:     h.Default,
-		},
-	)
+	return rolemwcli.CreateRole(ctx, &rolemwpb.RoleReq{
+		AppID:       h.AppID,
+		CreatedBy:   h.CreatedBy,
+		Role:        h.Role,
+		Description: h.Description,
+		Default:     h.Default,
+	})
 }

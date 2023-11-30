@@ -15,11 +15,11 @@ import (
 func (s *Server) CreateRole(ctx context.Context, in *npool.CreateRoleRequest) (*npool.CreateRoleResponse, error) {
 	handler, err := role1.NewHandler(
 		ctx,
-		role1.WithAppID(in.GetAppID()),
-		role1.WithCreatedBy(&in.UserID),
-		role1.WithRole(&in.RoleName),
-		role1.WithDescription(&in.Description),
-		role1.WithDefault(&in.Default),
+		role1.WithAppID(&in.AppID, true),
+		role1.WithCreatedBy(&in.UserID, true),
+		role1.WithRole(&in.RoleName, true),
+		role1.WithDescription(&in.Description, true),
+		role1.WithDefault(&in.Default, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -48,11 +48,11 @@ func (s *Server) CreateRole(ctx context.Context, in *npool.CreateRoleRequest) (*
 func (s *Server) CreateAppRole(ctx context.Context, in *npool.CreateAppRoleRequest) (*npool.CreateAppRoleResponse, error) {
 	handler, err := role1.NewHandler(
 		ctx,
-		role1.WithAppID(in.GetTargetAppID()),
-		role1.WithCreatedBy(&in.UserID),
-		role1.WithRole(&in.RoleName),
-		role1.WithDescription(&in.Description),
-		role1.WithDefault(&in.Default),
+		role1.WithAppID(&in.TargetAppID, true),
+		role1.WithCreatedBy(&in.UserID, true),
+		role1.WithRole(&in.RoleName, true),
+		role1.WithDescription(&in.Description, true),
+		role1.WithDefault(&in.Default, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

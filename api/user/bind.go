@@ -14,11 +14,13 @@ import (
 func (s *Server) BindUser(ctx context.Context, in *npool.BindUserRequest) (*npool.BindUserResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(&in.UserID),
-		user1.WithAccount(in.Account, in.AccountType),
-		user1.WithNewAccount(in.NewAccount, in.NewAccountType),
-		user1.WithNewVerificationCode(in.NewVerificationCode),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(&in.UserID, true),
+		user1.WithAccount(in.Account, true),
+		user1.WithAccountType(in.AccountType, true),
+		user1.WithNewAccount(in.NewAccount, true),
+		user1.WithNewAccountType(in.NewAccountType, true),
+		user1.WithNewVerificationCode(in.NewVerificationCode, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -47,9 +49,10 @@ func (s *Server) BindUser(ctx context.Context, in *npool.BindUserRequest) (*npoo
 func (s *Server) UnbindOAuth(ctx context.Context, in *npool.UnbindOAuthRequest) (*npool.UnbindOAuthResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(&in.UserID),
-		user1.WithAccount(&in.Account, &in.AccountType),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(&in.UserID, true),
+		user1.WithAccount(&in.Account, true),
+		user1.WithAccountType(&in.AccountType, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

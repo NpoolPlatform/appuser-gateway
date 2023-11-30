@@ -14,8 +14,10 @@ import (
 func (s *Server) DeleteUser(ctx context.Context, in *npool.DeleteUserRequest) (*npool.DeleteUserResponse, error) {
 	handler, err := user1.NewHandler(
 		ctx,
-		user1.WithAppID(in.GetAppID()),
-		user1.WithUserID(&in.TargetUserID),
+		user1.WithID(&in.ID, true),
+		user1.WithEntID(&in.TargetUserID, true),
+		user1.WithAppID(&in.AppID, true),
+		user1.WithUserID(&in.TargetUserID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

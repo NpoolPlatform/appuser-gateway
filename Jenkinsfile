@@ -103,28 +103,13 @@ pipeline {
       }
     }
 
-    stage('Generate docker image for feature') {
-      when {
-        expression { BUILD_TARGET == 'true' }
-        expression { BRANCH_NAME != 'master' }
-      }
-      steps {
-        sh 'make verify-build'
-        sh(returnStdout: false, script: '''
-          feature_name=`echo $BRANCH_NAME | awk -F '/' '{ print $2 }'`
-          DEVELOPMENT=$feature_name DOCKER_REGISTRY=$DOCKER_REGISTRY make generate-docker-images
-        '''.stripIndent())
-      }
-    }
-
     stage('Generate docker image for development') {
       when {
         expression { BUILD_TARGET == 'true' }
-        expression { BRANCH_NAME == 'master' }
       }
       steps {
         sh 'make verify-build'
-        sh 'DEVELOPMENT=development DOCKER_REGISTRY=$DOCKER_REGISTRY make generate-docker-images'
+        sh 'DOCKER_REGISTRY=$DOCKER_REGISTRY make generate-docker-images'
       }
     }
 
@@ -253,30 +238,7 @@ pipeline {
           fi
         '''.stripIndent())
         sh 'make verify-build'
-        sh 'DEVELOPMENT=other DOCKER_REGISTRY=$DOCKER_REGISTRY make generate-docker-images'
-      }
-    }
-
-    stage('Release docker image for feature') {
-      when {
-        expression { RELEASE_TARGET == 'true' }
-        expression { BRANCH_NAME != 'master' }
-      }
-      steps {
-        sh(returnStdout: false, script: '''
-          feature_name=`echo $BRANCH_NAME | awk -F '/' '{ print $2 }'`
-          set +e
-          docker images | grep appuser-gateway | grep $feature_name
-          rc=$?
-          set -e
-          if [ 0 -eq $rc ]; then
-            TAG=$feature_name DOCKER_REGISTRY=$DOCKER_REGISTRY make release-docker-images
-          fi
-          images=`docker images | grep entropypool | grep appuser-gateway | grep none | awk '{ print $3 }'`
-          for image in $images; do
-            docker rmi $image -f
-          done
-        '''.stripIndent())
+        sh 'DOCKER_REGISTRY=$DOCKER_REGISTRY make generate-docker-images'
       }
     }
 
@@ -286,12 +248,16 @@ pipeline {
       }
       steps {
         sh(returnStdout: false, script: '''
+          branch=latest
+          if [ "x$BRANCH_NAME" != "xmaster" ]; then
+            branch=`echo $BRANCH_NAME | awk -F '/' '{ print $2 }'`
+          fi
           set +e
-          docker images | grep appuser-gateway | grep latest
+          docker images | grep appuser-gateway | grep $branch
           rc=$?
           set -e
           if [ 0 -eq $rc ]; then
-            TAG=latest DOCKER_REGISTRY=$DOCKER_REGISTRY make release-docker-images
+            DOCKER_REGISTRY=$DOCKER_REGISTRY make release-docker-images
           fi
           images=`docker images | grep entropypool | grep appuser-gateway | grep none | awk '{ print $3 }'`
           for image in $images; do
@@ -319,7 +285,7 @@ pipeline {
             rc=$?
             set -e
             if [ 0 -eq $rc ]; then
-              TAG=$tag DOCKER_REGISTRY=$DOCKER_REGISTRY make release-docker-images
+              DOCKER_REGISTRY=$DOCKER_REGISTRY make release-docker-images
             fi
           fi
         '''.stripIndent())
@@ -344,25 +310,23 @@ pipeline {
             rc=$?
             set -e
             if [ 0 -eq $rc ]; then
-              TAG=$tag DOCKER_REGISTRY=$DOCKER_REGISTRY make release-docker-images
+              DOCKER_REGISTRY=$DOCKER_REGISTRY make release-docker-images
             fi
           fi
         '''.stripIndent())
       }
     }
 
-    stage('Deploy for feature') {
+    stage('Update replicas') {
       when {
         expression { DEPLOY_TARGET == 'true' }
-        expression { TARGET_ENV ==~ /.*development.*/ }
-        expression { BRANCH_NAME != 'master' }
       }
       steps {
         sh(returnStdout: false, script: '''
-          feature_name=`echo $BRANCH_NAME | awk -F '/' '{ print $2 }'`
-          sed -i "s/appuser-gateway:latest/appuser-gateway:$feature_name/g" cmd/appuser-gateway/k8s/02-appuser-gateway.yaml
-          sed -i "s/uhub.service.ucloud.cn/$DOCKER_REGISTRY/g" cmd/appuser-gateway/k8s/02-appuser-gateway.yaml
-          TAG=$feature_name make deploy-to-k8s-cluster
+          if [ "x$REPLICAS_COUNT" == "x" ];then
+            REPLICAS_COUNT=2
+          fi
+          sed -i "s/replicas: 2/replicas: $REPLICAS_COUNT/g" cmd/appuser-gateway/k8s/02-appuser-gateway.yaml
         '''.stripIndent())
       }
     }
@@ -371,11 +335,17 @@ pipeline {
       when {
         expression { DEPLOY_TARGET == 'true' }
         expression { TARGET_ENV ==~ /.*development.*/ }
-        expression { BRANCH_NAME == 'master' }
       }
       steps {
-        sh 'sed -i "s/uhub.service.ucloud.cn/$DOCKER_REGISTRY/g" cmd/appuser-gateway/k8s/02-appuser-gateway.yaml'
-        sh 'TAG=latest make deploy-to-k8s-cluster'
+        sh(returnStdout: false, script: '''
+          branch=latest
+          if [ "x$BRANCH_NAME" != "xmaster" ]; then
+            branch=`echo $BRANCH_NAME | awk -F '/' '{ print $2 }'`
+          fi
+          sed -i "s/appuser-gateway:latest/appuser-gateway:$branch/g" cmd/appuser-gateway/k8s/02-appuser-gateway.yaml
+          sed -i "s/uhub.service.ucloud.cn/$DOCKER_REGISTRY/g" cmd/appuser-gateway/k8s/02-appuser-gateway.yaml
+          make deploy-to-k8s-cluster
+        '''.stripIndent())
       }
     }
 
@@ -399,7 +369,7 @@ pipeline {
           git checkout $tag
           sed -i "s/appuser-gateway:latest/appuser-gateway:$tag/g" cmd/appuser-gateway/k8s/02-appuser-gateway.yaml
           sed -i "s/uhub.service.ucloud.cn/$DOCKER_REGISTRY/g" cmd/appuser-gateway/k8s/02-appuser-gateway.yaml
-          TAG=$tag make deploy-to-k8s-cluster
+          make deploy-to-k8s-cluster
         '''.stripIndent())
       }
     }
@@ -423,7 +393,7 @@ pipeline {
           git checkout $tag
           sed -i "s/appuser-gateway:latest/appuser-gateway:$tag/g" cmd/appuser-gateway/k8s/02-appuser-gateway.yaml
           sed -i "s/uhub.service.ucloud.cn/$DOCKER_REGISTRY/g" cmd/appuser-gateway/k8s/02-appuser-gateway.yaml
-          TAG=$tag make deploy-to-k8s-cluster
+          make deploy-to-k8s-cluster
         '''.stripIndent())
       }
     }

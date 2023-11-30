@@ -19,15 +19,14 @@ func (s *Server) CreateKyc(ctx context.Context, in *npool.CreateKycRequest) (res
 
 	handler, err := kyc1.NewHandler(
 		ctx,
-		kyc1.WithAppID(in.GetAppID()),
-		kyc1.WithUserID(in.GetUserID()),
-		kyc1.WithDocumentType(&in.DocumentType),
-		kyc1.WithIDNumber(in.IDNumber),
-		kyc1.WithImage(&frontImg, &in.FrontImg),
-		kyc1.WithImage(&backImg, &in.FrontImg),
-		kyc1.WithImage(&selfieImg, &in.FrontImg),
-		kyc1.WithEntityType(&in.EntityType),
-		kyc1.WithRequestTimeoutSeconds(10), //nolint
+		kyc1.WithAppID(&in.AppID, true),
+		kyc1.WithUserID(&in.UserID, true),
+		kyc1.WithDocumentType(&in.DocumentType, true),
+		kyc1.WithIDNumber(in.IDNumber, false),
+		kyc1.WithImage(&frontImg, &in.FrontImg, true),
+		kyc1.WithImage(&backImg, in.BackImg, false),
+		kyc1.WithImage(&selfieImg, &in.SelfieImg, true),
+		kyc1.WithEntityType(&in.EntityType, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

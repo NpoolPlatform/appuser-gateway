@@ -10,12 +10,9 @@ import (
 )
 
 func (h *Handler) GetRoles(ctx context.Context) ([]*rolemwpb.Role, uint32, error) {
-	return rolemwcli.GetRoles(
-		ctx,
-		&rolemwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.AppID},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	conds := &rolemwpb.Conds{}
+	if h.AppID != nil {
+		conds.AppID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID}
+	}
+	return rolemwcli.GetRoles(ctx, conds, h.Offset, h.Limit)
 }
