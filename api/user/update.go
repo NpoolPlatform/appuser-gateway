@@ -12,6 +12,11 @@ import (
 )
 
 func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*npool.UpdateUserResponse, error) {
+	updateCacheMode := user1.DontUpdateCache
+	if in.NewAccount != nil || in.PasswordHash != nil {
+		updateCacheMode = user1.DeleteCacheIfExist
+	}
+
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithID(&in.ID, true),
@@ -40,6 +45,7 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 		user1.WithSigninVerifyType(in.SigninVerifyType, false),
 		user1.WithKolConfirmed(in.KolConfirmed, false),
 		user1.WithSelectedLangID(in.SelectedLangID, false),
+		user1.WithUpdateCacheMode(&updateCacheMode, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -68,8 +74,9 @@ func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*
 func (s *Server) UpdateAppUser(ctx context.Context, in *npool.UpdateAppUserRequest) (*npool.UpdateAppUserResponse, error) {
 	updateCacheMode := user1.DontUpdateCache
 	if in.EmailAddress != nil {
-		updateCacheMode = user1.UpdateCacheIfExist
+		updateCacheMode = user1.DeleteCacheIfExist
 	}
+
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithID(&in.ID, true),

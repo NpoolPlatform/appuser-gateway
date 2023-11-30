@@ -221,22 +221,24 @@ func (h *updateHandler) updateCache(ctx context.Context) error {
 		return nil
 	}
 
+	meta, err := h.QueryCache(ctx)
+	if err != nil {
+		return err
+	}
+
 	switch *h.UpdateCacheMode {
 	case RequiredUpdateCache:
-	case UpdateCacheIfExist:
-		meta, err := h.QueryCache(ctx)
-		if err != nil {
-			return err
-		}
+	case DeleteCacheIfExist:
 		if meta == nil {
 			return nil
 		}
-		if (h.EmailAddress != nil && *h.EmailAddress != h.origUser.EmailAddress) ||
-			(h.PhoneNO != nil && *h.PhoneNO != h.origUser.PhoneNO) {
-			h.Metadata = meta
-			if err := h.DeleteCache(ctx); err != nil {
-				return err
-			}
+		h.Metadata = meta
+		if err := h.DeleteCache(ctx); err != nil {
+			return err
+		}
+		return nil
+	case UpdateCacheIfExist:
+		if meta == nil {
 			return nil
 		}
 	case DontUpdateCache:
@@ -248,7 +250,7 @@ func (h *updateHandler) updateCache(ctx context.Context) error {
 	if err := h.UpdateCache(ctx); err != nil {
 		return err
 	}
-	meta, err := h.QueryCache(ctx)
+	meta, err = h.QueryCache(ctx)
 	if err != nil {
 		return err
 	}

@@ -14,6 +14,10 @@ import (
 
 func (s *Server) BanUser(ctx context.Context, in *npool.BanUserRequest) (*npool.BanUserResponse, error) {
 	updateCacheMode := user1.UpdateCacheIfExist
+	if in.Banned {
+		updateCacheMode = user1.DeleteCacheIfExist
+	}
+
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(&in.AppID, true),
@@ -45,6 +49,10 @@ func (s *Server) BanUser(ctx context.Context, in *npool.BanUserRequest) (*npool.
 
 func (s *Server) BanAppUser(ctx context.Context, in *npool.BanAppUserRequest) (*npool.BanAppUserResponse, error) {
 	updateCacheMode := user1.UpdateCacheIfExist
+	if in.Banned {
+		updateCacheMode = user1.DeleteCacheIfExist
+	}
+
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(&in.TargetAppID, true),

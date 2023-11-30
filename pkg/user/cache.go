@@ -18,7 +18,8 @@ type UpdateCacheMode int32
 const (
 	RequiredUpdateCache UpdateCacheMode = 10
 	UpdateCacheIfExist  UpdateCacheMode = 20
-	DontUpdateCache     UpdateCacheMode = 30
+	DeleteCacheIfExist  UpdateCacheMode = 30
+	DontUpdateCache     UpdateCacheMode = 40
 )
 
 const (

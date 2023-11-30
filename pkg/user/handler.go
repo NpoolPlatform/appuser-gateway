@@ -695,6 +695,7 @@ func WithUpdateCacheMode(mode *UpdateCacheMode, must bool) func(context.Context,
 		switch *mode {
 		case RequiredUpdateCache:
 		case UpdateCacheIfExist:
+		case DeleteCacheIfExist:
 		case DontUpdateCache:
 		default:
 			return fmt.Errorf("invalid updatecachemode")
