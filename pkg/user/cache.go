@@ -104,6 +104,10 @@ func (h *Handler) CreateCache(ctx context.Context) error {
 }
 
 func (h *Handler) QueryCache(ctx context.Context) (*Metadata, error) {
+	return h.QueryUserCache(ctx, *h.UserID)
+}
+
+func (h *Handler) QueryUserCache(ctx context.Context, userID string) (*Metadata, error) {
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return nil, err
@@ -116,12 +120,12 @@ func (h *Handler) QueryCache(ctx context.Context) (*Metadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	userID, err := uuid.Parse(*h.UserID)
+	_userID, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	val, err := cli.Get(ctx, appUserKey(appID, userID)).Result()
+	val, err := cli.Get(ctx, appUserKey(appID, _userID)).Result()
 	if err == redis.Nil {
 		return nil, nil
 	} else if err != nil {
@@ -156,6 +160,10 @@ func (h *Handler) QueryCache(ctx context.Context) (*Metadata, error) {
 }
 
 func (h *Handler) DeleteCache(ctx context.Context) error {
+	return h.DeleteUserCache(ctx, h.Metadata)
+}
+
+func (h *Handler) DeleteUserCache(ctx context.Context, meta *Metadata) error {
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return err
@@ -164,12 +172,12 @@ func (h *Handler) DeleteCache(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
 	defer cancel()
 
-	err = cli.Del(ctx, metaToUserKey(h.Metadata)).Err()
+	err = cli.Del(ctx, metaToUserKey(meta)).Err()
 	if err != nil {
 		return err
 	}
 
-	err = cli.Del(ctx, metaToAccountKey(h.Metadata)).Err()
+	err = cli.Del(ctx, metaToAccountKey(meta)).Err()
 	if err != nil {
 		return err
 	}
@@ -207,27 +215,4 @@ func (h *Handler) UpdateCache(ctx context.Context) error {
 	h.Metadata = meta
 
 	return h.CreateCache(ctx)
-}
-
-func (h *Handler) CheckShouldUpdateCache(ctx context.Context) (bool, error) {
-	if h.UpdateCacheMode == nil {
-		return true, nil
-	}
-	switch *h.UpdateCacheMode {
-	case RequiredUpdateCache:
-		return true, nil
-	case UpdateCacheIfExist:
-		meta, err := h.QueryCache(ctx)
-		if err != nil {
-			return false, err
-		}
-		if meta == nil {
-			return false, nil
-		}
-	case DontUpdateCache:
-		return false, nil
-	default:
-		return false, fmt.Errorf("invalid updatecachemode")
-	}
-	return true, nil
 }

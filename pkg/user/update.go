@@ -36,6 +36,7 @@ type updateHandler struct {
 	*Handler
 	targetID   *uint32
 	targetUser *usermwpb.User
+	origUser   *usermwpb.User
 }
 
 func (h *updateHandler) verifyOldPasswordHash(ctx context.Context) error {
@@ -216,25 +217,32 @@ func (h *updateHandler) updateUser(ctx context.Context) error {
 }
 
 func (h *updateHandler) updateCache(ctx context.Context) error {
-	if (h.EmailAddress != nil && *h.EmailAddress != h.User.EmailAddress) ||
-		(h.PhoneNO != nil && *h.PhoneNO != h.User.PhoneNO) {
+	if h.UpdateCacheMode == nil {
+		return nil
+	}
+
+	switch *h.UpdateCacheMode {
+	case RequiredUpdateCache:
+	case UpdateCacheIfExist:
 		meta, err := h.QueryCache(ctx)
 		if err != nil {
 			return err
 		}
-		h.Metadata = meta
-		if err := h.DeleteCache(ctx); err != nil {
-			return err
+		if meta == nil {
+			return nil
 		}
+		if (h.EmailAddress != nil && *h.EmailAddress != h.origUser.EmailAddress) ||
+			(h.PhoneNO != nil && *h.PhoneNO != h.origUser.PhoneNO) {
+			h.Metadata = meta
+			if err := h.DeleteCache(ctx); err != nil {
+				return err
+			}
+			return nil
+		}
+	case DontUpdateCache:
 		return nil
-	}
-
-	updatable, err := h.CheckShouldUpdateCache(ctx)
-	if err != nil {
-		return err
-	}
-	if !updatable {
-		return nil
+	default:
+		return fmt.Errorf("invalid updatecachemode")
 	}
 
 	if err := h.UpdateCache(ctx); err != nil {
@@ -244,7 +252,6 @@ func (h *updateHandler) updateCache(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	h.Metadata = meta
 	h.User = meta.User
 	return nil
 }
@@ -285,6 +292,9 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	if err := handler.verifyNewAccountCode(ctx); err != nil {
 		return nil, err
 	}
+
+	handler.origUser = handler.User
+
 	if err := handler.updateUser(ctx); err != nil {
 		return nil, err
 	}
