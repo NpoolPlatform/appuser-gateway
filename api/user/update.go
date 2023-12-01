@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Server) UpdateUser(ctx context.Context, in *npool.UpdateUserRequest) (*npool.UpdateUserResponse, error) {
-	updateCacheMode := user1.DontUpdateCache
+	updateCacheMode := user1.RequiredUpdateCache
 	if in.NewAccount != nil || in.PasswordHash != nil {
 		updateCacheMode = user1.DeleteCacheIfExist
 	}
