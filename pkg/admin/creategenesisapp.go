@@ -21,6 +21,7 @@ func (h *createGenesisAppHandler) createGenesisApps(ctx context.Context) error {
 	for _, _app := range h.GenesisApps {
 		reqs = append(reqs, &appmwpb.AppReq{
 			ID:          &_app.ID,
+			EntID:       &_app.EntID,
 			CreatedBy:   &createdBy,
 			Name:        &_app.Name,
 			Logo:        &logo,
