@@ -41,6 +41,8 @@ func (s *Server) GetOAuthThirdParties(ctx context.Context, in *npool.GetOAuthThi
 	lists := []*oauthmwpb.OAuthThirdParty{}
 	for _, info := range infos {
 		thirdPartyInfo := &oauthmwpb.OAuthThirdParty{
+			ID:            info.ID,
+			EntID:         info.EntID,
 			AppID:         info.AppID,
 			ClientName:    info.ClientName,
 			ClientTag:     info.ClientTag,
