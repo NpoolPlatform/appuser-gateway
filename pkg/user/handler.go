@@ -173,7 +173,10 @@ func validateEmailAddress(emailAddress string) error {
 
 func validatePhoneNO(phoneNO string) error {
 	re := regexp.MustCompile(
-		`^\+(?:[0-9] ?){6,14}[0-9]$`,
+		`^\+(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[` +
+			`\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?)` +
+			`{0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)` +
+			`[\-\.\ \\\/]?(\d+))?$`,
 	)
 	if !re.MatchString(phoneNO) {
 		return fmt.Errorf("invalid phoneno")
