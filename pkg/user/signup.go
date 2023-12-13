@@ -42,7 +42,7 @@ func (h *signupHandler) withCreateInvitationCode(dispose *dtmcli.SagaDispose) {
 
 	id := uuid.NewString()
 	req := &ivcodemwpb.InvitationCodeReq{
-		ID:     &id,
+		EntID:  &id,
 		AppID:  h.AppID,
 		UserID: h.UserID,
 	}
@@ -84,7 +84,7 @@ func (h *signupHandler) withCreateRegistrationInvitation(dispose *dtmcli.SagaDis
 
 	id := uuid.NewString()
 	req := &registrationmwpb.RegistrationReq{
-		ID:        &id,
+		EntID:     &id,
 		AppID:     h.AppID,
 		InviterID: h.inviterID,
 		InviteeID: h.UserID,
