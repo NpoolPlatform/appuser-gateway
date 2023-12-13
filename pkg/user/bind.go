@@ -155,6 +155,7 @@ func (h *bindHandler) verifyNewAccount(ctx context.Context) error {
 
 func (h *bindHandler) updateUser(ctx context.Context) error {
 	req := &usermwpb.UserReq{
+		ID:               h.ID,
 		EntID:            h.UserID,
 		AppID:            h.AppID,
 		EmailAddress:     h.EmailAddress,
