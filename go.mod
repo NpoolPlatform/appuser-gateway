@@ -10,9 +10,9 @@ require (
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230930023319-e48074d9472e
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20231228095131-4bb790ea36b7
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6
-	github.com/NpoolPlatform/message v0.0.0-20231228094846-44c92902376f
+	github.com/NpoolPlatform/message v0.0.0-20231229041319-8196cb7274a7
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a
-	github.com/NpoolPlatform/review-middleware v0.0.0-20231228095444-154602cd0116
+	github.com/NpoolPlatform/review-middleware v0.0.0-20231229041456-f4436e452096
 	github.com/NpoolPlatform/third-middleware v0.0.0-20231011073243-59e4e2a0a8ac
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
