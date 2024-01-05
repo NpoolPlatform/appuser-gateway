@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	"github.com/shopspring/decimal"
 
 	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
 
