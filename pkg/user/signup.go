@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	"github.com/shopspring/decimal"
 
 	rolemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/role"
 
@@ -122,6 +123,7 @@ func (h *signupHandler) rewardSignup() {
 			UserID:      *h.UserID,
 			EventType:   basetypes.UsedFor_Signup,
 			Consecutive: 1,
+			Amount:      "0",
 		}
 		return publisher.Update(
 			basetypes.MsgID_RewardEventReq.String(),
