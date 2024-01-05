@@ -29,6 +29,7 @@ func (s *Server) UpdateApp(ctx context.Context, in *npool.UpdateAppRequest) (*np
 		app1.WithCreateInvitationCodeWhen(in.CreateInvitationCodeWhen, false),
 		app1.WithMaxTypedCouponsPerOrder(in.MaxTypedCouponsPerOrder, false),
 		app1.WithMaintaining(in.Maintaining, false),
+		app1.WithCouponWithdrawEnable(in.CouponWithdrawEnable, false),
 		app1.WithCommitButtonTargets(in.GetCommitButtonTargets(), false),
 	)
 	if err != nil {
