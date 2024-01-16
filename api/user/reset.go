@@ -43,11 +43,10 @@ func (s *Server) ResetUser(ctx context.Context, in *npool.ResetUserRequest) (*np
 		ctx,
 		user1.WithAppID(&in.AppID, true),
 		user1.WithUserID(in.UserID, false),
-		user1.WithAccount(&in.Account, true),
-		user1.WithAccountType(&in.AccountType, true),
-		user1.WithVerificationCode(&in.VerificationCode, true),
+		user1.WithVerificationCode(in.VerificationCode, false),
 		user1.WithPasswordHash(in.PasswordHash, true),
 		user1.WithRecoveryCode(in.RecoveryCode, false),
+		user1.WithResetToken(&in.ResetToken, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
