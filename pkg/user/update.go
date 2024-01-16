@@ -10,6 +10,7 @@ import (
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -347,7 +348,7 @@ func (h *updateHandler) getAccountUser(ctx context.Context) error {
 }
 
 func (h *updateHandler) verifyAccountCode(ctx context.Context) error {
-	if h.User.SigninVerifyType == basetypes.SignMethod_Reset {
+	if h.VerificationCode == nil {
 		return nil
 	}
 	if h.Account == nil || h.AccountType == nil {
@@ -406,9 +407,6 @@ func (h *updateHandler) verifyResetToken(ctx context.Context) error {
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
-	defer cancel()
-
 	tokenBytes, err := base64.StdEncoding.DecodeString(*h.ResetToken)
 	if err != nil {
 		return err
@@ -421,6 +419,7 @@ func (h *updateHandler) verifyResetToken(ctx context.Context) error {
 	} else if err != nil {
 		return err
 	}
+
 	userInfo := strings.Split(tokenStr, ":")
 	tokenAttrLen := 4
 	if len(userInfo) != tokenAttrLen {
@@ -433,6 +432,9 @@ func (h *updateHandler) verifyResetToken(ctx context.Context) error {
 }
 
 func (h *Handler) ResetUser(ctx context.Context) error {
+	if h.VerificationCode == nil && h.RecoveryCode == nil {
+		return fmt.Errorf("need verification code or recovery code")
+	}
 	handler := &updateHandler{
 		Handler: h,
 	}
@@ -605,12 +607,12 @@ func (h *Handler) PreResetUser(ctx context.Context) error {
 		return err
 	}
 
-	key := fmt.Sprintf("%v:%v:%v:%v", handler.User.EntID, h.AccountType.String(), *h.Account, h.User.SigninVerifyType.String())
+	key := fmt.Sprintf("%v:%v:%v:%v", handler.User.EntID, *h.Account, h.AccountType.String(), uuid.NewString())
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return err
 	}
-	err = cli.Set(ctx, key, key, resetPasswordLinkExpiration).Err()
+	err = cli.Set(ctx, key, key, resetPasswordExpiration).Err()
 	if err != nil {
 		return err
 	}
