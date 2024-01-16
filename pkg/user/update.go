@@ -5,20 +5,24 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strings"
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	recoverycodemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user/recoverycode"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
 
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	recoverycodemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user/recoverycode"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/invitationcode"
 	regmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 
@@ -37,9 +41,10 @@ import (
 
 type updateHandler struct {
 	*Handler
-	targetID   *uint32
-	targetUser *usermwpb.User
-	origUser   *usermwpb.User
+	targetID     *uint32
+	targetUser   *usermwpb.User
+	origUser     *usermwpb.User
+	recoveryCode *recoverycodemwpb.RecoveryCode
 }
 
 func (h *updateHandler) verifyOldPasswordHash(ctx context.Context) error {
@@ -343,6 +348,9 @@ func (h *updateHandler) getAccountUser(ctx context.Context) error {
 }
 
 func (h *updateHandler) verifyAccountCode(ctx context.Context) error {
+	if h.User.SigninVerifyType == basetypes.SignMethod_Reset {
+		return nil
+	}
 	if h.Account == nil || h.AccountType == nil {
 		return fmt.Errorf("invalid account")
 	}
@@ -359,15 +367,86 @@ func (h *updateHandler) verifyAccountCode(ctx context.Context) error {
 	})
 }
 
+func (h *updateHandler) verifyRecoveryCode(ctx context.Context) error {
+	if h.RecoveryCode == nil {
+		return nil
+	}
+	code, err := recoverycodemwcli.GetRecoveryCodeOnly(ctx, &recoverycodemwpb.Conds{
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		Code:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.RecoveryCode},
+		Used:   &basetypes.BoolVal{Op: cruder.EQ, Value: false},
+	})
+	if err != nil {
+		return err
+	}
+	if code == nil {
+		return fmt.Errorf("invalid recovery code")
+	}
+	h.recoveryCode = code
+	return nil
+}
+
+func (h *updateHandler) expireRecoveryCode(ctx context.Context) error {
+	if h.recoveryCode == nil {
+		return nil
+	}
+	used := true
+	if _, err := recoverycodemwcli.UpdateRecoveryCode(ctx, &recoverycodemwpb.RecoveryCodeReq{
+		ID:   &h.recoveryCode.ID,
+		Used: &used,
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *updateHandler) verifyResetToken(ctx context.Context) error {
+	cli, err := redis2.GetClient()
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
+	defer cancel()
+
+	tokenBytes, err := base64.StdEncoding.DecodeString(*h.ResetToken)
+	if err != nil {
+		return err
+	}
+	tokenStr := string(tokenBytes[:]) //nolint
+
+	_, err = cli.Get(ctx, tokenStr).Result()
+	if err == redis.Nil {
+		return fmt.Errorf("reset token invalid")
+	} else if err != nil {
+		return err
+	}
+	userInfo := strings.Split(tokenStr, ":")
+	tokenAttrLen := 4
+	if len(userInfo) != tokenAttrLen {
+		return fmt.Errorf("invaild token")
+	}
+	h.Account = &userInfo[1]
+	accountType := basetypes.SignMethod(basetypes.SignMethod_value[userInfo[2]])
+	h.AccountType = &accountType
+	return nil
+}
+
 func (h *Handler) ResetUser(ctx context.Context) error {
 	handler := &updateHandler{
 		Handler: h,
 	}
-
+	if err := handler.verifyResetToken(ctx); err != nil {
+		return err
+	}
 	if err := handler.getAccountUser(ctx); err != nil {
 		return err
 	}
 	if err := handler.verifyAccountCode(ctx); err != nil {
+		return err
+	}
+	if err := handler.verifyRecoveryCode(ctx); err != nil {
 		return err
 	}
 	if _, err := usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
@@ -378,12 +457,14 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	}); err != nil {
 		return err
 	}
+	if err := handler.expireRecoveryCode(ctx); err != nil {
+		return err
+	}
 	updateCacheMode := DeleteCacheIfExist
 	h.UpdateCacheMode = &updateCacheMode
 	if err := handler.updateCache(ctx); err != nil {
 		return err
 	}
-
 	return nil
 }
 

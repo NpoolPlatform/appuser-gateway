@@ -62,6 +62,7 @@ type Handler struct {
 	RecoveryCode          *string
 	UpdateCacheMode       *UpdateCacheMode
 	ThirdPartyID          *string
+	ResetToken            *string
 	Offset                int32
 	Limit                 int32
 }
@@ -448,6 +449,22 @@ func WithRecoveryCode(code *string, must bool) func(context.Context, *Handler) e
 			return fmt.Errorf("invalid recoverycode")
 		}
 		h.RecoveryCode = code
+		return nil
+	}
+}
+
+func WithResetToken(token *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if token == nil {
+			if must {
+				return fmt.Errorf("invalid reset token")
+			}
+			return nil
+		}
+		if *token == "" {
+			return fmt.Errorf("invalid reset token")
+		}
+		h.ResetToken = token
 		return nil
 	}
 }
