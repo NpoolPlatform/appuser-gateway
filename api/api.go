@@ -14,6 +14,7 @@ import (
 	"github.com/NpoolPlatform/appuser-gateway/api/subscriber"
 	appsubscribe "github.com/NpoolPlatform/appuser-gateway/api/subscriber/app/subscribe"
 	"github.com/NpoolPlatform/appuser-gateway/api/user"
+	"github.com/NpoolPlatform/appuser-gateway/api/user/recoverycode"
 
 	"github.com/NpoolPlatform/appuser-gateway/api/oauth"
 	"github.com/NpoolPlatform/appuser-gateway/api/oauth/appoauththirdparty"
@@ -37,6 +38,7 @@ func Register(server grpc.ServiceRegistrar) {
 	role.Register(server)
 	roleuser.Register(server)
 	user.Register(server)
+	recoverycode.Register(server)
 	ga.Register(server)
 	auth.Register(server)
 	authhistory.Register(server)
@@ -55,6 +57,9 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := app.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := recoverycode.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := subscriber.RegisterGateway(mux, endpoint, opts); err != nil {
