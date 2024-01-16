@@ -10,7 +10,6 @@ import (
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/go-redis/redis/v8"
-	"github.com/google/uuid"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -605,21 +604,15 @@ func (h *Handler) PreResetUser(ctx context.Context) error {
 		return err
 	}
 
-	key := fmt.Sprintf("%v:%v:%v:%v", handler.User.EntID, h.AccountType.String(), *h.Account, uuid.NewString())
+	key := fmt.Sprintf("%v:%v:%v:%v", handler.User.EntID, h.AccountType.String(), *h.Account, h.User.SigninVerifyType.String())
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return err
 	}
-
-	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
-	defer cancel()
-
 	err = cli.Set(ctx, key, key, resetPasswordLinkExpiration).Err()
 	if err != nil {
 		return err
 	}
-
-	sEncode := base64.StdEncoding.EncodeToString([]byte(key))
 
 	lang, err := applangmwcli.GetLangOnly(ctx, &applangmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
@@ -641,11 +634,13 @@ func (h *Handler) PreResetUser(ctx context.Context) error {
 	default:
 		return fmt.Errorf("invalid channel")
 	}
+
+	sEncode := base64.StdEncoding.EncodeToString([]byte(key))
 	info, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
 		AppID:     *h.AppID,
 		LangID:    lang.LangID,
 		Channel:   channel,
-		EventType: basetypes.UsedFor_ResetPassword, // 新增EventType为:ResetPassword,
+		EventType: basetypes.UsedFor_ResetPassword, // add EventType:ResetPassword
 		Vars: &tmplmwpb.TemplateVars{
 			Message: &sEncode,
 		},
