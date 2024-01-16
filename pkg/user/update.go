@@ -605,7 +605,7 @@ func (h *Handler) PreResetUser(ctx context.Context) error {
 		return err
 	}
 
-	key := fmt.Sprintf("%v:%v:%v:%v", handler.User.ID, h.AccountType.String(), *h.Account, uuid.NewString())
+	key := fmt.Sprintf("%v:%v:%v:%v", handler.User.EntID, h.AccountType.String(), *h.Account, uuid.NewString())
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return err
