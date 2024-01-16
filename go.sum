@@ -68,12 +68,17 @@ github.com/NpoolPlatform/inspire-middleware v0.0.0-20240119021120-823cef934a51/g
 github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6 h1:zbM3Zq0qObWEiw+wYJihNFOsBfXey8mBgAhT7HzGB8Y=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6/go.mod h1:EXCihQpRNNyWaPu1IphiZFLTyyUK/CJMZdW4My7y48Q=
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/NpoolPlatform/message v0.0.0-20240119020142-799e25722bb0 h1:3vuRZdkRjIFhlRkKd6zBlt85wKpAP+x2TADe+YFebl4=
 github.com/NpoolPlatform/message v0.0.0-20240119020142-799e25722bb0/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 =======
 github.com/NpoolPlatform/message v0.0.0-20240116023726-ab705b7f9d0e h1:n3CsWoSPVXGUgfO7Mr42z0v3/e//IkTNkEedqPgI7B0=
 github.com/NpoolPlatform/message v0.0.0-20240116023726-ab705b7f9d0e/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 >>>>>>> add recovery code
+=======
+github.com/NpoolPlatform/message v0.0.0-20240116060413-73369fb276c1 h1:d3/qiwwm+MTkMdWH1UQHN5FH1qC4t6vJv/v7EOFJooU=
+github.com/NpoolPlatform/message v0.0.0-20240116060413-73369fb276c1/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
+>>>>>>> add prereset
 github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a h1:+gVUfl0pCMHIBNXpwxseDxxapqmed8/ZAf+Oewl3UpQ=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a/go.mod h1:4Du89hzmz5gfqyxqXyzCOIWWpbPlDhKDRirekueAoRk=
 github.com/NpoolPlatform/review-middleware v0.0.0-20240108100223-106962e5a9c2 h1:qXBRJjUzscoz2Sn2ceEmjweHVXZIqGBw2SgJDu/Tk2k=

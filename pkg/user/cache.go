@@ -23,8 +23,9 @@ const (
 )
 
 const (
-	redisTimeout    = 5 * time.Second
-	loginExpiration = 4 * time.Hour
+	redisTimeout                = 5 * time.Second
+	loginExpiration             = 4 * time.Hour
+	resetPasswordLinkExpiration = 15 * time.Minute
 )
 
 func appAccountKey(appID uuid.UUID, account string, accountType basetypes.SignMethod) string {

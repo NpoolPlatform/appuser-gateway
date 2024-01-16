@@ -3,9 +3,12 @@ package user
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 
+	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	"github.com/google/uuid"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -381,12 +384,6 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 		return err
 	}
 
-	notif1 := &notifHandler{
-		Handler: h,
-		UsedFor: basetypes.UsedFor_UpdatePassword,
-	}
-	notif1.generateNotif(ctx)
-
 	return nil
 }
 
@@ -517,4 +514,75 @@ func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 	handler.sendKolNotification(ctx)
 
 	return info, nil
+}
+
+func (h *Handler) PreResetUser(ctx context.Context) error {
+	handler := &updateHandler{
+		Handler: h,
+	}
+	if err := handler.getAccountUser(ctx); err != nil {
+		return err
+	}
+
+	key := fmt.Sprintf("%v:%v:%v:%v", handler.User.ID, h.AccountType.String(), *h.Account, uuid.NewString())
+	cli, err := redis2.GetClient()
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
+	defer cancel()
+
+	err = cli.Set(ctx, key, key, resetPasswordLinkExpiration).Err()
+	if err != nil {
+		return err
+	}
+
+	sEncode := base64.StdEncoding.EncodeToString([]byte(key))
+
+	lang, err := applangmwcli.GetLangOnly(ctx, &applangmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		Main:  &basetypes.BoolVal{Op: cruder.EQ, Value: true},
+	})
+	if err != nil {
+		return nil
+	}
+	if lang == nil {
+		return fmt.Errorf("have not main language")
+	}
+
+	var channel basetypes.NotifChannel
+	switch *h.AccountType {
+	case basetypes.SignMethod_Email:
+		channel = basetypes.NotifChannel_ChannelEmail
+	case basetypes.SignMethod_Mobile:
+		channel = basetypes.NotifChannel_ChannelSMS
+	default:
+		return fmt.Errorf("invalid channel")
+	}
+	info, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
+		AppID:     *h.AppID,
+		LangID:    lang.LangID,
+		Channel:   channel,
+		EventType: basetypes.UsedFor_ResetPassword, // 新增EventType为:ResetPassword,
+		Vars: &tmplmwpb.TemplateVars{
+			Message: &sEncode,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if info == nil {
+		return fmt.Errorf("generate text failed")
+	}
+
+	return sendmwcli.SendMessage(ctx, &sendmwpb.SendMessageRequest{
+		Subject:     info.Subject,
+		Content:     info.Content,
+		From:        info.From,
+		To:          *h.Account,
+		ToCCs:       info.ToCCs,
+		ReplyTos:    info.ReplyTos,
+		AccountType: *h.AccountType,
+	})
 }
