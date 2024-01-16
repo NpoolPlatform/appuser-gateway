@@ -23,9 +23,9 @@ const (
 )
 
 const (
-	redisTimeout                = 5 * time.Second
-	loginExpiration             = 4 * time.Hour
-	resetPasswordLinkExpiration = 15 * time.Minute
+	redisTimeout            = 5 * time.Second
+	loginExpiration         = 4 * time.Hour
+	resetPasswordExpiration = 15 * time.Minute
 )
 
 func appAccountKey(appID uuid.UUID, account string, accountType basetypes.SignMethod) string {
@@ -57,6 +57,17 @@ func appUserKey(appID, userID uuid.UUID) string {
 
 func metaToUserKey(meta *Metadata) string {
 	return appUserKey(meta.AppID, meta.UserID)
+}
+
+func resetPasswordKey(userID string, account string, accountType basetypes.SignMethod, signinVerifyType basetypes.SignMethod) string {
+	return fmt.Sprintf(
+		"%v:%v:%v:%v:%v",
+		userID,
+		account,
+		accountType.String(),
+		signinVerifyType.String(),
+		uuid.NewString(),
+	)
 }
 
 type valAppUser struct {
