@@ -448,6 +448,9 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	if err := handler.verifyRecoveryCode(ctx); err != nil {
 		return err
 	}
+	if err := handler.expireRecoveryCode(ctx); err != nil {
+		return err
+	}
 	if _, err := usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
 		ID:           h.ID,
 		EntID:        h.UserID,
@@ -456,9 +459,7 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	}); err != nil {
 		return err
 	}
-	if err := handler.expireRecoveryCode(ctx); err != nil {
-		return err
-	}
+
 	updateCacheMode := DeleteCacheIfExist
 	h.UpdateCacheMode = &updateCacheMode
 	if err := handler.updateCache(ctx); err != nil {
