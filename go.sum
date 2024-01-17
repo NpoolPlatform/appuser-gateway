@@ -75,6 +75,7 @@ github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6/go.mod
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/NpoolPlatform/message v0.0.0-20240119020142-799e25722bb0 h1:3vuRZdkRjIFhlRkKd6zBlt85wKpAP+x2TADe+YFebl4=
 github.com/NpoolPlatform/message v0.0.0-20240119020142-799e25722bb0/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 =======
@@ -89,6 +90,10 @@ github.com/NpoolPlatform/message v0.0.0-20240116060413-73369fb276c1/go.mod h1:Px
 github.com/NpoolPlatform/message v0.0.0-20240116064208-3875497a8081 h1:1w8WW4iMjqSP3B6ZufQZyZAGRH/jCI7Z/xGwLInrXYs=
 github.com/NpoolPlatform/message v0.0.0-20240116064208-3875497a8081/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 >>>>>>> update reset
+=======
+github.com/NpoolPlatform/message v0.0.0-20240117035744-45778b7f60a7 h1:fiFZVqTKL0i84DW1ZuN4iGxd+l2un7WhvVKCIU1IMZc=
+github.com/NpoolPlatform/message v0.0.0-20240117035744-45778b7f60a7/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
+>>>>>>> update commti id
 github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a h1:+gVUfl0pCMHIBNXpwxseDxxapqmed8/ZAf+Oewl3UpQ=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a/go.mod h1:4Du89hzmz5gfqyxqXyzCOIWWpbPlDhKDRirekueAoRk=
 github.com/NpoolPlatform/review-middleware v0.0.0-20240108100223-106962e5a9c2 h1:qXBRJjUzscoz2Sn2ceEmjweHVXZIqGBw2SgJDu/Tk2k=
