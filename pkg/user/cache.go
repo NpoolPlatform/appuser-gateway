@@ -59,17 +59,6 @@ func metaToUserKey(meta *Metadata) string {
 	return appUserKey(meta.AppID, meta.UserID)
 }
 
-func resetPasswordKey(userID string, account string, accountType basetypes.SignMethod, signinVerifyType basetypes.SignMethod) string {
-	return fmt.Sprintf(
-		"%v:%v:%v:%v:%v",
-		userID,
-		account,
-		accountType.String(),
-		signinVerifyType.String(),
-		uuid.NewString(),
-	)
-}
-
 type valAppUser struct {
 	Account     string
 	AccountType string
