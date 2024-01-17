@@ -50,6 +50,7 @@ github.com/DATA-DOG/go-sqlmock v1.5.0 h1:Shsta01QNfFxHCfpW6YH2STWB0MudeXXEWMr20O
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20240119021359-948c8504d662 h1:t8u7hIcPbnH/W7rWOOqmvubagdO9lwR2CcteDAnJuD8=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20240119021359-948c8504d662/go.mod h1:NiRL9uaGlrIqtQWQmKW2Zt33AkTTImg/AFSJNJf0BNE=
 =======
@@ -60,6 +61,10 @@ github.com/NpoolPlatform/appuser-middleware v0.0.0-20240116015632-77b7c2f75dde/g
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20240116071453-7c0c8c0cb543 h1:FKm8C54ZdrsojePeFPnsKt2OC0mjyDK4ASyBxrSFlec=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20240116071453-7c0c8c0cb543/go.mod h1:hD6GVShZqzZjl0iPwdt/Rg2hlBpeBW4i553t+txI73w=
 >>>>>>> update reset
+=======
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20240117094838-2f6a11e03428 h1:YWmDS0xQfZCaV2sIPFrJYVG++u+9lRFhOVCW2x1e1u4=
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20240117094838-2f6a11e03428/go.mod h1:YjptZcG43o8jeqsJJ5VrWbf0IrQ8jZT/sQnSPhnfSsk=
+>>>>>>> add ResetUserMethod
 github.com/NpoolPlatform/basal-middleware v0.0.0-20231015112137-254853c60eec h1:YftnEsNtCsUz3iAKsI2bwt7+AuA7Ygx3GfYV6h38s9U=
 github.com/NpoolPlatform/basal-middleware v0.0.0-20231015112137-254853c60eec/go.mod h1:WlyWMkHKHeW9PuST/CvRAw9pkhfrr/XS8VDISBaKdGA=
 github.com/NpoolPlatform/dtm-cluster v0.0.0-20231011071916-859e5dcbf626 h1:qPhxD5Z8D3Z83mUqf0KedOmfND0IrATmYTmpF9vfdsQ=
@@ -72,6 +77,7 @@ github.com/NpoolPlatform/inspire-middleware v0.0.0-20240119021120-823cef934a51 h
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20240119021120-823cef934a51/go.mod h1:16mM11b2e8fREhpL43HGlDAcntaVN3jfoAxxHy65F8I=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6 h1:zbM3Zq0qObWEiw+wYJihNFOsBfXey8mBgAhT7HzGB8Y=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6/go.mod h1:EXCihQpRNNyWaPu1IphiZFLTyyUK/CJMZdW4My7y48Q=
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -98,6 +104,10 @@ github.com/NpoolPlatform/message v0.0.0-20240117035744-45778b7f60a7/go.mod h1:Px
 github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a h1:+gVUfl0pCMHIBNXpwxseDxxapqmed8/ZAf+Oewl3UpQ=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a/go.mod h1:4Du89hzmz5gfqyxqXyzCOIWWpbPlDhKDRirekueAoRk=
 =======
+=======
+github.com/NpoolPlatform/message v0.0.0-20240117094722-abd68e6241a9 h1:71Uq6UC2v1u9hPy0M6/5vPR/0zaUQs35XwjDMmq/G+k=
+github.com/NpoolPlatform/message v0.0.0-20240117094722-abd68e6241a9/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
+>>>>>>> add ResetUserMethod
 github.com/NpoolPlatform/notif-middleware v0.0.0-20240117062548-f38268cafc75 h1:QfCa7NDFSMSeOx4Pjbd+E06HBmpKb2rXaLmqTV7s43g=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20240117062548-f38268cafc75/go.mod h1:erh51LviK+huTU2CiyNnnp6M5M3cJwNRO0wLZmPl2lg=
 >>>>>>> update commit id

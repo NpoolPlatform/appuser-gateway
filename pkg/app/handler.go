@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	constant "github.com/NpoolPlatform/appuser-gateway/pkg/const"
+	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/google/uuid"
@@ -32,6 +33,7 @@ type Handler struct {
 	CommitButtonTargets      []string
 	Banned                   *bool
 	BanMessage               *string
+	ResetUserMethod          *appusertypes.ResetUserMethod
 	Offset                   int32
 	Limit                    int32
 }
@@ -274,6 +276,25 @@ func WithCouponWithdrawEnable(enable *bool, must bool) func(context.Context, *Ha
 func WithCommitButtonTargets(targets []string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.CommitButtonTargets = targets
+		return nil
+	}
+}
+
+func WithResetUserMethod(method *appusertypes.ResetUserMethod, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if method == nil {
+			if must {
+				return fmt.Errorf("invalid reset user method")
+			}
+			return nil
+		}
+		switch *method {
+		case appusertypes.ResetUserMethod_Normal:
+		case appusertypes.ResetUserMethod_Link:
+		default:
+			return fmt.Errorf("invalid reset method %v", method)
+		}
+		h.ResetUserMethod = method
 		return nil
 	}
 }
