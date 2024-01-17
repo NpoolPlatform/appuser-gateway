@@ -169,6 +169,14 @@ spec:
     - host: api.npool.top
       http: &http_rules
         paths:
+          - path: /api/appuser/v1/generate/recoverycodes
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/recoverycodes
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/create/app
             backend:
               serviceName: appuser-gateway
