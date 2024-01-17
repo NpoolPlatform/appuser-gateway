@@ -19,6 +19,7 @@ type Handler struct {
 	ID                    *uint32
 	EntID                 *string
 	AppID                 *string
+	LangID                *string
 	App                   *appmwpb.App
 	UserID                *string
 	User                  *usermwpb.User
@@ -113,6 +114,22 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 		}
 		h.AppID = id
 		h.App = app
+		return nil
+	}
+}
+
+func WithLangID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.LangID = id
 		return nil
 	}
 }

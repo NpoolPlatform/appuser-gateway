@@ -15,6 +15,7 @@ func (s *Server) PreResetUser(ctx context.Context, in *npool.PreResetUserRequest
 	handler, err := user1.NewHandler(
 		ctx,
 		user1.WithAppID(&in.AppID, true),
+		user1.WithLangID(&in.LangID, true),
 		user1.WithAccount(&in.Account, true),
 		user1.WithAccountType(&in.AccountType, true),
 	)

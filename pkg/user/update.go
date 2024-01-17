@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
+	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
@@ -402,6 +403,9 @@ func (h *updateHandler) expireRecoveryCode(ctx context.Context) error {
 }
 
 func (h *updateHandler) verifyResetToken(ctx context.Context) error {
+	if h.App.ResetUserMethod != appusertypes.ResetUserMethod_Link {
+		return nil
+	}
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return err
@@ -450,9 +454,6 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	if err := handler.verifyRecoveryCode(ctx); err != nil {
 		return err
 	}
-	if err := handler.expireRecoveryCode(ctx); err != nil {
-		return err
-	}
 	if _, err := usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
 		ID:           h.ID,
 		EntID:        h.UserID,
@@ -461,7 +462,9 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	}); err != nil {
 		return err
 	}
-
+	if err := handler.expireRecoveryCode(ctx); err != nil {
+		return err
+	}
 	updateCacheMode := DeleteCacheIfExist
 	h.UpdateCacheMode = &updateCacheMode
 	if err := handler.updateCache(ctx); err != nil {
@@ -612,20 +615,20 @@ func (h *Handler) PreResetUser(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = cli.Set(ctx, key, key, resetPasswordExpiration).Err()
+	err = cli.Set(ctx, key, key, resetUserExpiration).Err()
 	if err != nil {
 		return err
 	}
 
 	lang, err := applangmwcli.GetLangOnly(ctx, &applangmwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		Main:  &basetypes.BoolVal{Op: cruder.EQ, Value: true},
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		LangID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.LangID},
 	})
 	if err != nil {
 		return nil
 	}
 	if lang == nil {
-		return fmt.Errorf("have not main language")
+		return fmt.Errorf("invalid langid")
 	}
 
 	var channel basetypes.NotifChannel
@@ -643,7 +646,7 @@ func (h *Handler) PreResetUser(ctx context.Context) error {
 		AppID:     *h.AppID,
 		LangID:    lang.LangID,
 		Channel:   channel,
-		EventType: basetypes.UsedFor_ResetPassword, // add EventType:ResetPassword
+		EventType: basetypes.UsedFor_ResetPassword,
 		Vars: &tmplmwpb.TemplateVars{
 			Message: &sEncode,
 		},
