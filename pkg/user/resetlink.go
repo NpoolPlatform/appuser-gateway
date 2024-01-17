@@ -7,14 +7,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	"github.com/go-redis/redis/v8"
 )
-
-type resetLinkHandler struct {
-	*Handler
-}
 
 type valResetUser struct {
 	AppID       string
@@ -24,16 +22,16 @@ type valResetUser struct {
 	StartAt     uint32
 }
 
-func metaToResetKey(val valResetUser) string {
-	key := fmt.Sprintf(
-		"%v:%v:%v:%v:%v",
+func resetUserKey(val valResetUser) string {
+	return fmt.Sprintf(
+		"%v:%v:%v:%v:%v:%v",
+		basetypes.Prefix_PrefixCreateResetUserLink,
 		val.AppID,
 		val.UserID,
 		val.Account,
 		val.AccountType,
 		val.StartAt,
 	)
-	return base64.StdEncoding.EncodeToString([]byte(key))
 }
 
 func (h *Handler) CreateResetUserLink(ctx context.Context) (string, error) {
@@ -58,15 +56,21 @@ func (h *Handler) CreateResetUserLink(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	key := metaToResetKey(val)
+	key := resetUserKey(val)
 	err = cli.Set(ctx, key, body, resetUserExpiration).Err()
 	if err != nil {
 		return "", err
 	}
-	return key, nil
+	return base64.StdEncoding.EncodeToString([]byte(key)), nil
 }
 
-func (h *Handler) VerifyResetUserLink(ctx context.Context, key string) error {
+func (h *Handler) VerifyResetUserLink(ctx context.Context) error {
+	if h.App.ResetUserMethod != appusertypes.ResetUserMethod_Link {
+		return nil
+	}
+	if h.ResetToken == nil {
+		return fmt.Errorf("invalid reset token")
+	}
 	cli, err := redis2.GetClient()
 	if err != nil {
 		return err
@@ -74,6 +78,12 @@ func (h *Handler) VerifyResetUserLink(ctx context.Context, key string) error {
 
 	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
 	defer cancel()
+
+	tokenBytes, err := base64.StdEncoding.DecodeString(*h.ResetToken)
+	if err != nil {
+		return err
+	}
+	key := string(tokenBytes[:]) //nolint
 
 	val, err := cli.Get(ctx, key).Result()
 	if err == redis.Nil {
@@ -87,9 +97,36 @@ func (h *Handler) VerifyResetUserLink(ctx context.Context, key string) error {
 	if err != nil {
 		return err
 	}
+	if resetUser.UserID != *h.UserID ||
+		resetUser.Account != *h.Account ||
+		resetUser.AccountType != h.AccountType.String() ||
+		resetUser.AppID != *h.AppID {
+		return fmt.Errorf("reset token invalid")
+	}
 	return nil
 }
 
-func (h *Handler) DeleteResetUserLink(ctx context.Context, link string) error {
+func (h *Handler) DeleteResetUserLink(ctx context.Context) error {
+	if h.ResetToken == nil {
+		return nil
+	}
+	tokenBytes, err := base64.StdEncoding.DecodeString(*h.ResetToken)
+	if err != nil {
+		return err
+	}
+	key := string(tokenBytes[:]) //nolint
+
+	cli, err := redis2.GetClient()
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, redisTimeout)
+	defer cancel()
+
+	err = cli.Del(ctx, key).Err()
+	if err != nil {
+		return err
+	}
 	return nil
 }

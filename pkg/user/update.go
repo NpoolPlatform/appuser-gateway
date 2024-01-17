@@ -3,15 +3,9 @@ package user
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"strings"
 
-	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
-	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	"github.com/go-redis/redis/v8"
-	"github.com/google/uuid"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -402,48 +396,15 @@ func (h *updateHandler) expireRecoveryCode(ctx context.Context) error {
 	return nil
 }
 
-func (h *updateHandler) verifyResetToken(ctx context.Context) error {
-	if h.App.ResetUserMethod != appusertypes.ResetUserMethod_Link {
-		return nil
-	}
-	cli, err := redis2.GetClient()
-	if err != nil {
-		return err
-	}
-
-	tokenBytes, err := base64.StdEncoding.DecodeString(*h.ResetToken)
-	if err != nil {
-		return err
-	}
-	tokenStr := string(tokenBytes[:]) //nolint
-
-	_, err = cli.Get(ctx, tokenStr).Result()
-	if err == redis.Nil {
-		return fmt.Errorf("reset token invalid")
-	} else if err != nil {
-		return err
-	}
-
-	userInfo := strings.Split(tokenStr, ":")
-	tokenAttrLen := 4
-	if len(userInfo) != tokenAttrLen {
-		return fmt.Errorf("invaild token")
-	}
-	h.Account = &userInfo[1]
-	accountType := basetypes.SignMethod(basetypes.SignMethod_value[userInfo[2]])
-	h.AccountType = &accountType
-	return nil
-}
-
 func (h *Handler) ResetUser(ctx context.Context) error {
 	if h.VerificationCode == nil && h.RecoveryCode == nil {
 		return fmt.Errorf("need verification code or recovery code")
 	}
+	if err := h.VerifyResetUserLink(ctx); err != nil {
+		return err
+	}
 	handler := &updateHandler{
 		Handler: h,
-	}
-	if err := handler.verifyResetToken(ctx); err != nil {
-		return err
 	}
 	if err := handler.getAccountUser(ctx); err != nil {
 		return err
@@ -468,6 +429,9 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	updateCacheMode := DeleteCacheIfExist
 	h.UpdateCacheMode = &updateCacheMode
 	if err := handler.updateCache(ctx); err != nil {
+		return err
+	}
+	if err := h.DeleteResetUserLink(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -610,12 +574,7 @@ func (h *Handler) PreResetUser(ctx context.Context) error {
 		return err
 	}
 
-	key := fmt.Sprintf("%v:%v:%v:%v", handler.User.EntID, *h.Account, h.AccountType.String(), uuid.NewString())
-	cli, err := redis2.GetClient()
-	if err != nil {
-		return err
-	}
-	err = cli.Set(ctx, key, key, resetUserExpiration).Err()
+	link, err := h.CreateResetUserLink(ctx)
 	if err != nil {
 		return err
 	}
@@ -641,14 +600,13 @@ func (h *Handler) PreResetUser(ctx context.Context) error {
 		return fmt.Errorf("invalid channel")
 	}
 
-	sEncode := base64.StdEncoding.EncodeToString([]byte(key))
 	info, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
 		AppID:     *h.AppID,
 		LangID:    lang.LangID,
 		Channel:   channel,
 		EventType: basetypes.UsedFor_ResetPassword,
 		Vars: &tmplmwpb.TemplateVars{
-			Message: &sEncode,
+			Message: &link,
 		},
 	})
 	if err != nil {
