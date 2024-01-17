@@ -31,5 +31,6 @@ func (h *Handler) CreateApp(ctx context.Context) (*appmwpb.App, error) {
 		MaxTypedCouponsPerOrder:  h.MaxTypedCouponsPerOrder,
 		Maintaining:              h.Maintaining,
 		CommitButtonTargets:      h.CommitButtonTargets,
+		ResetUserMethod:          h.ResetUserMethod,
 	})
 }

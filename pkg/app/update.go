@@ -57,5 +57,6 @@ func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
 		CommitButtonTargets:      h.CommitButtonTargets,
 		Banned:                   h.Banned,
 		BanMessage:               h.BanMessage,
+		ResetUserMethod:          h.ResetUserMethod,
 	})
 }

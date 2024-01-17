@@ -30,6 +30,7 @@ func (s *Server) UpdateApp(ctx context.Context, in *npool.UpdateAppRequest) (*np
 		app1.WithMaxTypedCouponsPerOrder(in.MaxTypedCouponsPerOrder, false),
 		app1.WithMaintaining(in.Maintaining, false),
 		app1.WithCommitButtonTargets(in.GetCommitButtonTargets(), false),
+		app1.WithResetUserMethod(in.ResetUserMethod, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

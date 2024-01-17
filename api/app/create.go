@@ -28,6 +28,7 @@ func (s *Server) CreateApp(ctx context.Context, in *npool.CreateAppRequest) (*np
 		app1.WithMaxTypedCouponsPerOrder(in.MaxTypedCouponsPerOrder, false),
 		app1.WithMaintaining(in.Maintaining, false),
 		app1.WithCommitButtonTargets(in.GetCommitButtonTargets(), false),
+		app1.WithResetUserMethod(in.ResetUserMethod, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
