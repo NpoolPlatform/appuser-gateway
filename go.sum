@@ -82,6 +82,7 @@ github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6/go.mod
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/NpoolPlatform/message v0.0.0-20240119020142-799e25722bb0 h1:3vuRZdkRjIFhlRkKd6zBlt85wKpAP+x2TADe+YFebl4=
 github.com/NpoolPlatform/message v0.0.0-20240119020142-799e25722bb0/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 =======
@@ -108,6 +109,10 @@ github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a/go.
 github.com/NpoolPlatform/message v0.0.0-20240117094722-abd68e6241a9 h1:71Uq6UC2v1u9hPy0M6/5vPR/0zaUQs35XwjDMmq/G+k=
 github.com/NpoolPlatform/message v0.0.0-20240117094722-abd68e6241a9/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 >>>>>>> add ResetUserMethod
+=======
+github.com/NpoolPlatform/message v0.0.0-20240117143050-364f63a2f783 h1:MzZkTr9mnwortEwuwr0ocgLlnjo2q2ZtfnyhBjieRik=
+github.com/NpoolPlatform/message v0.0.0-20240117143050-364f63a2f783/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
+>>>>>>> update resteuser
 github.com/NpoolPlatform/notif-middleware v0.0.0-20240117062548-f38268cafc75 h1:QfCa7NDFSMSeOx4Pjbd+E06HBmpKb2rXaLmqTV7s43g=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20240117062548-f38268cafc75/go.mod h1:erh51LviK+huTU2CiyNnnp6M5M3cJwNRO0wLZmPl2lg=
 >>>>>>> update commit id
