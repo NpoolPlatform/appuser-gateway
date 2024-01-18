@@ -5,10 +5,12 @@ import (
 	"context"
 	"fmt"
 
+	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	recoverycodemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user/recoverycode"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
@@ -566,9 +568,26 @@ func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 	return info, nil
 }
 
+func (h *updateHandler) getApp(ctx context.Context) error {
+	app, err := appmwcli.GetApp(ctx, *h.AppID)
+	if err != nil {
+		return err
+	}
+	if app == nil {
+		return fmt.Errorf("invalid app")
+	}
+	if app.ResetUserMethod != appusertypes.ResetUserMethod_Link {
+		return fmt.Errorf("permission denied")
+	}
+	return nil
+}
+
 func (h *Handler) PreResetUser(ctx context.Context) error {
 	handler := &updateHandler{
 		Handler: h,
+	}
+	if err := handler.getApp(ctx); err != nil {
+		return err
 	}
 	if err := handler.getAccountUser(ctx); err != nil {
 		return err
