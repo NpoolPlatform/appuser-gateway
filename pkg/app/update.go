@@ -54,6 +54,7 @@ func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
 		CreateInvitationCodeWhen: h.CreateInvitationCodeWhen,
 		MaxTypedCouponsPerOrder:  h.MaxTypedCouponsPerOrder,
 		Maintaining:              h.Maintaining,
+		CouponWithdrawEnable:     h.CouponWithdrawEnable,
 		CommitButtonTargets:      h.CommitButtonTargets,
 		Banned:                   h.Banned,
 		BanMessage:               h.BanMessage,

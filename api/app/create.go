@@ -27,6 +27,7 @@ func (s *Server) CreateApp(ctx context.Context, in *npool.CreateAppRequest) (*np
 		app1.WithCreateInvitationCodeWhen(in.CreateInvitationCodeWhen, false),
 		app1.WithMaxTypedCouponsPerOrder(in.MaxTypedCouponsPerOrder, false),
 		app1.WithMaintaining(in.Maintaining, false),
+		app1.WithCouponWithdrawEnable(in.CouponWithdrawEnable, false),
 		app1.WithCommitButtonTargets(in.GetCommitButtonTargets(), false),
 	)
 	if err != nil {
