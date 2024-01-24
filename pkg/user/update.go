@@ -402,13 +402,13 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	if h.VerificationCode == nil && h.RecoveryCode == nil {
 		return fmt.Errorf("need verification code or recovery code")
 	}
-	if err := h.VerifyResetUserLink(ctx); err != nil {
-		return err
-	}
 	handler := &updateHandler{
 		Handler: h,
 	}
 	if err := handler.getAccountUser(ctx); err != nil {
+		return err
+	}
+	if err := h.VerifyResetUserLink(ctx); err != nil {
 		return err
 	}
 	if err := handler.verifyAccountCode(ctx); err != nil {
