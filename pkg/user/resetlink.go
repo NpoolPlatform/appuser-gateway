@@ -87,7 +87,7 @@ func (h *Handler) VerifyResetUserLink(ctx context.Context) error {
 
 	val, err := cli.Get(ctx, key).Result()
 	if err == redis.Nil {
-		return nil
+		return fmt.Errorf("token expired")
 	} else if err != nil {
 		return err
 	}
