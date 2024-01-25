@@ -5,17 +5,21 @@ import (
 	"context"
 	"fmt"
 
+	appusertypes "github.com/NpoolPlatform/message/npool/basetypes/appuser/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	recoverycodemwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user/recoverycode"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
 
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	recoverycodemwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user/recoverycode"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/invitationcode"
 	regmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 
@@ -34,9 +38,10 @@ import (
 
 type updateHandler struct {
 	*Handler
-	targetID   *uint32
-	targetUser *usermwpb.User
-	origUser   *usermwpb.User
+	targetID     *uint32
+	targetUser   *usermwpb.User
+	origUser     *usermwpb.User
+	recoveryCode *recoverycodemwpb.RecoveryCode
 }
 
 func (h *updateHandler) verifyOldPasswordHash(ctx context.Context) error {
@@ -340,6 +345,9 @@ func (h *updateHandler) getAccountUser(ctx context.Context) error {
 }
 
 func (h *updateHandler) verifyAccountCode(ctx context.Context) error {
+	if h.VerificationCode == nil {
+		return nil
+	}
 	if h.Account == nil || h.AccountType == nil {
 		return fmt.Errorf("invalid account")
 	}
@@ -356,15 +364,57 @@ func (h *updateHandler) verifyAccountCode(ctx context.Context) error {
 	})
 }
 
+func (h *updateHandler) verifyRecoveryCode(ctx context.Context) error {
+	if h.RecoveryCode == nil {
+		return nil
+	}
+	code, err := recoverycodemwcli.GetRecoveryCodeOnly(ctx, &recoverycodemwpb.Conds{
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		Code:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.RecoveryCode},
+		Used:   &basetypes.BoolVal{Op: cruder.EQ, Value: false},
+	})
+	if err != nil {
+		return err
+	}
+	if code == nil {
+		return fmt.Errorf("invalid recovery code")
+	}
+	h.recoveryCode = code
+	return nil
+}
+
+func (h *updateHandler) expireRecoveryCode(ctx context.Context) error {
+	if h.recoveryCode == nil {
+		return nil
+	}
+	used := true
+	if _, err := recoverycodemwcli.UpdateRecoveryCode(ctx, &recoverycodemwpb.RecoveryCodeReq{
+		ID:   &h.recoveryCode.ID,
+		Used: &used,
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (h *Handler) ResetUser(ctx context.Context) error {
+	if h.VerificationCode == nil && h.RecoveryCode == nil {
+		return fmt.Errorf("need verification code or recovery code")
+	}
 	handler := &updateHandler{
 		Handler: h,
 	}
-
 	if err := handler.getAccountUser(ctx); err != nil {
 		return err
 	}
+	if err := h.VerifyResetUserLink(ctx); err != nil {
+		return err
+	}
 	if err := handler.verifyAccountCode(ctx); err != nil {
+		return err
+	}
+	if err := handler.verifyRecoveryCode(ctx); err != nil {
 		return err
 	}
 	if _, err := usermwcli.UpdateUser(ctx, &usermwpb.UserReq{
@@ -375,18 +425,17 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	}); err != nil {
 		return err
 	}
+	if err := handler.expireRecoveryCode(ctx); err != nil {
+		return err
+	}
 	updateCacheMode := DeleteCacheIfExist
 	h.UpdateCacheMode = &updateCacheMode
 	if err := handler.updateCache(ctx); err != nil {
 		return err
 	}
-
-	notif1 := &notifHandler{
-		Handler: h,
-		UsedFor: basetypes.UsedFor_UpdatePassword,
+	if err := h.DeleteResetUserLink(ctx); err != nil {
+		return err
 	}
-	notif1.generateNotif(ctx)
-
 	return nil
 }
 
@@ -517,4 +566,82 @@ func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 	handler.sendKolNotification(ctx)
 
 	return info, nil
+}
+
+func (h *updateHandler) getApp(ctx context.Context) error {
+	app, err := appmwcli.GetApp(ctx, *h.AppID)
+	if err != nil {
+		return err
+	}
+	if app == nil {
+		return fmt.Errorf("invalid app")
+	}
+	if app.ResetUserMethod != appusertypes.ResetUserMethod_Link {
+		return fmt.Errorf("permission denied")
+	}
+	return nil
+}
+
+func (h *Handler) PreResetUser(ctx context.Context) error {
+	handler := &updateHandler{
+		Handler: h,
+	}
+	if err := handler.getApp(ctx); err != nil {
+		return err
+	}
+	if err := handler.getAccountUser(ctx); err != nil {
+		return err
+	}
+
+	link, err := h.CreateResetUserLink(ctx)
+	if err != nil {
+		return err
+	}
+
+	lang, err := applangmwcli.GetLangOnly(ctx, &applangmwpb.Conds{
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		LangID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.LangID},
+	})
+	if err != nil {
+		return nil
+	}
+	if lang == nil {
+		return fmt.Errorf("invalid langid")
+	}
+
+	var channel basetypes.NotifChannel
+	switch *h.AccountType {
+	case basetypes.SignMethod_Email:
+		channel = basetypes.NotifChannel_ChannelEmail
+	case basetypes.SignMethod_Mobile:
+		channel = basetypes.NotifChannel_ChannelSMS
+	default:
+		return fmt.Errorf("invalid channel")
+	}
+
+	info, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
+		AppID:     *h.AppID,
+		LangID:    lang.LangID,
+		Channel:   channel,
+		EventType: basetypes.UsedFor_ResetPassword,
+		Vars: &tmplmwpb.TemplateVars{
+			Message: &link,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if info == nil {
+		return fmt.Errorf("generate text failed")
+	}
+
+	return sendmwcli.SendMessage(ctx, &sendmwpb.SendMessageRequest{
+		Subject:     info.Subject,
+		Content:     info.Content,
+		From:        info.From,
+		To:          *h.Account,
+		ToCCs:       info.ToCCs,
+		ReplyTos:    info.ReplyTos,
+		AccountType: *h.AccountType,
+	})
 }

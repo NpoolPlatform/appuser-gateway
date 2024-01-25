@@ -19,6 +19,7 @@ type Handler struct {
 	ID                    *uint32
 	EntID                 *string
 	AppID                 *string
+	LangID                *string
 	App                   *appmwpb.App
 	UserID                *string
 	User                  *usermwpb.User
@@ -62,6 +63,7 @@ type Handler struct {
 	RecoveryCode          *string
 	UpdateCacheMode       *UpdateCacheMode
 	ThirdPartyID          *string
+	ResetToken            *string
 	Offset                int32
 	Limit                 int32
 }
@@ -112,6 +114,22 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 		}
 		h.AppID = id
 		h.App = app
+		return nil
+	}
+}
+
+func WithLangID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.LangID = id
 		return nil
 	}
 }
@@ -448,6 +466,22 @@ func WithRecoveryCode(code *string, must bool) func(context.Context, *Handler) e
 			return fmt.Errorf("invalid recoverycode")
 		}
 		h.RecoveryCode = code
+		return nil
+	}
+}
+
+func WithResetToken(token *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if token == nil {
+			if must {
+				return fmt.Errorf("invalid reset token")
+			}
+			return nil
+		}
+		if *token == "" {
+			return fmt.Errorf("invalid reset token")
+		}
+		h.ResetToken = token
 		return nil
 	}
 }

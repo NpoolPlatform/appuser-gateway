@@ -99,6 +99,7 @@ metadata:
       kube-system-common-headers@kubernetescrd,
       kube-system-headers-appid-to-body@kubernetescrd,
       kube-system-headers-userid-to-body@kubernetescrd,
+      kube-system-headers-langid-to-body@kubernetescrd,
       kube-system-headers-app-login-token-to-body@kubernetescrd,
       kube-system-app-rbac-auth@kubernetescrd
 
@@ -112,6 +113,10 @@ spec:
               serviceName: appuser-gateway
               servicePort: 50500
           - path: /api/appuser/v1/reset/user
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/prereset/user
             backend:
               serviceName: appuser-gateway
               servicePort: 50500
@@ -165,6 +170,14 @@ spec:
     - host: api.npool.top
       http: &http_rules
         paths:
+          - path: /api/appuser/v1/generate/recoverycodes
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
+          - path: /api/appuser/v1/get/recoverycodes
+            backend:
+              serviceName: appuser-gateway
+              servicePort: 50500
           - path: /api/appuser/v1/create/app
             backend:
               serviceName: appuser-gateway

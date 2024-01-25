@@ -32,5 +32,6 @@ func (h *Handler) CreateApp(ctx context.Context) (*appmwpb.App, error) {
 		Maintaining:              h.Maintaining,
 		CouponWithdrawEnable:     h.CouponWithdrawEnable,
 		CommitButtonTargets:      h.CommitButtonTargets,
+		ResetUserMethod:          h.ResetUserMethod,
 	})
 }
