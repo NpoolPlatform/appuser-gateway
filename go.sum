@@ -52,6 +52,7 @@ github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20240119021359-948c8504d662 h1:t8u7hIcPbnH/W7rWOOqmvubagdO9lwR2CcteDAnJuD8=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20240119021359-948c8504d662/go.mod h1:NiRL9uaGlrIqtQWQmKW2Zt33AkTTImg/AFSJNJf0BNE=
 =======
@@ -70,6 +71,10 @@ github.com/NpoolPlatform/appuser-middleware v0.0.0-20240117094838-2f6a11e03428/g
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20240124072752-be15b8557b38 h1:zKmXLEylwXCF3f0SxDBeGTaIbkHz5Gg2uh/UfeA6x7U=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20240124072752-be15b8557b38/go.mod h1:WijDz7WQdpF2dHbsQb7Us2wg46JmEthyhEmWencKhjg=
 >>>>>>> update commit id
+=======
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20240125023515-2ea7b44eae0d h1:zUxrrKdnb2Mc1XGSdbVlqSCTft2qHKBYvQ+MPNU8FNk=
+github.com/NpoolPlatform/appuser-middleware v0.0.0-20240125023515-2ea7b44eae0d/go.mod h1:6QaVNtVa3WkQfChAiwG/k291Bwfr7jqJnE7ie30f6SE=
+>>>>>>> update commit id
 github.com/NpoolPlatform/basal-middleware v0.0.0-20231015112137-254853c60eec h1:YftnEsNtCsUz3iAKsI2bwt7+AuA7Ygx3GfYV6h38s9U=
 github.com/NpoolPlatform/basal-middleware v0.0.0-20231015112137-254853c60eec/go.mod h1:WlyWMkHKHeW9PuST/CvRAw9pkhfrr/XS8VDISBaKdGA=
 github.com/NpoolPlatform/dtm-cluster v0.0.0-20231011071916-859e5dcbf626 h1:qPhxD5Z8D3Z83mUqf0KedOmfND0IrATmYTmpF9vfdsQ=
@@ -82,6 +87,7 @@ github.com/NpoolPlatform/inspire-middleware v0.0.0-20240119021120-823cef934a51 h
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20240119021120-823cef934a51/go.mod h1:16mM11b2e8fREhpL43HGlDAcntaVN3jfoAxxHy65F8I=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6 h1:zbM3Zq0qObWEiw+wYJihNFOsBfXey8mBgAhT7HzGB8Y=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6/go.mod h1:EXCihQpRNNyWaPu1IphiZFLTyyUK/CJMZdW4My7y48Q=
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -125,6 +131,12 @@ github.com/NpoolPlatform/message v0.0.0-20240124072343-e67196b8baea/go.mod h1:Px
 >>>>>>> update commit id
 github.com/NpoolPlatform/notif-middleware v0.0.0-20240117062548-f38268cafc75 h1:QfCa7NDFSMSeOx4Pjbd+E06HBmpKb2rXaLmqTV7s43g=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20240117062548-f38268cafc75/go.mod h1:erh51LviK+huTU2CiyNnnp6M5M3cJwNRO0wLZmPl2lg=
+>>>>>>> update commit id
+=======
+github.com/NpoolPlatform/message v0.0.0-20240125015821-e83c4ddf2126 h1:GTPvLFtMdSozC5GK9SpvM9D+vfeIUKbkLu6GMBBtdxg=
+github.com/NpoolPlatform/message v0.0.0-20240125015821-e83c4ddf2126/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
+github.com/NpoolPlatform/notif-middleware v0.0.0-20240125023232-354e552cab98 h1:MOLovEwWTk4Lf8MXiuF7/Qfbs11bcRAHPFaegmljQhM=
+github.com/NpoolPlatform/notif-middleware v0.0.0-20240125023232-354e552cab98/go.mod h1:Q7sUtORhhueuZ1mQjxn1ggsHRsBrqzb/bMV04kM+3bA=
 >>>>>>> update commit id
 github.com/NpoolPlatform/review-middleware v0.0.0-20240108100223-106962e5a9c2 h1:qXBRJjUzscoz2Sn2ceEmjweHVXZIqGBw2SgJDu/Tk2k=
 github.com/NpoolPlatform/review-middleware v0.0.0-20240108100223-106962e5a9c2/go.mod h1:31T/JYYgE/9w5uHYXqbrd9/a5DU0NEaV5CxBeBOBAHQ=
