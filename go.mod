@@ -3,7 +3,7 @@ module github.com/NpoolPlatform/appuser-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20240125023515-2ea7b44eae0d
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20240228082801-b01a96a4f419
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20231015112137-254853c60eec
 	github.com/NpoolPlatform/dtm-cluster v0.0.0-20231011071916-859e5dcbf626
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20231026021135-ec3cd368fc24
@@ -136,7 +136,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.12.0 // indirect
 	github.com/subosito/gotenv v1.3.0 // indirect
-	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
