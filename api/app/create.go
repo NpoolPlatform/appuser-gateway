@@ -30,6 +30,12 @@ func (s *Server) CreateApp(ctx context.Context, in *npool.CreateAppRequest) (*np
 		app1.WithCouponWithdrawEnable(in.CouponWithdrawEnable, false),
 		app1.WithCommitButtonTargets(in.GetCommitButtonTargets(), false),
 		app1.WithResetUserMethod(in.ResetUserMethod, false),
+		app1.WithSettleMode(&in.SettleMode, true),
+		app1.WithSettleAmountType(&in.SettleAmountType, true),
+		app1.WithSettleInterval(&in.SettleInterval, true),
+		app1.WithCommissionType(&in.CommissionType, true),
+		app1.WithSettleBenefit(in.SettleBenefit, false),
+		app1.WithStartAt(in.StartAt, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
