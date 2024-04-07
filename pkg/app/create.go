@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 
+	appusermwsvcname "github.com/NpoolPlatform/appuser-middleware/pkg/servicename"
 	dtmcli "github.com/NpoolPlatform/dtm-cluster/pkg/dtm"
 	inspiremwsvcname "github.com/NpoolPlatform/inspire-middleware/pkg/servicename"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
@@ -59,7 +60,7 @@ func (h *createHandler) withCreateApp(dispose *dtmcli.SagaDispose) {
 		ResetUserMethod:          h.ResetUserMethod,
 	}
 	dispose.Add(
-		inspiremwsvcname.ServiceDomain,
+		appusermwsvcname.ServiceDomain,
 		"appuser.middleware.app.v1.Middleware/CreateApp",
 		"appuser.middleware.app.v1.Middleware/DeleteApp",
 		&appmwpb.CreateAppRequest{
