@@ -3,17 +3,22 @@ package user
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
+	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
+	taskusermwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/user"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	loginhispb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user/login/history"
 	usercodemwpb "github.com/NpoolPlatform/message/npool/basal/mw/v1/usercode"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 	ivcodemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/invitationcode"
+	taskusermwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/task/user"
 	thirdmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/verify"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
@@ -47,6 +52,162 @@ func (h *loginHandler) notifyLogin(loginType basetypes.LoginType) {
 	}); err != nil {
 		logger.Sugar().Errorw(
 			"notifyLogin",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"Account", h.Account,
+			"AccountType", h.AccountType,
+			"Error", err,
+		)
+	}
+}
+
+func (h *loginHandler) checkLoginReward(ctx context.Context) {
+	loginEvent, err := eventmwcli.GetEventOnly(ctx, &eventmwpb.Conds{
+		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EventType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(basetypes.UsedFor_Signin)},
+	})
+	if err != nil {
+		logger.Sugar().Errorw(
+			"checkLoginReward",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"EventType", basetypes.UsedFor_Signin,
+			"Account", h.Account,
+			"AccountType", h.AccountType,
+			"Error", err,
+		)
+		return
+	}
+	if loginEvent == nil {
+		return
+	}
+	now := uint32(time.Now().Unix())
+	coolDownDuration := 4 * 60 * 60
+	coolDownTime := now - uint32(coolDownDuration)
+
+	exist, err := taskusermwcli.ExistTaskUserConds(ctx, &taskusermwpb.Conds{
+		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		UserID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		EventID:   &basetypes.StringVal{Op: cruder.EQ, Value: loginEvent.EntID},
+		CreatedAt: &basetypes.Uint32Val{Op: cruder.GTE, Value: coolDownTime},
+	})
+	if err != nil {
+		logger.Sugar().Errorw(
+			"checkLoginReward",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"EventID", loginEvent.EntID,
+			"CreatedAt", coolDownTime,
+			"Account", h.Account,
+			"AccountType", h.AccountType,
+			"Error", err,
+		)
+		return
+	}
+	if exist {
+		return
+	}
+
+	h.rewardSignin()
+}
+
+func (h *loginHandler) checkConsecutiveLoginReward(ctx context.Context) {
+	loginEvent, err := eventmwcli.GetEventOnly(ctx, &eventmwpb.Conds{
+		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EventType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(basetypes.UsedFor_ConsecutiveLogin)},
+	})
+	if err != nil {
+		logger.Sugar().Errorw(
+			"checkConsecutiveLoginReward",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"EventType", basetypes.UsedFor_ConsecutiveLogin,
+			"Account", h.Account,
+			"AccountType", h.AccountType,
+			"Error", err,
+		)
+		return
+	}
+	if loginEvent == nil {
+		return
+	}
+	now := time.Now()
+	location := now.Location()
+	midnight := uint32(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, location).Unix())
+
+	exist, err := taskusermwcli.ExistTaskUserConds(ctx, &taskusermwpb.Conds{
+		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		UserID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		EventID:   &basetypes.StringVal{Op: cruder.EQ, Value: loginEvent.EntID},
+		CreatedAt: &basetypes.Uint32Val{Op: cruder.GTE, Value: midnight},
+	})
+	if err != nil {
+		logger.Sugar().Errorw(
+			"checkConsecutiveLoginReward",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"EventID", loginEvent.EntID,
+			"CreatedAt", midnight,
+			"Account", h.Account,
+			"AccountType", h.AccountType,
+			"Error", err,
+		)
+		return
+	}
+	if exist {
+		return
+	}
+
+	h.rewardConsecutiveLogin()
+}
+
+//nolint:dupl
+func (h *loginHandler) rewardSignin() {
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		req := &eventmwpb.CalcluateEventRewardsRequest{
+			AppID:       *h.AppID,
+			UserID:      *h.UserID,
+			EventType:   basetypes.UsedFor_Signin,
+			Consecutive: 1,
+		}
+		return publisher.Update(
+			basetypes.MsgID_CalculateEventRewardReq.String(),
+			nil,
+			nil,
+			nil,
+			req,
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"rewardSignin",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"Account", h.Account,
+			"AccountType", h.AccountType,
+			"Error", err,
+		)
+	}
+}
+
+//nolint:dupl
+func (h *loginHandler) rewardConsecutiveLogin() {
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		req := &eventmwpb.CalcluateEventRewardsRequest{
+			AppID:       *h.AppID,
+			UserID:      *h.UserID,
+			EventType:   basetypes.UsedFor_ConsecutiveLogin,
+			Consecutive: 1,
+		}
+		return publisher.Update(
+			basetypes.MsgID_CalculateEventRewardReq.String(),
+			nil,
+			nil,
+			nil,
+			req,
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"rewardConsecutiveLogin",
 			"AppID", *h.AppID,
 			"UserID", h.UserID,
 			"Account", h.Account,
@@ -176,6 +337,8 @@ func (h *Handler) Login(ctx context.Context) (info *usermwpb.User, err error) {
 	}
 
 	handler.notifyLogin(basetypes.LoginType_FreshLogin)
+	handler.checkLoginReward(ctx)
+	handler.checkConsecutiveLoginReward(ctx)
 
 	return h.User, nil
 }
@@ -224,6 +387,8 @@ func (h *Handler) ThirdLogin(ctx context.Context) (info *usermwpb.User, err erro
 		return nil, err
 	}
 	handler.notifyLogin(basetypes.LoginType_FreshLogin)
+	handler.checkLoginReward(ctx)
+	handler.checkConsecutiveLoginReward(ctx)
 	return h.User, nil
 }
 

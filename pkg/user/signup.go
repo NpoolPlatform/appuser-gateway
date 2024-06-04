@@ -115,16 +115,17 @@ func (h *signupHandler) getDefaultRole(ctx context.Context) error {
 	return nil
 }
 
+//nolint:dupl
 func (h *signupHandler) rewardSignup() {
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
-		req := &eventmwpb.RewardEventRequest{
+		req := &eventmwpb.CalcluateEventRewardsRequest{
 			AppID:       *h.AppID,
 			UserID:      *h.UserID,
 			EventType:   basetypes.UsedFor_Signup,
 			Consecutive: 1,
 		}
 		return publisher.Update(
-			basetypes.MsgID_RewardEventReq.String(),
+			basetypes.MsgID_CalculateEventRewardReq.String(),
 			nil,
 			nil,
 			nil,
@@ -133,6 +134,34 @@ func (h *signupHandler) rewardSignup() {
 	}); err != nil {
 		logger.Sugar().Errorw(
 			"rewardSignup",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"Account", h.Account,
+			"AccountType", h.AccountType,
+			"Error", err,
+		)
+	}
+}
+
+//nolint:dupl
+func (h *signupHandler) rewardAffiliateSignup() {
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		req := &eventmwpb.CalcluateEventRewardsRequest{
+			AppID:       *h.AppID,
+			UserID:      *h.UserID,
+			EventType:   basetypes.UsedFor_AffiliateSignup,
+			Consecutive: 1,
+		}
+		return publisher.Update(
+			basetypes.MsgID_CalculateEventRewardReq.String(),
+			nil,
+			nil,
+			nil,
+			req,
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"rewardAffiliateSignup",
 			"AppID", *h.AppID,
 			"UserID", h.UserID,
 			"Account", h.Account,
@@ -201,6 +230,7 @@ func (h *Handler) Signup(ctx context.Context) (info *usermwpb.User, err error) {
 	}
 
 	signupHandler.rewardSignup()
+	signupHandler.rewardAffiliateSignup()
 
 	return h.GetUser(ctx)
 }
