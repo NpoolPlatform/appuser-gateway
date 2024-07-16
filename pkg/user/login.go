@@ -9,6 +9,7 @@ import (
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
+	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
 	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 	taskusermwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/user"
@@ -82,7 +83,7 @@ func (h *loginHandler) checkLoginReward(ctx context.Context) {
 		return
 	}
 	now := uint32(time.Now().Unix())
-	coolDownDuration := 4 * 60 * 60
+	coolDownDuration := 4 * timedef.SecondsPerHour
 	coolDownTime := now - uint32(coolDownDuration)
 
 	exist, err := taskusermwcli.ExistTaskUserConds(ctx, &taskusermwpb.Conds{
