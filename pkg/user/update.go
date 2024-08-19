@@ -312,7 +312,7 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	// Generate Notif
 	notif1.generateNotif(ctx)
 
-	return h.User, nil
+	return h.GetUser(ctx)
 }
 
 func (h *updateHandler) getAccountUser(ctx context.Context) error {
@@ -554,18 +554,18 @@ func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 		AppID: h.AppID,
 		Kol:   h.Kol,
 	}
-	info, err := usermwcli.UpdateUser(ctx, req)
-	if err != nil {
+	if _, err := usermwcli.UpdateUser(ctx, req); err != nil {
 		return nil, err
 	}
 
-	if err := handler.tryCreateInvitationCode(ctx); err != nil {
-		return nil, err
+	if h.Kol != nil && *h.Kol {
+		if err := handler.tryCreateInvitationCode(ctx); err != nil {
+			return nil, err
+		}
+		handler.sendKolNotification(ctx)
 	}
 
-	handler.sendKolNotification(ctx)
-
-	return info, nil
+	return h.GetUser(ctx)
 }
 
 func (h *updateHandler) getApp(ctx context.Context) error {
