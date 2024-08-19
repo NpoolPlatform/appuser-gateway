@@ -282,7 +282,7 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	notif1 := &notifHandler{
 		Handler: h,
 	}
-	notif1.getUsedFor()
+	notif1.formalizeUsedFor()
 
 	if err := handler.CheckNewAccount(ctx); err != nil {
 		return nil, err
@@ -307,6 +307,13 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	}
 	if err := handler.updateCache(ctx); err != nil {
 		return nil, err
+	}
+
+	if h.Kol != nil && *h.Kol {
+		if err := handler.tryCreateInvitationCode(ctx); err != nil {
+			return nil, err
+		}
+		handler.sendKolNotification(ctx)
 	}
 
 	// Generate Notif
