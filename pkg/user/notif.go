@@ -14,7 +14,7 @@ type notifHandler struct {
 	UsedFor basetypes.UsedFor
 }
 
-func (h *notifHandler) getUsedFor() {
+func (h *notifHandler) formalizeUsedFor() {
 	h.UsedFor = basetypes.UsedFor_DefaultUsedFor
 
 	if h.NewAccountType != nil {
