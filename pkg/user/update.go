@@ -299,6 +299,9 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) { //no
 	if err := handler.verifyNewAccountCode(ctx); err != nil {
 		return nil, err
 	}
+	if err := handler.getTargetUser(ctx); err != nil {
+		return nil, err
+	}
 
 	handler.origUser = handler.User
 
@@ -447,7 +450,7 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 }
 
 func (h *updateHandler) verifyRegistrationInvitation(ctx context.Context) error {
-	if h.TargetUserID == nil {
+	if *h.TargetUserID == *h.UserID {
 		return fmt.Errorf("invalid target userid")
 	}
 
