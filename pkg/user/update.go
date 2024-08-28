@@ -40,7 +40,6 @@ type updateHandler struct {
 	*Handler
 	targetID     *uint32
 	targetUser   *usermwpb.User
-	origUser     *usermwpb.User
 	recoveryCode *recoverycodemwpb.RecoveryCode
 }
 
@@ -303,26 +302,28 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) { //no
 		return nil, err
 	}
 
-	handler.origUser = handler.User
-
 	if err := handler.updateUser(ctx); err != nil {
 		return nil, err
 	}
-	if err := handler.updateCache(ctx); err != nil {
-		return nil, err
-	}
-
 	if h.Kol != nil && *h.Kol {
 		if err := handler.tryCreateInvitationCode(ctx); err != nil {
 			return nil, err
 		}
 		handler.sendKolNotification(ctx)
 	}
+	user, err := h.GetUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	h.User = user
+	if err := handler.updateCache(ctx); err != nil {
+		return nil, err
+	}
 
 	// Generate Notif
 	notif1.generateNotif(ctx)
 
-	return h.GetUser(ctx)
+	return h.User, nil
 }
 
 func (h *updateHandler) getAccountUser(ctx context.Context) error {
