@@ -13,6 +13,7 @@ func (h *Handler) SetupGoogleAuth(ctx context.Context) (*usermwpb.User, error) {
 		ctx,
 		user1.WithAppID(h.AppID, true),
 		user1.WithUserID(h.UserID, true),
+		user1.WithTargetUserID(h.UserID, true),
 	)
 	if err != nil {
 		return nil, err

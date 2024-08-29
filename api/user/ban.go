@@ -22,6 +22,7 @@ func (s *Server) BanUser(ctx context.Context, in *npool.BanUserRequest) (*npool.
 		ctx,
 		user1.WithAppID(&in.AppID, true),
 		user1.WithUserID(&in.TargetUserID, true),
+		user1.WithTargetUserID(&in.TargetUserID, true),
 		user1.WithBanned(&in.Banned, true),
 		user1.WithBanMessage(&in.BanMessage, true),
 		user1.WithUpdateCacheMode(&updateCacheMode, true),
