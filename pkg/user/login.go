@@ -9,7 +9,6 @@ import (
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	usercodemwcli "github.com/NpoolPlatform/basal-middleware/pkg/client/usercode"
-	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
 	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	ivcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
 	taskusermwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/user"
@@ -80,32 +79,6 @@ func (h *loginHandler) checkLoginReward(ctx context.Context) {
 		return
 	}
 	if loginEvent == nil {
-		return
-	}
-	now := uint32(time.Now().Unix())
-	coolDownDuration := 4 * timedef.SecondsPerHour
-	coolDownTime := now - uint32(coolDownDuration)
-
-	exist, err := taskusermwcli.ExistTaskUserConds(ctx, &taskusermwpb.Conds{
-		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		UserID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
-		EventID:   &basetypes.StringVal{Op: cruder.EQ, Value: loginEvent.EntID},
-		CreatedAt: &basetypes.Uint32Val{Op: cruder.GTE, Value: coolDownTime},
-	})
-	if err != nil {
-		logger.Sugar().Errorw(
-			"checkLoginReward",
-			"AppID", *h.AppID,
-			"UserID", h.UserID,
-			"EventID", loginEvent.EntID,
-			"CreatedAt", coolDownTime,
-			"Account", h.Account,
-			"AccountType", h.AccountType,
-			"Error", err,
-		)
-		return
-	}
-	if exist {
 		return
 	}
 
