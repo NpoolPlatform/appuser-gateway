@@ -46,6 +46,34 @@ type updateHandler struct {
 	recoveryCode *recoverycodemwpb.RecoveryCode
 }
 
+func (h *updateHandler) rewardSet2FA() {
+	if !h.shouldVerifyNewCode() {
+		return
+	}
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		req := &eventmwpb.CalcluateEventRewardsRequest{
+			AppID:       *h.AppID,
+			UserID:      *h.UserID,
+			EventType:   basetypes.UsedFor_Set2FA,
+			Consecutive: 1,
+		}
+		return publisher.Update(
+			basetypes.MsgID_CalculateEventRewardReq.String(),
+			nil,
+			nil,
+			nil,
+			req,
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"rewardSet2FA",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"Error", err,
+		)
+	}
+}
+
 func (h *updateHandler) rewardResetPassword() {
 	if h.PasswordHash == nil {
 		return
@@ -375,6 +403,8 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	notif1.generateNotif(ctx)
 
 	handler.rewardUpdatePassword()
+
+	handler.rewardSet2FA()
 
 	return h.User, nil
 }
