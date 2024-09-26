@@ -58,12 +58,12 @@ github.com/NpoolPlatform/g11n-middleware v0.0.0-20231026021135-ec3cd368fc24 h1:m
 github.com/NpoolPlatform/g11n-middleware v0.0.0-20231026021135-ec3cd368fc24/go.mod h1:tAM2cFWtV/C0UesOlIMTGcLtGgFsZ6PfBFKAzPuPHpw=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20240510075442-89278cb5cf47 h1:17FyjOnXXioSqcM4L7qa0ML/L2a0LEIODPiGTtDYR3o=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20240510075442-89278cb5cf47/go.mod h1:8ZqSAAL4eLX/09HLWwDzQY0fMORy8nqHj3kwiUHEyS4=
-github.com/NpoolPlatform/inspire-middleware v0.0.0-20240925082404-cefd58dea6f6 h1:pY23T3ophOlV8Om4AehTLsjvn9ytn9oI2AFG1wNNiuc=
-github.com/NpoolPlatform/inspire-middleware v0.0.0-20240925082404-cefd58dea6f6/go.mod h1:UJ2sD6VH9JdjwvzHO45k43WJiIMFanzGHKrbp4sxR68=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20240926020437-b88747d98d0b h1:0dXbhuTQntyQCmiMU8QUccMWsETN5G2OJZ5rwlTz3tM=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20240926020437-b88747d98d0b/go.mod h1:dyLXmOr5awVvF+LrOb/1d4HomuUoacBuPmSEWi2TNfk=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20240514082633-598d5fc7b1e3 h1:/KSPKS4kVn031QTPpdxjPnp+Yykmde25Zya0krZdk/Y=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20240514082633-598d5fc7b1e3/go.mod h1:EXCihQpRNNyWaPu1IphiZFLTyyUK/CJMZdW4My7y48Q=
-github.com/NpoolPlatform/message v0.0.0-20240925081700-885e32f4940e h1:hvTI/0V/CxMt9EVgJ0gLf/dzwCkGJAtzVmSzdguddp4=
-github.com/NpoolPlatform/message v0.0.0-20240925081700-885e32f4940e/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
+github.com/NpoolPlatform/message v0.0.0-20240926015312-8a21355537dc h1:zlUcZZk2dx7/7qYD2wjcl1/cbaczrjwpHJ4Dq4mAw9I=
+github.com/NpoolPlatform/message v0.0.0-20240926015312-8a21355537dc/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20240711094100-57fe099fcd64 h1:iVNzJiOGLCfY95OleN+47/LKUnOoh3o9FcFX7oEyB+I=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20240711094100-57fe099fcd64/go.mod h1:cTdoDJN6vSfeWgOfT+sxthXH+LN6hlngeFkdLBuN/7w=
 github.com/NpoolPlatform/review-middleware v0.0.0-20240108100223-106962e5a9c2 h1:qXBRJjUzscoz2Sn2ceEmjweHVXZIqGBw2SgJDu/Tk2k=
