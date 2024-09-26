@@ -30,6 +30,8 @@ import (
 	sendmwpb "github.com/NpoolPlatform/message/npool/third/mw/v1/send"
 	sendmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/send"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
+	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 	tmplmwpb "github.com/NpoolPlatform/message/npool/notif/mw/v1/template"
 	tmplmwcli "github.com/NpoolPlatform/notif-middleware/pkg/client/template"
 
@@ -41,6 +43,94 @@ type updateHandler struct {
 	targetID     *uint32
 	targetUser   *usermwpb.User
 	recoveryCode *recoverycodemwpb.RecoveryCode
+}
+
+func (h *updateHandler) rewardSet2FA() {
+	if !h.shouldVerifyNewCode() {
+		return
+	}
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		req := &eventmwpb.CalcluateEventRewardsRequest{
+			AppID:       *h.AppID,
+			UserID:      *h.UserID,
+			EventType:   basetypes.UsedFor_Set2FA,
+			Consecutive: 1,
+		}
+		return publisher.Update(
+			basetypes.MsgID_CalculateEventRewardReq.String(),
+			nil,
+			nil,
+			nil,
+			req,
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"rewardSet2FA",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"Error", err,
+		)
+	}
+}
+
+func (h *updateHandler) rewardResetPassword() {
+	if h.PasswordHash == nil {
+		return
+	}
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		req := &eventmwpb.CalcluateEventRewardsRequest{
+			AppID:       *h.AppID,
+			UserID:      *h.UserID,
+			EventType:   basetypes.UsedFor_ResetPassword,
+			Consecutive: 1,
+		}
+		return publisher.Update(
+			basetypes.MsgID_CalculateEventRewardReq.String(),
+			nil,
+			nil,
+			nil,
+			req,
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"rewardResetPassword",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"Account", h.Account,
+			"AccountType", h.AccountType,
+			"Error", err,
+		)
+	}
+}
+
+func (h *updateHandler) rewardUpdatePassword() {
+	if h.PasswordHash == nil {
+		return
+	}
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		req := &eventmwpb.CalcluateEventRewardsRequest{
+			AppID:       *h.AppID,
+			UserID:      *h.UserID,
+			EventType:   basetypes.UsedFor_UpdatePassword,
+			Consecutive: 1,
+		}
+		return publisher.Update(
+			basetypes.MsgID_CalculateEventRewardReq.String(),
+			nil,
+			nil,
+			nil,
+			req,
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"rewardUpdatePassword",
+			"AppID", *h.AppID,
+			"UserID", h.UserID,
+			"Account", h.Account,
+			"AccountType", h.AccountType,
+			"Error", err,
+		)
+	}
 }
 
 func (h *updateHandler) verifyOldPasswordHash(ctx context.Context) error {
@@ -323,6 +413,10 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) { //no
 	// Generate Notif
 	notif1.generateNotif(ctx)
 
+	handler.rewardUpdatePassword()
+
+	handler.rewardSet2FA()
+
 	return h.User, nil
 }
 
@@ -447,6 +541,7 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 	if err := h.DeleteResetUserLink(ctx); err != nil {
 		return err
 	}
+	handler.rewardResetPassword()
 	return nil
 }
 
