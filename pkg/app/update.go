@@ -24,7 +24,9 @@ func (h *Handler) UpdateApp(ctx context.Context) (*appmwpb.App, error) {
 
 	if h.Name != nil {
 		exist, err := appmwcli.ExistAppConds(ctx, &appmwpb.Conds{
-			Name: &basetypes.StringVal{Op: cruder.EQ, Value: *h.Name},
+			ID:    &basetypes.Uint32Val{Op: cruder.NEQ, Value: *h.ID},
+			Name:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.Name},
+			EntID: &basetypes.StringVal{Op: cruder.NEQ, Value: *h.EntID},
 		})
 		if err != nil {
 			return nil, err

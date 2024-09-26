@@ -42,7 +42,6 @@ type updateHandler struct {
 	*Handler
 	targetID     *uint32
 	targetUser   *usermwpb.User
-	origUser     *usermwpb.User
 	recoveryCode *recoverycodemwpb.RecoveryCode
 }
 
@@ -353,7 +352,7 @@ func (h *updateHandler) updateCache(ctx context.Context) error {
 	return nil
 }
 
-func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
+func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) { //nolint:gocyclo
 	handler := &updateHandler{
 		Handler: h,
 	}
@@ -372,7 +371,7 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	notif1 := &notifHandler{
 		Handler: h,
 	}
-	notif1.getUsedFor()
+	notif1.formalizeUsedFor()
 
 	if err := handler.CheckNewAccount(ctx); err != nil {
 		return nil, err
@@ -389,12 +388,24 @@ func (h *Handler) UpdateUser(ctx context.Context) (*usermwpb.User, error) {
 	if err := handler.verifyNewAccountCode(ctx); err != nil {
 		return nil, err
 	}
-
-	handler.origUser = handler.User
+	if err := handler.getTargetUser(ctx); err != nil {
+		return nil, err
+	}
 
 	if err := handler.updateUser(ctx); err != nil {
 		return nil, err
 	}
+	if h.Kol != nil && *h.Kol {
+		if err := handler.tryCreateInvitationCode(ctx); err != nil {
+			return nil, err
+		}
+		handler.sendKolNotification(ctx)
+	}
+	user, err := h.GetUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	h.User = user
 	if err := handler.updateCache(ctx); err != nil {
 		return nil, err
 	}
@@ -535,7 +546,7 @@ func (h *Handler) ResetUser(ctx context.Context) error {
 }
 
 func (h *updateHandler) verifyRegistrationInvitation(ctx context.Context) error {
-	if h.TargetUserID == nil {
+	if *h.TargetUserID == *h.UserID {
 		return fmt.Errorf("invalid target userid")
 	}
 
@@ -649,18 +660,18 @@ func (h *Handler) UpdateUserKol(ctx context.Context) (*usermwpb.User, error) {
 		AppID: h.AppID,
 		Kol:   h.Kol,
 	}
-	info, err := usermwcli.UpdateUser(ctx, req)
-	if err != nil {
+	if _, err := usermwcli.UpdateUser(ctx, req); err != nil {
 		return nil, err
 	}
 
-	if err := handler.tryCreateInvitationCode(ctx); err != nil {
-		return nil, err
+	if h.Kol != nil && *h.Kol {
+		if err := handler.tryCreateInvitationCode(ctx); err != nil {
+			return nil, err
+		}
+		handler.sendKolNotification(ctx)
 	}
 
-	handler.sendKolNotification(ctx)
-
-	return info, nil
+	return h.GetUser(ctx)
 }
 
 func (h *updateHandler) getApp(ctx context.Context) error {
